@@ -1,319 +1,152 @@
-# Asterisk PBX GUI 
-Eine moderne Web-GUI für Asterisk PBX, entwickelt mit FastAPI (Backend) und React (Frontend).
-
-## 🚀 Quick Start
-
-### Voraussetzungen
-
-- Linux Server (Ubuntu 22.04+ empfohlen)
-- Docker & Docker Compose
-- Mindestens 2 GB RAM
-- Offene Ports: 5060/UDP, 10000-10100/UDP, 8000/TCP, 3000/TCP
-
-### Installation
-
-1. **Dateien auf Server hochladen**
-
-```bash
-# Alle Projektdateien nach /root/asterisk-pbx-gui/ hochladen
-cd /root/asterisk-pbx-gui/
-```
-
-2. **Setup-Script ausführen**
-
-```bash
-chmod +x setup.sh
-./setup.sh
-```
-
-Das Script:
-- Installiert Docker (falls nicht vorhanden)
-- Baut alle Docker Images
-- Startet die Services
-- Konfiguriert die Firewall
-
-3. **Zugriff auf die GUI**
-
-Nach erfolgreichem Setup:
-- **Frontend**: `http://DEINE-SERVER-IP:3000`
-- **Backend API**: `http://DEINE-SERVER-IP:8000`
-- **API Dokumentation**: `http://DEINE-SERVER-IP:8000/docs`
-
-## 📋 Projekt-Struktur
-
-```
-asterisk-pbx-gui/
-├── docker-compose.yml          # Orchestrierung aller Services
-├── setup.sh                    # Automatisches Setup-Script
-├── ROADMAP.md                  # Projekt-Roadmap
-│
-├── asterisk/
-│   └── config/                 # Asterisk Konfigurationsdateien
-│       ├── manager.conf        # AMI Konfiguration
-│       ├── sip.conf           # SIP Peers
-│       └── extensions.conf    # Dialplan
-│
-├── backend/
-│   ├── main.py                # FastAPI Hauptanwendung
-│   ├── ami_client.py          # Asterisk AMI Client
-│   ├── database.py            # SQLAlchemy Models
-│   ├── requirements.txt       # Python Dependencies
-│   ├── Dockerfile
-│   └── routers/
-│       ├── peers.py           # SIP Peers API
-│       ├── dashboard.py       # Dashboard API
-│       └── cdr.py             # Call Records API
-│
-├── frontend/
-│   ├── src/
-│   │   ├── App.tsx           # Haupt-React-Komponente
-│   │   ├── hooks/
-│   │   │   └── useWebSocket.ts  # WebSocket Hook
-│   │   └── services/
-│   │       └── api.ts        # API Service
-│   ├── package.json
-│   ├── vite.config.ts
-│   ├── tailwind.config.js
-│   └── Dockerfile
-│
-└── database/
-    └── init.sql              # Datenbank-Schema
-```
-
-## 🔧 Services
-
-### 1. PostgreSQL
-- **Container**: `pbx_postgres`
-- **Port**: 5432
-- **Datenbank**: `asterisk_gui`
-- **User**: `asterisk` / `asterisk_secure_2026`
-
-### 2. Asterisk PBX
-- **Container**: `pbx_asterisk`
-- **SIP Port**: 5060 (UDP/TCP)
-- **RTP Ports**: 10000-10100 (UDP)
-- **AMI Port**: 5038
-- **AMI User**: `admin` / `admin_secret`
-
-### 3. Backend (FastAPI)
-- **Container**: `pbx_backend`
-- **Port**: 8000
-- **Features**:
-  - REST API
-  - WebSocket für Live-Updates
-  - AMI Integration
-  - PostgreSQL Connection
-
-### 4. Frontend (React)
-- **Container**: `pbx_frontend`
-- **Port**: 3000
-- **Features**:
-  - Dashboard mit Live-Daten
-  - WebSocket-Integration
-  - Responsive Design
-
-## 📞 Test-Extensions
-
-Das System kommt mit zwei vorkonfigurierten Test-Extensions:
-
-| Extension | Passwort | Beschreibung |
-|-----------|----------|--------------|
-| 1000 | test1000 | Test User 1 |
-| 1001 | test1001 | Test User 2 |
-
-### Spezielle Extensions
-
-- **\*43**: Echo Test (spricht zurück, was du sagst)
-- **\*44**: Playback Test (spielt "Hello World" ab)
-- **\*97**: Voicemail Zugriff
-
-## 🛠️ Docker Befehle
-
-### Services verwalten
-
-```bash
-# Alle Services starten
-docker compose up -d
-
-# Services stoppen
-docker compose down
-
-# Services neu starten
-docker compose restart
-
-# Logs anzeigen (alle Services)
-docker compose logs -f
-
-# Logs einzelner Service
-docker compose logs -f backend
-docker compose logs -f asterisk
-```
-
-### Asterisk CLI
-
-```bash
-# Asterisk Console öffnen
-docker exec -it pbx_asterisk asterisk -rvvv
-
-# Wichtige Asterisk-Befehle:
-asterisk> sip show peers        # Zeige SIP Peers
-asterisk> core show channels    # Zeige aktive Kanäle
-asterisk> dialplan show         # Zeige Dialplan
-asterisk> core reload           # Config neu laden
-```
-
-### Datenbank Zugriff
-
-```bash
-# PostgreSQL Console
-docker exec -it pbx_postgres psql -U asterisk -d asterisk_gui
-
-# Beispiel-Queries:
-SELECT * FROM sip_peers;
-SELECT * FROM cdr ORDER BY call_date DESC LIMIT 10;
-```
-
-## 🔐 Sicherheit
-
-### Ändern der Default-Passwörter
-
-**Asterisk AMI** (`asterisk/config/manager.conf`):
-```ini
-[admin]
-secret = DEIN_NEUES_SICHERES_PASSWORT
-```
-
-**Datenbank** (`docker-compose.yml`):
-```yaml
-POSTGRES_PASSWORD: DEIN_NEUES_DB_PASSWORT
-```
-
-**Test SIP Extensions** (`asterisk/config/sip.conf`):
-```ini
-[1000](peer-template)
-secret=NEUES_SICHERES_PASSWORT
-```
-
-Nach Änderungen:
-```bash
-docker compose down
-docker compose up -d
-```
-
-## 🌐 Hetzner Cloud Firewall
-
-Stelle sicher, dass folgende Ports in der Hetzner Cloud Firewall geöffnet sind:
-
-| Port | Protokoll | Zweck |
-|------|-----------|-------|
-| 22 | TCP | SSH |
-| 5060 | UDP/TCP | SIP Signaling |
-| 10000-10100 | UDP | RTP Media (Audio) |
-| 8000 | TCP | Backend API |
-| 3000 | TCP | Frontend GUI |
-
-## 📊 API Endpoints
-
-### Health Check
-```bash
-curl http://localhost:8000/api/health
-```
-
-### Dashboard Status
-```bash
-curl http://localhost:8000/api/dashboard/status
-```
-
-### SIP Peers auflisten
-```bash
-curl http://localhost:8000/api/peers/
-```
-
-### Neuen SIP Peer anlegen
-```bash
-curl -X POST http://localhost:8000/api/peers/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "extension": "1002",
-    "secret": "test1002",
-    "caller_id": "Test User 1002"
-  }'
-```
-
-### API Dokumentation
-Vollständige API-Docs unter: `http://DEINE-SERVER-IP:8000/docs`
-
-## 🐛 Troubleshooting
-
-### Services starten nicht
-
-```bash
-# Status prüfen
-docker compose ps
-
-# Logs aller Services
-docker compose logs
-
-# Einzelne Services neu starten
-docker compose restart backend
-docker compose restart asterisk
-```
-
-### Asterisk verbindet nicht
-
-```bash
-# Asterisk Logs
-docker compose logs asterisk
-
-# AMI Verbindung testen
-docker exec -it pbx_asterisk asterisk -rx "manager show connected"
-
-# Config-Syntax prüfen
-docker exec -it pbx_asterisk asterisk -rx "dialplan reload"
-```
-
-### Frontend zeigt keine Daten
-
-```bash
-# Backend Logs prüfen
-docker compose logs backend
-
-# WebSocket-Verbindung im Browser Console prüfen
-# Öffne Browser DevTools → Console
-```
-
-### Datenbank-Probleme
-
-```bash
-# Datenbank neu initialisieren
-docker compose down -v  # ACHTUNG: Löscht alle Daten!
-docker compose up -d
-```
-
-## 🎯 Nächste Schritte (nach PoC)
-
-- [ ] Echte AMI-Events vom Asterisk empfangen
-- [ ] SIP-Peers über GUI bearbeiten funktional machen
-- [ ] Dialplan-Editor implementieren
-- [ ] Authentication & Authorization
-- [ ] Voicemail-Player
-- [ ] Call Recording
-- [ ] Queue-Management
-
-Siehe `ROADMAP.md` für vollständigen Projektplan.
-
-## 📝 Lizenz
-
-Dieses Projekt ist für den privaten und Entwicklungs-Einsatz gedacht.
-
-## 🤝 Support
-
-Bei Fragen oder Problemen:
-1. Prüfe die Logs: `docker compose logs -f`
-2. Checke die API Docs: `http://localhost:8000/docs`
-3. Siehe Troubleshooting-Sektion oben
+<p align="center">
+  <img src="https://gonopbx.de/logo.png" alt="GonoPBX Logo" width="120">
+</p>
+
+<h1 align="center">GonoPBX</h1>
+
+<p align="center">
+  <strong>Modern Open-Source Web GUI for Asterisk PBX</strong><br>
+  Manage your phone system through an intuitive web interface – extensions, SIP trunks, call routing, voicemail, and real-time monitoring.
+</p>
+
+<p align="center">
+  <a href="https://github.com/ankaios76/gonopbx/blob/main/LICENSE"><img src="https://img.shields.io/github/license/ankaios76/gonopbx?color=blue" alt="License"></a>
+  <a href="https://github.com/ankaios76/gonopbx/releases"><img src="https://img.shields.io/github/v/release/ankaios76/gonopbx?color=green" alt="Release"></a>
+  <a href="https://github.com/ankaios76/gonopbx/stargazers"><img src="https://img.shields.io/github/stars/ankaios76/gonopbx?style=social" alt="Stars"></a>
+  <a href="https://demo.gonopbx.de"><img src="https://img.shields.io/badge/Live-Demo-brightgreen" alt="Live Demo"></a>
+  <a href="https://buymeacoffee.com/ankaios"><img src="https://img.shields.io/badge/Buy%20me%20a-Coffee-orange?logo=buymeacoffee&logoColor=white" alt="Buy me a Coffee"></a>
+</p>
+
+<p align="center">
+  <a href="https://gonopbx.de">Website</a> •
+  <a href="https://demo.gonopbx.de">Live Demo</a> •
+  <a href="#-quick-start">Quick Start</a> •
+  <a href="#-screenshots">Screenshots</a> •
+  <a href="#-features">Features</a> •
+  <a href="https://buymeacoffee.com/ankaios">Support the Project</a>
+</p>
 
 ---
 
-**Version**: 0.1.0 (Proof of Concept)
-**Erstellt**: Februar 2026
+<p align="center">
+  <img src="https://gonopbx.de/dashboard.png" alt="GonoPBX Dashboard" width="800">
+</p>
+
+## ✨ Features
+
+- **📞 Extension Management** – Create, edit, and manage SIP extensions with caller ID, context, and activation status
+- **🔌 SIP Trunk Configuration** – Connect to SIP providers via registration or IP authentication, with built-in templates for Plusnet IPfonie
+- **📠 DID Routing** – Flexibly assign incoming phone numbers to extensions with number block management per trunk
+- **🔄 Call Forwarding** – Unconditional, busy, and no-answer forwarding per extension, toggled with one click
+- **📩 Voicemail** – Per-extension voicemail boxes with PIN, email notifications, and built-in audio player
+- **📊 Call Detail Records** – Full CDR with filters by source, destination, and status, plus call statistics at a glance
+- **🔐 Multi-User & Roles** – Admin and user roles with JWT-based authentication
+- **📡 Real-Time Dashboard** – Live overview via WebSocket: Asterisk status, registered endpoints, active lines, and recent calls
+- **🐳 Docker Deployment** – Full system up and running in minutes with `docker compose up`
+
+## 📸 Screenshots
+
+| Extensions Overview | Extension Detail | SIP Trunk Config |
+|:---:|:---:|:---:|
+| ![Extensions](https://gonopbx.de/extensions.png) | ![Detail](https://gonopbx.de/extensions_detail.png) | ![Trunk](https://gonopbx.de/extensions_siptrunk.png) |
+
+| Call History | User Management | Live Dashboard |
+|:---:|:---:|:---:|
+| ![CDR](https://gonopbx.de/anrufverlauf.png) | ![Users](https://gonopbx.de/benutzer.png) | ![Dashboard](https://gonopbx.de/dashboard.png) |
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Linux server (Ubuntu 22.04+ / Debian 12+ recommended)
+- Docker & Docker Compose installed
+- Ports 3000 (Web UI), 5060 (SIP), 10000-20000 (RTP) available
+
+### Installation
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/ankaios76/gonopbx.git
+cd gonopbx
+
+# 2. Run the interactive installer
+chmod +x install.sh
+./install.sh
+
+# 3. Access the web interface
+# Open https://your-server-ip:3000 in your browser
+```
+
+The installer will automatically:
+- Detect your server IP
+- Generate secure passwords
+- Create the Docker configuration
+- Start all services
+
+## 🏗️ Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| **PBX Engine** | Asterisk 18 (PJSIP) |
+| **Backend** | FastAPI (Python) |
+| **Frontend** | React + TypeScript (Vite, Tailwind CSS) |
+| **Database** | PostgreSQL |
+| **Auth** | JWT + bcrypt |
+| **Real-Time** | WebSocket |
+| **Deployment** | Docker Compose |
+| **SSL** | Let's Encrypt (automatic) |
+
+## 📁 Project Structure
+
+```
+gonopbx/
+├── asterisk/config/    # Asterisk configuration templates
+├── backend/            # FastAPI backend (API, WebSocket, Asterisk integration)
+├── frontend/           # React frontend (Vite + Tailwind)
+├── database/           # SQL schema and migrations
+├── doks/               # Documentation
+├── releases/           # Release packages
+├── docker-compose.yml  # Container orchestration
+└── install.sh          # Interactive installer
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Whether it's bug reports, feature requests, or pull requests – all help is appreciated.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+Have an idea but no time to code? [Open an issue](https://github.com/ankaios76/gonopbx/issues) – I'll implement it when I find the time.
+
+## 🗺️ Roadmap
+
+- [ ] Ring groups & call queues
+- [ ] IVR / auto attendant builder
+- [ ] Conference rooms
+- [ ] Phonebook with CallerID lookup
+- [ ] REST API documentation (Swagger/OpenAPI)
+- [ ] Multi-language support (EN/DE)
+- [ ] Backup & restore functionality
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## ☕ Support
+
+GonoPBX is free and open source. If you find it useful, please consider:
+
+- ⭐ **Starring this repository** – it helps with visibility
+- 🐛 **Reporting bugs** or suggesting features via [Issues](https://github.com/ankaios76/gonopbx/issues)
+- ☕ **[Buy me a Coffee](https://buymeacoffee.com/ankaios)** – helps cover hosting costs
+
+---
+
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/ankaios76">Norbert Hengsteler</a><br>
+  <a href="https://gonopbx.de">gonopbx.de</a>
+</p>

@@ -6,6 +6,7 @@ import logging
 import subprocess
 from typing import List
 from database import SIPPeer, SIPTrunk
+from version import VERSION
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ def generate_pjsip_config(peers: List[SIPPeer]) -> str:
 [global]
 type=global
 max_forwards=70
-user_agent=Asterisk PBX GUI
+user_agent=GonoPBX {VERSION}
 
 [transport-udp]
 type=transport

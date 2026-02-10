@@ -28,6 +28,7 @@ from auth import get_password_hash, get_current_user
 from database import SessionLocal, User, SIPPeer, VoicemailMailbox, SystemSettings
 from voicemail_config import write_voicemail_config, reload_voicemail
 from email_config import write_msmtp_config
+from version import VERSION
 
 # Global AMI client instance
 ami_client = None
@@ -157,7 +158,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Asterisk PBX GUI API",
     description="REST API for Asterisk PBX Management",
-    version="1.1.0",
+    version=VERSION,
     lifespan=lifespan
 )
 

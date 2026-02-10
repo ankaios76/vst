@@ -153,9 +153,22 @@ class CDR(Base):
     userfield = Column(String(255))
 
 
+class VoicemailMailbox(Base):
+    __tablename__ = "voicemail_mailboxes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    extension = Column(String(20), unique=True, nullable=False, index=True)
+    enabled = Column(Boolean, default=True)
+    pin = Column(String(20), default="1234")
+    name = Column(String(100), nullable=True)
+    email = Column(String(200), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class SystemSettings(Base):
     __tablename__ = "system_settings"
-    
+
     key = Column(String(100), primary_key=True)
     value = Column(Text)
     description = Column(Text)

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
 import './VoicemailStats.css';
 
 interface VoicemailStats {
@@ -64,9 +63,6 @@ const VoicemailStats: React.FC = () => {
     <div className="voicemail-stats-card">
       <div className="card-header">
         <h3>Voicemail</h3>
-        <Link to="/voicemail" className="view-all-link">
-          Alle anzeigen →
-        </Link>
       </div>
       
       <div className="card-content">

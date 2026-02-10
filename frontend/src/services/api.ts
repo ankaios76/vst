@@ -1,5 +1,5 @@
 const API_BASE_URL = typeof window !== 'undefined'
-  ? `${window.location.protocol}//${window.location.hostname}:8000`
+  ? `${window.location.protocol}//${window.location.host}`
   : 'http://localhost:8000'
 
 class ApiService {
@@ -183,6 +183,42 @@ class ApiService {
     return this.request<any>('/api/cdr/stats')
   }
 
+  // Voicemail Mailbox Config
+  async getVoicemailMailbox(extension: string) {
+    return this.request<any>(`/api/voicemail/mailbox/${extension}`)
+  }
+
+  async updateVoicemailMailbox(extension: string, data: any) {
+    return this.request<any>(`/api/voicemail/mailbox/${extension}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteVoicemailMailbox(extension: string) {
+    return this.request<any>(`/api/voicemail/mailbox/${extension}`, {
+      method: 'DELETE',
+    })
+  }
+
+  // Voicemail Messages
+  async getVoicemails(mailbox?: string) {
+    const params = mailbox ? `?mailbox=${mailbox}` : ''
+    return this.request<any[]>(`/api/voicemail/${params}`)
+  }
+
+  async markVoicemailRead(id: number) {
+    return this.request<any>(`/api/voicemail/${id}/mark-read`, {
+      method: 'PATCH',
+    })
+  }
+
+  async deleteVoicemail(id: number) {
+    return this.request<any>(`/api/voicemail/${id}`, {
+      method: 'DELETE',
+    })
+  }
+
   // Users (Admin)
   async getUsers() {
     return this.request<any[]>('/api/users/')
@@ -198,6 +234,25 @@ class ApiService {
   async deleteUser(id: number) {
     return this.request<any>(`/api/users/${id}`, {
       method: 'DELETE',
+    })
+  }
+
+  // Settings
+  async getSettings() {
+    return this.request<any>('/api/settings/')
+  }
+
+  async updateSettings(data: any) {
+    return this.request<any>('/api/settings/', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async sendTestEmail(to: string) {
+    return this.request<any>('/api/settings/test-email', {
+      method: 'POST',
+      body: JSON.stringify({ to }),
     })
   }
 }

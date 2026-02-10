@@ -9,8 +9,9 @@ from pydantic import BaseModel
 from datetime import datetime
 import logging
 
-from database import get_db, SIPPeer, SIPTrunk, User
+from database import get_db, SIPPeer, SIPTrunk, User, VoicemailMailbox
 from pjsip_config import write_pjsip_config, reload_asterisk
+from voicemail_config import write_voicemail_config, reload_voicemail
 from auth import get_current_user
 
 logger = logging.getLogger(__name__)
@@ -41,6 +42,17 @@ class SIPPeerResponse(SIPPeerBase):
     
     class Config:
         from_attributes = True
+
+
+def regenerate_voicemail_config(db: Session):
+    """Regenerate voicemail.conf from database and reload Asterisk"""
+    try:
+        all_mailboxes = db.query(VoicemailMailbox).all()
+        write_voicemail_config(all_mailboxes)
+        reload_voicemail()
+        logger.info(f"✓ Voicemail config regenerated with {len(all_mailboxes)} mailboxes")
+    except Exception as e:
+        logger.error(f"✗ Failed to regenerate voicemail config: {e}")
 
 
 def regenerate_pjsip_config(db: Session):
@@ -80,9 +92,17 @@ def create_peer(peer: SIPPeerCreate, current_user: User = Depends(get_current_us
     db.commit()
     db.refresh(db_peer)
     
+    # Auto-create voicemail mailbox
+    existing_mb = db.query(VoicemailMailbox).filter(VoicemailMailbox.extension == peer.extension).first()
+    if not existing_mb:
+        mb = VoicemailMailbox(extension=peer.extension, name=peer.caller_id or peer.extension)
+        db.add(mb)
+        db.commit()
+
     logger.info(f"✓ Created SIP peer: {peer.extension}")
     regenerate_pjsip_config(db)
-    
+    regenerate_voicemail_config(db)
+
     return db_peer
 
 
@@ -117,10 +137,17 @@ def delete_peer(peer_id: int, current_user: User = Depends(get_current_user), db
         raise HTTPException(status_code=404, detail="Peer not found")
     
     extension = db_peer.extension
+
+    # Delete associated voicemail mailbox
+    mb = db.query(VoicemailMailbox).filter(VoicemailMailbox.extension == extension).first()
+    if mb:
+        db.delete(mb)
+
     db.delete(db_peer)
     db.commit()
-    
+
     logger.info(f"✓ Deleted SIP peer: {extension}")
     regenerate_pjsip_config(db)
-    
+    regenerate_voicemail_config(db)
+
     return {"status": "deleted", "extension": extension}

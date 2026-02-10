@@ -1,12 +1,12 @@
 services:
   asterisk:
-    image: andrius/asterisk:18
+    build: ./asterisk
     container_name: pbx_asterisk
     restart: unless-stopped
     ports:
       - "5060:5060/udp"
       - "5060:5060/tcp"
-      - "5038:5038/tcp"
+      - "127.0.0.1:5038:5038/tcp"
       - "10000-10100:10000-10100/udp"
     volumes:
       - ./asterisk/config:/etc/asterisk/custom
@@ -29,7 +29,7 @@ services:
     container_name: pbx_backend
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     env_file: .env
     environment:
       - DATABASE_URL=postgresql://asterisk:${DB_PASSWORD}@postgres:5432/asterisk_gui
@@ -55,7 +55,7 @@ services:
     container_name: pbx_frontend
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "127.0.0.1:3000:80"
     depends_on:
       - backend
     networks:
@@ -71,8 +71,7 @@ services:
       - POSTGRES_DB=asterisk_gui
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # PostgreSQL nur intern erreichbar, kein Port-Mapping nötig
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U asterisk"]
       interval: 10s

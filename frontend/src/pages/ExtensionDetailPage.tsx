@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { ArrowLeft, Phone, Plus, Trash2, Server, PhoneForwarded, PhoneOutgoing, ToggleLeft, ToggleRight } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { ArrowLeft, Phone, Plus, Trash2, Server, PhoneForwarded, PhoneOutgoing, ToggleLeft, ToggleRight, Voicemail, Save, Play, Pause, Clock } from 'lucide-react'
 import { api } from '../services/api'
 
 interface Props {
@@ -40,6 +40,24 @@ interface CallForwardRule {
   enabled: boolean
 }
 
+interface VoicemailMailbox {
+  extension: string
+  enabled: boolean
+  pin: string
+  name: string | null
+  email: string | null
+}
+
+interface VoicemailMessage {
+  id: number
+  mailbox: string
+  caller_id: string
+  duration: number
+  date: string
+  is_read: boolean
+  file_path: string
+}
+
 const FORWARD_TYPE_LABELS: Record<string, string> = {
   unconditional: 'Sofort (immer)',
   busy: 'Bei Besetzt',
@@ -76,6 +94,14 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
     ring_time: 20,
   })
 
+  // Voicemail state
+  const [, setMailbox] = useState<VoicemailMailbox | null>(null)
+  const [mailboxForm, setMailboxForm] = useState({ enabled: true, pin: '1234', name: '', email: '' })
+  const [voicemails, setVoicemails] = useState<VoicemailMessage[]>([])
+  const [savingMailbox, setSavingMailbox] = useState(false)
+  const [playingId, setPlayingId] = useState<number | null>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
+
   useEffect(() => {
     fetchData()
   }, [extension])
@@ -96,6 +122,28 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
       setForwards(forwardsData)
       if (trunksData.length > 0 && routeFormData.trunk_id === 0) {
         setRouteFormData(f => ({ ...f, trunk_id: trunksData[0].id }))
+      }
+
+      // Fetch voicemail mailbox config
+      try {
+        const mbData = await api.getVoicemailMailbox(extension)
+        setMailbox(mbData)
+        setMailboxForm({
+          enabled: mbData.enabled,
+          pin: mbData.pin || '1234',
+          name: mbData.name || '',
+          email: mbData.email || '',
+        })
+      } catch {
+        setMailbox(null)
+      }
+
+      // Fetch voicemail messages
+      try {
+        const vmData = await api.getVoicemails(extension)
+        setVoicemails(vmData)
+      } catch {
+        setVoicemails([])
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -173,6 +221,77 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
     } catch (error: any) {
       alert(error.message || 'Fehler beim Löschen')
     }
+  }
+
+  // ==================== VOICEMAIL ====================
+  const handleSaveMailbox = async () => {
+    setSavingMailbox(true)
+    try {
+      await api.updateVoicemailMailbox(extension, {
+        enabled: mailboxForm.enabled,
+        pin: mailboxForm.pin,
+        name: mailboxForm.name || null,
+        email: mailboxForm.email || null,
+      })
+      const mbData = await api.getVoicemailMailbox(extension)
+      setMailbox(mbData)
+    } catch (error: any) {
+      alert(error.message || 'Fehler beim Speichern der Voicemail-Konfiguration')
+    } finally {
+      setSavingMailbox(false)
+    }
+  }
+
+  const handlePlayVoicemail = (vm: VoicemailMessage) => {
+    if (playingId === vm.id) {
+      audioRef.current?.pause()
+      setPlayingId(null)
+      return
+    }
+    const baseUrl = `${window.location.protocol}//${window.location.host}`
+    const token = localStorage.getItem('token')
+    if (audioRef.current) {
+      audioRef.current.src = `${baseUrl}/api/voicemail/${vm.id}/audio?token=${token}`
+      audioRef.current.play()
+      setPlayingId(vm.id)
+      audioRef.current.onended = () => setPlayingId(null)
+    }
+    if (!vm.is_read) {
+      api.markVoicemailRead(vm.id).then(() => fetchData())
+    }
+  }
+
+  const handleDeleteVoicemail = async (vm: VoicemailMessage) => {
+    if (!confirm('Voicemail wirklich loschen?')) return
+    try {
+      await api.deleteVoicemail(vm.id)
+      if (playingId === vm.id) {
+        audioRef.current?.pause()
+        setPlayingId(null)
+      }
+      setVoicemails(prev => prev.filter(v => v.id !== vm.id))
+    } catch (error: any) {
+      alert(error.message || 'Fehler beim Loschen')
+    }
+  }
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+    if (diffMins < 60) return `vor ${diffMins} Min.`
+    if (diffHours < 24) return `vor ${diffHours} Std.`
+    if (diffDays < 7) return `vor ${diffDays} Tag${diffDays > 1 ? 'en' : ''}`
+    return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
   }
 
   // Available forward types (exclude already configured ones)
@@ -505,6 +624,130 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
           )}
         </div>
       </div>
+
+      {/* ==================== Voicemail-Konfiguration ==================== */}
+      <div className="bg-white rounded-lg shadow mb-8">
+        <div className="px-6 py-4 border-b flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Voicemail className="w-5 h-5 text-gray-600" />
+            <h2 className="text-lg font-semibold">Voicemail</h2>
+          </div>
+          <button
+            onClick={() => setMailboxForm(f => ({ ...f, enabled: !f.enabled }))}
+            className={`p-2 rounded-lg transition ${mailboxForm.enabled ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-100'}`}
+            title={mailboxForm.enabled ? 'Deaktivieren' : 'Aktivieren'}
+          >
+            {mailboxForm.enabled ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6" />}
+          </button>
+        </div>
+
+        <div className="px-6 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">PIN</label>
+              <input
+                type="text"
+                value={mailboxForm.pin}
+                onChange={(e) => setMailboxForm({ ...mailboxForm, pin: e.target.value })}
+                placeholder="1234"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <input
+                type="text"
+                value={mailboxForm.name}
+                onChange={(e) => setMailboxForm({ ...mailboxForm, name: e.target.value })}
+                placeholder={extension}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">E-Mail (optional)</label>
+              <input
+                type="email"
+                value={mailboxForm.email}
+                onChange={(e) => setMailboxForm({ ...mailboxForm, email: e.target.value })}
+                placeholder="user@example.com"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+          </div>
+          <button
+            onClick={handleSaveMailbox}
+            disabled={savingMailbox}
+            className="flex items-center gap-2 bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition text-sm disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" />
+            {savingMailbox ? 'Speichere...' : 'Speichern'}
+          </button>
+        </div>
+      </div>
+
+      {/* ==================== Voicemail-Nachrichten ==================== */}
+      {mailboxForm.enabled && (
+        <div className="bg-white rounded-lg shadow mb-8">
+          <div className="px-6 py-4 border-b">
+            <div className="flex items-center gap-2">
+              <Voicemail className="w-5 h-5 text-gray-600" />
+              <h2 className="text-lg font-semibold">Voicemail-Nachrichten</h2>
+              {voicemails.filter(v => !v.is_read).length > 0 && (
+                <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                  {voicemails.filter(v => !v.is_read).length} neu
+                </span>
+              )}
+            </div>
+          </div>
+
+          <audio ref={audioRef} className="hidden" />
+
+          <div className="divide-y">
+            {voicemails.length > 0 ? (
+              voicemails.map(vm => (
+                <div
+                  key={vm.id}
+                  className={`px-6 py-4 flex items-center justify-between ${!vm.is_read ? 'bg-blue-50' : ''}`}
+                >
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <button
+                      onClick={() => handlePlayVoicemail(vm)}
+                      className={`p-2 rounded-full transition flex-shrink-0 ${playingId === vm.id ? 'bg-primary-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                    >
+                      {playingId === vm.id ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                    </button>
+                    <div className="min-w-0">
+                      <div className="font-medium flex items-center gap-2">
+                        <span className="truncate">{vm.caller_id || 'Unbekannt'}</span>
+                        {!vm.is_read && (
+                          <span className="text-xs bg-blue-500 text-white px-1.5 py-0.5 rounded flex-shrink-0">Neu</span>
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-500 flex items-center gap-3">
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {formatDate(vm.date)}
+                        </span>
+                        <span>{formatDuration(vm.duration)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteVoicemail(vm)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg flex-shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <div className="px-6 py-8 text-center text-gray-500">
+                Keine Voicemail-Nachrichten vorhanden.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

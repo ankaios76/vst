@@ -23,8 +23,11 @@ from ami_client import AsteriskAMIClient
 from database import engine, Base
 from routers import peers, trunks, routes, dashboard, cdr, voicemail, callforward
 from routers import auth as auth_router, users as users_router
+from routers import settings as settings_router
 from auth import get_password_hash, get_current_user
-from database import SessionLocal, User
+from database import SessionLocal, User, SIPPeer, VoicemailMailbox, SystemSettings
+from voicemail_config import write_voicemail_config, reload_voicemail
+from email_config import write_msmtp_config
 
 # Global AMI client instance
 ami_client = None
@@ -92,6 +95,35 @@ async def lifespan(app: FastAPI):
             logger.info("Admin user created")
         else:
             logger.info("Admin user already exists")
+        # Migrate: create voicemail mailboxes for existing peers
+        peers = db.query(SIPPeer).all()
+        created = 0
+        for peer in peers:
+            existing_mb = db.query(VoicemailMailbox).filter(VoicemailMailbox.extension == peer.extension).first()
+            if not existing_mb:
+                mb = VoicemailMailbox(extension=peer.extension, name=peer.caller_id or peer.extension)
+                db.add(mb)
+                created += 1
+        if created > 0:
+            db.commit()
+            logger.info(f"Created {created} voicemail mailboxes for existing peers")
+
+        # Load SMTP settings from DB
+        smtp_settings = {}
+        for key in ["smtp_host", "smtp_port", "smtp_tls", "smtp_user", "smtp_password", "smtp_from"]:
+            s = db.query(SystemSettings).filter(SystemSettings.key == key).first()
+            smtp_settings[key] = s.value if s else ""
+
+        # Write msmtp config if SMTP is configured
+        if smtp_settings.get("smtp_host"):
+            write_msmtp_config(smtp_settings)
+            logger.info("msmtp config written to Asterisk container")
+
+        # Regenerate voicemail.conf with SMTP settings
+        all_mailboxes = db.query(VoicemailMailbox).all()
+        write_voicemail_config(all_mailboxes, smtp_settings)
+        reload_voicemail()
+        logger.info(f"Voicemail config generated with {len(all_mailboxes)} mailboxes")
     finally:
         db.close()
 
@@ -148,6 +180,7 @@ app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"]
 app.include_router(cdr.router, prefix="/api/cdr", tags=["Call Records"])
 app.include_router(voicemail.router, prefix="/api/voicemail", tags=["Voicemail"])
 app.include_router(callforward.router, prefix="/api/callforward", tags=["Call Forwarding"])
+app.include_router(settings_router.router, prefix="/api/settings", tags=["Settings"])
 
 
 # Root endpoint

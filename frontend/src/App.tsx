@@ -1,16 +1,16 @@
 import { useState } from 'react'
-import { Phone, Users, History, Voicemail, Menu, X, LogOut, Shield } from 'lucide-react'
+import { Phone, Users, History, Menu, X, LogOut, Shield, Settings } from 'lucide-react'
 import packageJson from '../package.json'
 import Dashboard from './pages/Dashboard'
 import ExtensionsPage from './pages/ExtensionsPage'
 import ExtensionDetailPage from './pages/ExtensionDetailPage'
 import CDRPage from './pages/CDRPage'
-import VoicemailPage from './pages/VoicemailPage'
 import LoginPage from './pages/LoginPage'
 import UsersPage from './pages/UsersPage'
+import SettingsPage from './pages/SettingsPage'
 import { AuthProvider, useAuth } from './context/AuthContext'
 
-type Page = 'dashboard' | 'extensions' | 'extension-detail' | 'cdr' | 'voicemail' | 'users'
+type Page = 'dashboard' | 'extensions' | 'extension-detail' | 'cdr' | 'users' | 'settings'
 
 function AppContent() {
   const { user, isAuthenticated, isLoading, logout } = useAuth()
@@ -39,9 +39,11 @@ function AppContent() {
     { id: 'dashboard' as Page, name: 'Dashboard', icon: Phone },
     { id: 'extensions' as Page, name: 'Extensions', icon: Users },
     { id: 'cdr' as Page, name: 'Anrufverlauf', icon: History },
-    { id: 'voicemail' as Page, name: 'Voicemail', icon: Voicemail },
     ...(user?.role === 'admin'
-      ? [{ id: 'users' as Page, name: 'Benutzer', icon: Shield }]
+      ? [
+          { id: 'users' as Page, name: 'Benutzer', icon: Shield },
+          { id: 'settings' as Page, name: 'Einstellungen', icon: Settings },
+        ]
       : []),
   ]
 
@@ -55,10 +57,10 @@ function AppContent() {
         return <ExtensionDetailPage extension={selectedExtension} onBack={() => setCurrentPage('dashboard')} />
       case 'cdr':
         return <CDRPage />
-      case 'voicemail':
-        return <VoicemailPage />
       case 'users':
         return user?.role === 'admin' ? <UsersPage /> : <Dashboard />
+      case 'settings':
+        return user?.role === 'admin' ? <SettingsPage /> : <Dashboard />
       default:
         return <Dashboard />
     }

@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
 const API_BASE_URL = typeof window !== 'undefined'
-  ? `${window.location.protocol}//${window.location.hostname}:8000`
+  ? `${window.location.protocol}//${window.location.host}`
   : 'http://localhost:8000'
 
 interface User {

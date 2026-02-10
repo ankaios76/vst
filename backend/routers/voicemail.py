@@ -1,20 +1,88 @@
 """
 Voicemail API Router with database integration
 """
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, func
-from database import Base, get_db, User
-from auth import get_current_user
+from pydantic import BaseModel
+from database import Base, get_db, User, VoicemailMailbox
+from auth import get_current_user, JWT_SECRET, JWT_ALGORITHM
+from voicemail_config import write_voicemail_config, reload_voicemail
 from typing import Dict, Any, List, Optional
 from datetime import datetime
+from jose import JWTError, jwt as jose_jwt
 import os
 import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 VOICEMAIL_PATH = "/var/spool/asterisk/voicemail/default"
+
+
+class MailboxUpdate(BaseModel):
+    enabled: bool = True
+    pin: str = "1234"
+    name: Optional[str] = None
+    email: Optional[str] = None
+
+
+def regenerate_voicemail_config(db: Session):
+    """Regenerate voicemail.conf from database and reload Asterisk"""
+    try:
+        all_mailboxes = db.query(VoicemailMailbox).all()
+        write_voicemail_config(all_mailboxes)
+        reload_voicemail()
+        logger.info(f"Voicemail config regenerated with {len(all_mailboxes)} mailboxes")
+    except Exception as e:
+        logger.error(f"Failed to regenerate voicemail config: {e}")
+
+
+# ==================== Mailbox Config Endpoints ====================
+
+@router.get("/mailbox/{extension}")
+async def get_mailbox(extension: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    mb = db.query(VoicemailMailbox).filter(VoicemailMailbox.extension == extension).first()
+    if not mb:
+        raise HTTPException(status_code=404, detail="Mailbox not found")
+    return {
+        "extension": mb.extension, "enabled": mb.enabled,
+        "pin": mb.pin, "name": mb.name, "email": mb.email,
+    }
+
+
+@router.put("/mailbox/{extension}")
+async def update_mailbox(extension: str, data: MailboxUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    mb = db.query(VoicemailMailbox).filter(VoicemailMailbox.extension == extension).first()
+    if not mb:
+        mb = VoicemailMailbox(extension=extension)
+        db.add(mb)
+    mb.enabled = data.enabled
+    mb.pin = data.pin
+    mb.name = data.name
+    mb.email = data.email
+    mb.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(mb)
+    regenerate_voicemail_config(db)
+    return {
+        "extension": mb.extension, "enabled": mb.enabled,
+        "pin": mb.pin, "name": mb.name, "email": mb.email,
+    }
+
+
+@router.delete("/mailbox/{extension}")
+async def delete_mailbox(extension: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    mb = db.query(VoicemailMailbox).filter(VoicemailMailbox.extension == extension).first()
+    if not mb:
+        raise HTTPException(status_code=404, detail="Mailbox not found")
+    db.delete(mb)
+    db.commit()
+    regenerate_voicemail_config(db)
+    return {"success": True, "message": f"Mailbox {extension} deleted"}
+
+
+# ==================== Voicemail Message Endpoints ====================
 
 class VoicemailRecord(Base):
     __tablename__ = "voicemail_records"
@@ -108,7 +176,14 @@ async def get_voicemail_stats(current_user: User = Depends(get_current_user), db
     return {"total": total, "unread": unread, "by_mailbox": by_mailbox}
 
 @router.get("/{voicemail_id}/audio")
-async def get_voicemail_audio(voicemail_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def get_voicemail_audio(voicemail_id: int, token: Optional[str] = Query(None), db: Session = Depends(get_db)):
+    # Accept token via query param (for <audio> element) or header
+    if not token:
+        raise HTTPException(status_code=401, detail="Token required")
+    try:
+        jose_jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
     vm = db.query(VoicemailRecord).filter(VoicemailRecord.id == voicemail_id).first()
     if not vm:
         raise HTTPException(status_code=404, detail="Voicemail not found")

@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { io, Socket } from 'socket.io-client'
 
-const WS_URL = typeof window !== 'undefined' 
-  ? `${window.location.protocol}//${window.location.hostname}:8000`
+const WS_URL = typeof window !== 'undefined'
+  ? `${window.location.protocol}//${window.location.host}`
   : 'http://localhost:8000'
 
 export function useWebSocket() {

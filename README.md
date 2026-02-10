@@ -144,6 +144,7 @@ Have an idea but no time to code? [Open an issue](https://github.com/ankaios76/g
 
 ## 🗺️ Roadmap
 
+- [ ] Multi-database support (SQLite for home use, MySQL/MariaDB)
 - [ ] Ring groups & call queues
 - [ ] IVR / auto attendant builder
 - [ ] Conference rooms

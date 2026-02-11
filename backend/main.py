@@ -120,12 +120,13 @@ async def lifespan(app: FastAPI):
     # Seed admin user if not exists
     db = SessionLocal()
     try:
+        admin_pw = os.getenv("ADMIN_PASSWORD", "GonoPBX2026!")
         admin = db.query(User).filter(User.username == "admin").first()
         if not admin:
             admin = User(
                 username="admin",
                 email="admin@gonopbx.local",
-                password_hash=get_password_hash(os.getenv("ADMIN_PASSWORD", "GonoPBX2026!")),
+                password_hash=get_password_hash(admin_pw),
                 full_name="Administrator",
                 role="admin",
             )
@@ -133,7 +134,10 @@ async def lifespan(app: FastAPI):
             db.commit()
             logger.info("Admin user created")
         else:
-            logger.info("Admin user already exists")
+            # Update password to match current ADMIN_PASSWORD env var
+            admin.password_hash = get_password_hash(admin_pw)
+            db.commit()
+            logger.info("Admin user password synced with ADMIN_PASSWORD env")
         # Migrate: create voicemail mailboxes for existing peers
         peers = db.query(SIPPeer).all()
         created = 0

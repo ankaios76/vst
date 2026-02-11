@@ -21,6 +21,70 @@ docker compose version >/dev/null 2>&1 || { echo "ERROR: docker compose is not a
 echo "[OK] Docker and Docker Compose found."
 echo ""
 
+# --- Check for existing installation ---
+FRESH_INSTALL=true
+
+if [ -f .env ]; then
+    echo "Bestehende Installation gefunden."
+    echo ""
+    echo "  [1] Update - Code aktualisieren, Daten und Passwoerter behalten"
+    echo "  [2] Neu    - Alles loeschen und komplett neu installieren"
+    echo ""
+    read -rp "Auswahl [1]: " INSTALL_MODE
+
+    if [ "$INSTALL_MODE" = "2" ]; then
+        echo ""
+        echo "ACHTUNG: Alle Daten (Nebenstellen, Trunks, Anrufverlauf) werden geloescht!"
+        read -rp "Wirklich alles loeschen? [j/N]: " CONFIRM_DELETE
+        if [ "$CONFIRM_DELETE" = "j" ] || [ "$CONFIRM_DELETE" = "J" ]; then
+            echo "Stoppe Container und loesche Daten..."
+            docker compose down -v 2>/dev/null || true
+            rm -f .env asterisk/config/manager.conf
+            echo "[OK] Alte Installation entfernt"
+            FRESH_INSTALL=true
+        else
+            echo "Abgebrochen."
+            exit 0
+        fi
+    else
+        # --- Update mode ---
+        echo ""
+        echo "Aktualisiere GonoPBX..."
+
+        # Source existing env values
+        # shellcheck disable=SC1091
+        . ./.env
+
+        # Regenerate manager.conf with existing AMI password
+        sed "s/%%AMI_PASSWORD%%/${AMI_PASSWORD}/" asterisk/config/manager.conf.template > asterisk/config/manager.conf
+        echo "[OK] manager.conf updated"
+
+        echo ""
+        echo "Starte Container neu..."
+        docker compose up -d --build
+
+        # Detect local LAN IP
+        LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || echo "")
+
+        echo ""
+        echo "============================================"
+        echo "  GonoPBX Update Complete!"
+        echo "============================================"
+        echo ""
+        if [ "$BIND_ADDRESS" = "0.0.0.0" ] && [ -n "$LOCAL_IP" ]; then
+            echo "  Web GUI:    http://${LOCAL_IP}:3000"
+        else
+            echo "  Web GUI:    http://localhost:3000"
+        fi
+        echo ""
+        echo "  Zugangsdaten unveraendert (siehe .env)"
+        echo "============================================"
+        exit 0
+    fi
+fi
+
+# --- Fresh installation ---
+
 # Detect external IP
 echo "Detecting external IP address..."
 DETECTED_IP=$(curl -s --max-time 5 ifconfig.me 2>/dev/null || curl -s --max-time 5 icanhazip.com 2>/dev/null || echo "")

@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from datetime import datetime
 import logging
 
-from database import get_db, SIPTrunk, SIPPeer, User, SystemSettings
+from database import get_db, SIPTrunk, SIPPeer, User, SystemSettings, InboundRoute
 from pjsip_config import write_pjsip_config, reload_asterisk, DEFAULT_CODECS
 from auth import get_current_user
 from audit import log_action
@@ -156,10 +156,16 @@ def delete_trunk(trunk_id: int, request: Request, current_user: User = Depends(g
         raise HTTPException(status_code=404, detail="Trunk not found")
 
     name = db_trunk.name
+
+    # Delete associated inbound routes first
+    routes = db.query(InboundRoute).filter(InboundRoute.trunk_id == trunk_id).all()
+    for route in routes:
+        db.delete(route)
+
     db.delete(db_trunk)
     db.commit()
 
-    logger.info(f"Deleted SIP trunk: {name}")
+    logger.info(f"Deleted SIP trunk: {name} (and {len(routes)} inbound routes)")
     log_action(db, current_user.username, "trunk_deleted", "trunk", name,
                None, request.client.host if request.client else None)
     regenerate_config(db)

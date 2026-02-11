@@ -120,6 +120,14 @@ else
     echo "-> Bind: 0.0.0.0 (Zugriff aus dem Netzwerk)"
 fi
 
+# SIP port
+echo ""
+echo "SIP-Port fuer Asterisk (Standard: 5060)"
+echo "Aendern falls dein Router ein SIP-ALG hat (z.B. FritzBox)"
+read -rp "SIP-Port [5060]: " SIP_PORT
+SIP_PORT="${SIP_PORT:-5060}"
+echo "-> SIP-Port: $SIP_PORT"
+
 echo ""
 
 # Admin password
@@ -152,6 +160,7 @@ ENVEOF
     printf 'DB_PASSWORD=%s\n' "$DB_PASSWORD"
     printf 'AMI_PASSWORD=%s\n' "$AMI_PASSWORD"
     printf 'BIND_ADDRESS=%s\n' "$BIND_ADDRESS"
+    printf 'SIP_PORT=%s\n' "$SIP_PORT"
 } >> .env
 
 echo "[OK] .env created"

@@ -4,8 +4,8 @@ services:
     container_name: pbx_asterisk
     restart: unless-stopped
     ports:
-      - "5060:5060/udp"
-      - "5060:5060/tcp"
+      - "${SIP_PORT:-5060}:5060/udp"
+      - "${SIP_PORT:-5060}:5060/tcp"
       - "127.0.0.1:5038:5038/tcp"
       - "10000-10100:10000-10100/udp"
     volumes:

@@ -49,6 +49,7 @@ def _detect_external_ip() -> str:
 
 
 EXTERNAL_IP = _detect_external_ip()
+SIP_PORT = os.getenv("SIP_PORT", "5060")
 
 DEFAULT_CODECS = "ulaw,alaw,g722,opus"
 
@@ -75,8 +76,10 @@ protocol=udp
 bind=0.0.0.0:5060
 external_media_address={EXTERNAL_IP}
 external_signaling_address={EXTERNAL_IP}
+external_signaling_port={SIP_PORT}
 local_net=172.0.0.0/8
 local_net=10.0.0.0/8
+local_net=192.168.0.0/16
 
 [transport-tcp]
 type=transport

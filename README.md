@@ -39,8 +39,12 @@
 - **🔌 SIP Trunk Configuration** – Connect to any SIP provider via registration or IP authentication, with built-in templates for Plusnet IPfonie and support for custom providers
 - **📠 DID Routing** – Flexibly assign incoming phone numbers to extensions with number block management per trunk
 - **🔄 Call Forwarding** – Unconditional, busy, and no-answer forwarding per extension, toggled with one click
-- **📩 Voicemail** – Per-extension voicemail boxes with PIN, email notifications, and built-in audio player
-- **📧 SMTP Email Configuration** – Configure your mail server for voicemail-to-email delivery, with built-in test email function
+- **📩 Voicemail** – Per-extension voicemail boxes with PIN, email notifications (HTML), configurable ring timeout, and built-in audio player
+- **📧 SMTP Email Configuration** – Configure your mail server for voicemail-to-email delivery, with built-in test email function (Port 465/587 auto-detection)
+- **🎵 Music on Hold** – Pre-installed hold music in high-quality g722 format
+- **🎙️ German Voice Prompts** – Built-in German Asterisk sound pack for IVR and voicemail announcements
+- **🔒 IP Whitelist** – Restrict SIP registration to trusted IP addresses and CIDR networks
+- **🎛️ Codec Management** – Global and per-extension codec configuration with drag-and-drop priority ordering
 - **📊 Call Detail Records** – Full CDR with filters by source, destination, and status, plus call statistics at a glance
 - **🔐 Multi-User & Roles** – Admin and user roles with JWT-based authentication
 - **📡 Real-Time Dashboard** – Live overview via WebSocket: Asterisk status, registered endpoints, active lines, and recent calls
@@ -89,7 +93,7 @@ The installer will automatically:
 
 | Component | Technology |
 |-----------|------------|
-| **PBX Engine** | Asterisk 18 (PJSIP) |
+| **PBX Engine** | Asterisk 20 (PJSIP) |
 | **Backend** | FastAPI (Python) |
 | **Frontend** | React + TypeScript (Vite, Tailwind CSS) |
 | **Database** | PostgreSQL |
@@ -112,17 +116,32 @@ gonopbx/
 
 ## 📋 Changelog
 
-### v1.1.0 (2026-02-10)
+### v1.3.0 (2026-02-11)
 
 **New Features:**
-- SMTP email configuration for voicemail-to-email notifications (admin settings page with test email)
-- Per-extension voicemail mailbox management (PIN, email, enable/disable)
-- Support for custom SIP trunk providers (manual SIP server entry)
+- IP whitelist for SIP registration (restrict to trusted IPs/CIDRs)
+- Music on Hold with pre-installed g722 audio files
+- HTML voicemail email notifications
+- Per-extension ring timeout (configurable seconds before voicemail picks up)
+- German voice prompts (asterisk-prompt-de)
 
 **Improvements:**
-- Custom Asterisk Docker image with msmtp for email delivery
-- Hardened Docker Compose: backend, frontend, and AMI bound to localhost only
-- Dynamic PJSIP identify matching (replaces hardcoded IP ranges)
+- Auto-detection of external IP address
+- SMTP port 465 implicit TLS support
+- Dialplan: device-state check before dial, early answer for inbound trunk calls
+- DID extraction from SIP To-header as fallback
+- Duplicate identify section protection for multi-trunk setups
+- Installer: Docker permission check
+
+### v1.2.0 (2026-02-10)
+
+- Global and per-extension codec management with drag-and-drop priority
+
+### v1.1.0 (2026-02-10)
+
+- SMTP email configuration with test email function
+- Per-extension voicemail mailbox management
+- Custom SIP trunk provider support
 
 ### v1.0.0 (2026-02-09)
 

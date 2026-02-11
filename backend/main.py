@@ -92,6 +92,19 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"Migration check for codecs column: {e}")
 
+    # Migrate: add ring_timeout column to voicemail_mailboxes if missing
+    try:
+        from sqlalchemy import text, inspect as sa_inspect
+        vm_inspector = sa_inspect(engine)
+        vm_columns = [c['name'] for c in vm_inspector.get_columns('voicemail_mailboxes')]
+        if 'ring_timeout' not in vm_columns:
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE voicemail_mailboxes ADD COLUMN ring_timeout INTEGER DEFAULT 20"))
+                conn.commit()
+            logger.info("Migration: added ring_timeout column to voicemail_mailboxes")
+    except Exception as e:
+        logger.warning(f"Migration check for ring_timeout column: {e}")
+
     # Seed admin user if not exists
     db = SessionLocal()
     try:

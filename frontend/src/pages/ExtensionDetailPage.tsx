@@ -53,6 +53,7 @@ interface VoicemailMailbox {
   pin: string
   name: string | null
   email: string | null
+  ring_timeout: number
 }
 
 interface VoicemailMessage {
@@ -103,7 +104,7 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
 
   // Voicemail state
   const [, setMailbox] = useState<VoicemailMailbox | null>(null)
-  const [mailboxForm, setMailboxForm] = useState({ enabled: true, pin: '1234', name: '', email: '' })
+  const [mailboxForm, setMailboxForm] = useState({ enabled: true, pin: '1234', name: '', email: '', ring_timeout: 20 })
   const [voicemails, setVoicemails] = useState<VoicemailMessage[]>([])
   const [savingMailbox, setSavingMailbox] = useState(false)
   const [playingId, setPlayingId] = useState<number | null>(null)
@@ -161,6 +162,7 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
           pin: mbData.pin || '1234',
           name: mbData.name || '',
           email: mbData.email || '',
+          ring_timeout: mbData.ring_timeout || 20,
         })
       } catch {
         setMailbox(null)
@@ -260,6 +262,7 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
         pin: mailboxForm.pin,
         name: mailboxForm.name || null,
         email: mailboxForm.email || null,
+        ring_timeout: mailboxForm.ring_timeout,
       })
       const mbData = await api.getVoicemailMailbox(extension)
       setMailbox(mbData)
@@ -761,7 +764,7 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
         </div>
 
         <div className="px-6 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">PIN</label>
               <input
@@ -791,6 +794,18 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
                 placeholder="user@example.com"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Klingeldauer (Sek.)</label>
+              <input
+                type="number"
+                value={mailboxForm.ring_timeout}
+                onChange={(e) => setMailboxForm({ ...mailboxForm, ring_timeout: Number(e.target.value) })}
+                min={5}
+                max={120}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">Wie lange klingelt es bevor Voicemail annimmt?</p>
             </div>
           </div>
           <button

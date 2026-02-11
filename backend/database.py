@@ -163,6 +163,7 @@ class VoicemailMailbox(Base):
     pin = Column(String(20), default="1234")
     name = Column(String(100), nullable=True)
     email = Column(String(200), nullable=True)
+    ring_timeout = Column(Integer, default=20)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

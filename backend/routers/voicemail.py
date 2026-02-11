@@ -9,6 +9,8 @@ from pydantic import BaseModel
 from database import Base, get_db, User, VoicemailMailbox
 from auth import get_current_user, JWT_SECRET, JWT_ALGORITHM
 from voicemail_config import write_voicemail_config, reload_voicemail
+from dialplan import write_extensions_config, reload_dialplan
+from database import InboundRoute, CallForward
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 from jose import JWTError, jwt as jose_jwt
@@ -25,6 +27,7 @@ class MailboxUpdate(BaseModel):
     pin: str = "1234"
     name: Optional[str] = None
     email: Optional[str] = None
+    ring_timeout: int = 20
 
 
 def regenerate_voicemail_config(db: Session):
@@ -48,6 +51,7 @@ async def get_mailbox(extension: str, current_user: User = Depends(get_current_u
     return {
         "extension": mb.extension, "enabled": mb.enabled,
         "pin": mb.pin, "name": mb.name, "email": mb.email,
+        "ring_timeout": mb.ring_timeout or 20,
     }
 
 
@@ -61,13 +65,24 @@ async def update_mailbox(extension: str, data: MailboxUpdate, current_user: User
     mb.pin = data.pin
     mb.name = data.name
     mb.email = data.email
+    mb.ring_timeout = data.ring_timeout
     mb.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(mb)
     regenerate_voicemail_config(db)
+    # Regenerate dialplan so ring_timeout takes effect
+    try:
+        all_routes = db.query(InboundRoute).filter(InboundRoute.enabled == True).all()
+        all_forwards = db.query(CallForward).filter(CallForward.enabled == True).all()
+        all_mailboxes = db.query(VoicemailMailbox).all()
+        write_extensions_config(all_routes, all_forwards, all_mailboxes)
+        reload_dialplan()
+    except Exception as e:
+        logger.error(f"Failed to regenerate dialplan after mailbox update: {e}")
     return {
         "extension": mb.extension, "enabled": mb.enabled,
         "pin": mb.pin, "name": mb.name, "email": mb.email,
+        "ring_timeout": mb.ring_timeout or 20,
     }
 
 

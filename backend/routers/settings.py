@@ -2,16 +2,20 @@
 Settings Router - Admin-only system settings management
 """
 
+import json
+import ipaddress
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 from database import get_db, SystemSettings, VoicemailMailbox, SIPPeer, SIPTrunk
 from auth import require_admin, User
 from email_config import write_msmtp_config, send_test_email
 from voicemail_config import write_voicemail_config, reload_voicemail
 from pjsip_config import write_pjsip_config, reload_asterisk, DEFAULT_CODECS
+from acl_config import write_acl_config, remove_acl_config, reload_acl
 
 router = APIRouter(tags=["Settings"])
 
@@ -176,7 +180,97 @@ def update_codec_settings(
     # Regenerate pjsip.conf
     all_peers = db.query(SIPPeer).all()
     all_trunks = db.query(SIPTrunk).all()
-    write_pjsip_config(all_peers, all_trunks, global_codecs=",".join(codecs))
+    acl_on = _is_acl_enabled(db)
+    write_pjsip_config(all_peers, all_trunks, global_codecs=",".join(codecs), acl_enabled=acl_on)
     reload_asterisk()
 
     return {"status": "ok", "global_codecs": ",".join(codecs)}
+
+
+# --- IP Whitelist ---
+
+def _is_acl_enabled(db: Session) -> bool:
+    """Check if IP whitelist is enabled in DB."""
+    s = db.query(SystemSettings).filter(SystemSettings.key == "ip_whitelist_enabled").first()
+    return s is not None and s.value == "true"
+
+
+def _validate_ip_or_cidr(value: str) -> bool:
+    """Validate that a string is a valid IP address or CIDR network."""
+    try:
+        if "/" in value:
+            ipaddress.ip_network(value, strict=False)
+        else:
+            ipaddress.ip_address(value)
+        return True
+    except ValueError:
+        return False
+
+
+class IpWhitelistUpdate(BaseModel):
+    enabled: bool
+    ips: List[str]
+
+
+@router.get("/ip-whitelist")
+def get_ip_whitelist(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    """Get IP whitelist settings."""
+    enabled_setting = db.query(SystemSettings).filter(
+        SystemSettings.key == "ip_whitelist_enabled"
+    ).first()
+    ips_setting = db.query(SystemSettings).filter(
+        SystemSettings.key == "ip_whitelist"
+    ).first()
+
+    enabled = enabled_setting.value == "true" if enabled_setting else False
+    ips = json.loads(ips_setting.value) if ips_setting and ips_setting.value else []
+
+    return {"enabled": enabled, "ips": ips}
+
+
+@router.put("/ip-whitelist")
+def update_ip_whitelist(
+    data: IpWhitelistUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    """Save IP whitelist, regenerate acl.conf + pjsip.conf, reload Asterisk."""
+    # Validate all IPs/CIDRs
+    for ip in data.ips:
+        if not _validate_ip_or_cidr(ip.strip()):
+            raise HTTPException(status_code=400, detail=f"Ungültige IP-Adresse oder CIDR: {ip}")
+
+    clean_ips = [ip.strip() for ip in data.ips if ip.strip()]
+
+    # Save to DB
+    for key, value in [
+        ("ip_whitelist_enabled", "true" if data.enabled else "false"),
+        ("ip_whitelist", json.dumps(clean_ips)),
+    ]:
+        setting = db.query(SystemSettings).filter(SystemSettings.key == key).first()
+        if setting:
+            setting.value = value
+        else:
+            setting = SystemSettings(key=key, value=value, description="IP whitelist for SIP registration")
+            db.add(setting)
+    db.commit()
+
+    # Generate/remove ACL config
+    if data.enabled and clean_ips:
+        write_acl_config(clean_ips)
+    else:
+        remove_acl_config()
+    reload_acl()
+
+    # Regenerate pjsip.conf with or without acl line
+    codec_setting = db.query(SystemSettings).filter(SystemSettings.key == "global_codecs").first()
+    global_codecs = codec_setting.value if codec_setting else DEFAULT_CODECS
+    all_peers = db.query(SIPPeer).all()
+    all_trunks = db.query(SIPTrunk).all()
+    write_pjsip_config(all_peers, all_trunks, global_codecs=global_codecs, acl_enabled=data.enabled and len(clean_ips) > 0)
+    reload_asterisk()
+
+    return {"status": "ok", "enabled": data.enabled, "ips": clean_ips}

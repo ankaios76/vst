@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.3.0] - 2026-02-11
+
+### Neue Features
+
+- **IP-Whitelist fuer SIP-Registrierung**: Beschraenkt die Registrierung auf
+  bestimmte IP-Adressen oder CIDR-Netzwerke. Konfigurierbar ueber die
+  Admin-Einstellungsseite mit Validierung und Warnhinweisen.
+- **Music on Hold**: Vorinstallierte Wartemusik (g722-Format) wird automatisch
+  im Asterisk-Container bereitgestellt.
+- **HTML Voicemail E-Mails**: Neues Sender-Script fuer professionelle
+  HTML-formatierte Voicemail-Benachrichtigungen per E-Mail.
+- **Klingeldauer pro Extension**: Individuelle Ring-Timeout-Einstellung
+  pro Voicemail-Mailbox (5-120 Sekunden), bevor die Voicemail annimmt.
+- **Deutsche Sprachansagen**: Asterisk-Prompt-Paket (de) wird automatisch
+  installiert, Endpunkte auf language=de gesetzt.
+
+### Verbesserungen
+
+- **Externe IP Auto-Erkennung**: Backend erkennt die oeffentliche IP automatisch
+  ueber mehrere Services, falls EXTERNAL_IP nicht gesetzt ist.
+- **SMTP Port 465 Support**: Automatische Erkennung von implizitem TLS
+  (tls_starttls=off) fuer Port 465 vs. STARTTLS fuer Port 587.
+- **Dialplan-Optimierungen**: Device-State-Pruefung vor dem Dial (UNAVAILABLE
+  geht direkt zur Voicemail), Early Answer fuer Inbound-Trunk-Calls
+  (verhindert Provider-BYE-Race-Condition).
+- **DID-Extraktion aus To-Header**: Fallback fuer Provider, die die DID nicht
+  in der Request-URI senden (Extraktion aus SIP To-Header).
+- **Duplikat-Identify-Schutz**: Mehrere Trunks vom gleichen Provider teilen
+  sich eine PJSIP-Identify-Section (verhindert Asterisk-Konflikte).
+- **Timezone**: Asterisk-Container auf Europe/Berlin gesetzt.
+- **Installer**: Docker-Berechtigung wird vor Start geprueft.
+
+## [1.2.0] - 2026-02-10
+
+### Neue Features
+
+- **Codec-Verwaltung**: Globale und pro-Extension Codec-Konfiguration
+  mit Drag-and-Drop-Priorisierung.
+
 ## [1.1.0] - 2026-02-10
 
 ### Neue Features

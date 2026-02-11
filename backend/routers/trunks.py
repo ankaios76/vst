@@ -62,7 +62,9 @@ def regenerate_config(db: Session):
         all_trunks = db.query(SIPTrunk).all()
         setting = db.query(SystemSettings).filter(SystemSettings.key == "global_codecs").first()
         global_codecs = setting.value if setting else DEFAULT_CODECS
-        write_pjsip_config(all_peers, all_trunks, global_codecs=global_codecs)
+        acl_setting = db.query(SystemSettings).filter(SystemSettings.key == "ip_whitelist_enabled").first()
+        acl_on = acl_setting is not None and acl_setting.value == "true"
+        write_pjsip_config(all_peers, all_trunks, global_codecs=global_codecs, acl_enabled=acl_on)
         reload_asterisk()
         logger.info(f"PJSIP config regenerated with {len(all_peers)} peers, {len(all_trunks)} trunks")
     except Exception as e:

@@ -6,6 +6,14 @@ echo "  GonoPBX Installer"
 echo "============================================"
 echo ""
 
+# Check if user can run Docker (root or docker group)
+if ! docker info >/dev/null 2>&1; then
+    echo "ERROR: Cannot connect to Docker."
+    echo "       Run as root or add your user to the docker group:"
+    echo "       sudo usermod -aG docker \$USER"
+    exit 1
+fi
+
 # Check prerequisites
 command -v docker >/dev/null 2>&1 || { echo "ERROR: docker is not installed."; exit 1; }
 docker compose version >/dev/null 2>&1 || { echo "ERROR: docker compose is not available."; exit 1; }

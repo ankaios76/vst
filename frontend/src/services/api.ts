@@ -268,6 +268,18 @@ class ApiService {
     })
   }
 
+  // IP Whitelist
+  async getIpWhitelist() {
+    return this.request<{ enabled: boolean; ips: string[] }>('/api/settings/ip-whitelist')
+  }
+
+  async updateIpWhitelist(data: { enabled: boolean; ips: string[] }) {
+    return this.request<any>('/api/settings/ip-whitelist', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
   async updatePeerCodecs(peerId: number, codecs: string | null) {
     return this.request<any>(`/api/peers/${peerId}/codecs`, {
       method: 'PATCH',

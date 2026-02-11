@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react'
-import { Save, Send, Eye, EyeOff, Mail, Volume2 } from 'lucide-react'
+import { Save, Send, Eye, EyeOff, Mail, Volume2, Shield, Plus, Trash2, AlertTriangle } from 'lucide-react'
 import { api } from '../services/api'
 
 interface AvailableCodec {
@@ -30,12 +30,19 @@ export default function SettingsPage() {
   const [selectedCodecs, setSelectedCodecs] = useState<string[]>([])
   const [savingCodecs, setSavingCodecs] = useState(false)
 
+  // IP Whitelist state
+  const [whitelistEnabled, setWhitelistEnabled] = useState(false)
+  const [whitelistIps, setWhitelistIps] = useState<string[]>([])
+  const [newIp, setNewIp] = useState('')
+  const [savingWhitelist, setSavingWhitelist] = useState(false)
+
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const [data, codecData] = await Promise.all([
+        const [data, codecData, wlData] = await Promise.all([
           api.getSettings(),
           api.getCodecSettings(),
+          api.getIpWhitelist(),
         ])
         setFormData({
           smtp_host: data.smtp_host || '',
@@ -47,6 +54,8 @@ export default function SettingsPage() {
         })
         setAvailableCodecs(codecData.available_codecs || [])
         setSelectedCodecs((codecData.global_codecs || '').split(',').filter(Boolean))
+        setWhitelistEnabled(wlData.enabled || false)
+        setWhitelistIps(wlData.ips || [])
       } catch {
         setError('Einstellungen konnten nicht geladen werden')
       } finally {
@@ -110,6 +119,35 @@ export default function SettingsPage() {
       setError(err.message || 'Fehler beim Speichern der Codec-Einstellungen')
     } finally {
       setSavingCodecs(false)
+    }
+  }
+
+  const addIp = () => {
+    const trimmed = newIp.trim()
+    if (!trimmed) return
+    if (whitelistIps.includes(trimmed)) {
+      setError('Diese IP ist bereits in der Liste')
+      return
+    }
+    setWhitelistIps([...whitelistIps, trimmed])
+    setNewIp('')
+  }
+
+  const removeIp = (ip: string) => {
+    setWhitelistIps(whitelistIps.filter(i => i !== ip))
+  }
+
+  const handleSaveWhitelist = async () => {
+    setError('')
+    setSuccess('')
+    setSavingWhitelist(true)
+    try {
+      await api.updateIpWhitelist({ enabled: whitelistEnabled, ips: whitelistIps })
+      setSuccess('IP-Whitelist gespeichert')
+    } catch (err: any) {
+      setError(err.message || 'Fehler beim Speichern der IP-Whitelist')
+    } finally {
+      setSavingWhitelist(false)
     }
   }
 
@@ -295,6 +333,98 @@ export default function SettingsPage() {
         >
           <Save className="w-4 h-4" />
           {savingCodecs ? 'Speichern...' : 'Codecs speichern'}
+        </button>
+      </div>
+
+      {/* IP Whitelist Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center gap-2 mb-6">
+          <Shield className="w-5 h-5 text-gray-600" />
+          <h2 className="text-lg font-semibold text-gray-800">IP-Whitelist für Registrierung</h2>
+        </div>
+        <p className="text-sm text-gray-500 mb-6">
+          Beschränken Sie die SIP-Registrierung auf bestimmte IP-Adressen oder Netzwerke (CIDR).
+          Wenn aktiviert, werden alle anderen IPs blockiert.
+        </p>
+
+        {whitelistEnabled && (
+          <div className="flex items-start gap-2 mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+            <span className="text-sm text-amber-800">
+              Achtung: Stellen Sie sicher, dass Ihre eigene IP-Adresse in der Liste enthalten ist,
+              bevor Sie die Whitelist aktivieren.
+            </span>
+          </div>
+        )}
+
+        <div className="mb-6">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <div
+              onClick={() => setWhitelistEnabled(!whitelistEnabled)}
+              className={`relative w-11 h-6 rounded-full transition-colors ${
+                whitelistEnabled ? 'bg-blue-600' : 'bg-gray-300'
+              }`}
+            >
+              <div
+                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                  whitelistEnabled ? 'translate-x-5' : ''
+                }`}
+              />
+            </div>
+            <span className="text-sm font-medium text-gray-700">
+              Whitelist {whitelistEnabled ? 'aktiviert' : 'deaktiviert'}
+            </span>
+          </label>
+        </div>
+
+        <div className="space-y-3 mb-6">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newIp}
+              onChange={(e) => setNewIp(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addIp())}
+              className="flex-1 max-w-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              placeholder="z.B. 203.0.113.5 oder 10.0.0.0/24"
+            />
+            <button
+              onClick={addIp}
+              className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Hinzufügen
+            </button>
+          </div>
+
+          {whitelistIps.length > 0 ? (
+            <div className="space-y-2">
+              {whitelistIps.map((ip) => (
+                <div
+                  key={ip}
+                  className="flex items-center justify-between px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg"
+                >
+                  <span className="text-sm font-mono text-gray-800">{ip}</span>
+                  <button
+                    onClick={() => removeIp(ip)}
+                    className="text-red-400 hover:text-red-600 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400">Keine IPs konfiguriert</p>
+          )}
+        </div>
+
+        <button
+          onClick={handleSaveWhitelist}
+          disabled={savingWhitelist}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg transition-colors"
+        >
+          <Save className="w-4 h-4" />
+          {savingWhitelist ? 'Speichern...' : 'Whitelist speichern'}
         </button>
       </div>
     </div>

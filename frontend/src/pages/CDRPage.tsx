@@ -88,33 +88,6 @@ export default function CDRPage() {
     })
   }
 
-  const getDispositionStyle = (disposition: string | null) => {
-    switch (disposition) {
-      case 'ANSWERED':
-        return 'bg-green-100 text-green-800'
-      case 'NO ANSWER':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'BUSY':
-        return 'bg-orange-100 text-orange-800'
-      case 'FAILED':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
-  const getDispositionIcon = (disposition: string | null) => {
-    switch (disposition) {
-      case 'ANSWERED':
-        return <Phone className="w-4 h-4 text-green-600" />
-      case 'NO ANSWER':
-        return <PhoneMissed className="w-4 h-4 text-yellow-600" />
-      case 'BUSY':
-        return <PhoneOutgoing className="w-4 h-4 text-orange-600" />
-      default:
-        return <PhoneIncoming className="w-4 h-4 text-gray-600" />
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -185,20 +158,6 @@ export default function CDRPage() {
             />
           </div>
           
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Status</label>
-            <select
-              value={filterDisposition}
-              onChange={(e) => setFilterDisposition(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Alle</option>
-              <option value="ANSWERED">Angenommen</option>
-              <option value="NO ANSWER">Nicht angenommen</option>
-              <option value="BUSY">Besetzt</option>
-              <option value="FAILED">Fehlgeschlagen</option>
-            </select>
-          </div>
           
           <div className="flex items-end gap-2">
             <button
@@ -238,7 +197,6 @@ export default function CDRPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nach</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dauer</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gesprächszeit</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -264,14 +222,6 @@ export default function CDRPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {formatDuration(record.billsec)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        {getDispositionIcon(record.disposition)}
-                        <span className={`text-xs px-2 py-1 rounded-full ${getDispositionStyle(record.disposition)}`}>
-                          {record.disposition || 'Unknown'}
-                        </span>
-                      </div>
                     </td>
                   </tr>
                 ))}

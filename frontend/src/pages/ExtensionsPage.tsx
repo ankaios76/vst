@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Plus, Edit2, Trash2, Phone, PhoneOff, Server, RefreshCw } from 'lucide-react'
+
+interface ExtensionsPageProps {
+  mode: 'peers' | 'trunks'
+}
 import { api } from '../services/api'
 
 interface SIPPeer {
@@ -36,8 +40,8 @@ const PROVIDERS: Record<string, { label: string; server: string; supportsIp: boo
   custom: { label: 'Anderer Provider', server: '', supportsIp: true },
 }
 
-export default function ExtensionsPage() {
-  const [activeTab, setActiveTab] = useState<'peers' | 'trunks'>('peers')
+export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
+  const activeTab = mode
 
   // --- Peers state ---
   const [peers, setPeers] = useState<SIPPeer[]>([])
@@ -116,7 +120,7 @@ export default function ExtensionsPage() {
   }
 
   const handlePeerDelete = async (peer: SIPPeer) => {
-    if (!confirm(`Wirklich Extension ${peer.extension} löschen?`)) return
+    if (!confirm(`Wirklich Nebenstelle ${peer.extension} löschen?`)) return
     try {
       await api.deleteSipPeer(peer.id)
       fetchPeers()
@@ -221,8 +225,12 @@ export default function ExtensionsPage() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Extensions verwalten</h1>
-          <p className="text-gray-600 mt-1">SIP-Accounts und Trunks anlegen und bearbeiten</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {activeTab === 'peers' ? 'Nebenstellen' : 'Leitungen'}
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {activeTab === 'peers' ? 'SIP-Nebenstellen anlegen und bearbeiten' : 'SIP-Trunks anlegen und bearbeiten'}
+          </p>
         </div>
 
         {activeTab === 'peers' && !showPeerForm && (
@@ -231,7 +239,7 @@ export default function ExtensionsPage() {
             className="flex items-center gap-2 bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition"
           >
             <Plus className="w-5 h-5" />
-            Neue Extension
+            Neue Nebenstelle
           </button>
         )}
         {activeTab === 'trunks' && !showTrunkForm && (
@@ -240,39 +248,9 @@ export default function ExtensionsPage() {
             className="flex items-center gap-2 bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition"
           >
             <Plus className="w-5 h-5" />
-            Neuer SIP-Trunk
+            Neue Leitung
           </button>
         )}
-      </div>
-
-      {/* Tabs */}
-      <div className="flex border-b mb-6">
-        <button
-          onClick={() => setActiveTab('peers')}
-          className={`px-6 py-3 font-medium text-sm border-b-2 transition ${
-            activeTab === 'peers'
-              ? 'border-primary-500 text-primary-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <span className="flex items-center gap-2">
-            <Phone className="w-4 h-4" />
-            Nebenstellen ({peers.length})
-          </span>
-        </button>
-        <button
-          onClick={() => setActiveTab('trunks')}
-          className={`px-6 py-3 font-medium text-sm border-b-2 transition ${
-            activeTab === 'trunks'
-              ? 'border-primary-500 text-primary-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <span className="flex items-center gap-2">
-            <Server className="w-4 h-4" />
-            SIP-Trunks ({trunks.length})
-          </span>
-        </button>
       </div>
 
       {/* ==================== PEERS TAB ==================== */}
@@ -281,12 +259,12 @@ export default function ExtensionsPage() {
           {showPeerForm && (
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
               <h2 className="text-xl font-semibold mb-4">
-                {editingPeer ? 'Extension bearbeiten' : 'Neue Extension anlegen'}
+                {editingPeer ? 'Nebenstelle bearbeiten' : 'Neue Nebenstelle anlegen'}
               </h2>
               <form onSubmit={handlePeerSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Extension (Rufnummer) *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nebenstelle (Rufnummer) *</label>
                     <input
                       type="text"
                       value={peerForm.extension}
@@ -336,7 +314,7 @@ export default function ExtensionsPage() {
                       if (/[A-Z]/.test(pw)) score += 15; else warnings.push('Großbuchstaben fehlen')
                       if (/\d/.test(pw)) score += 15; else warnings.push('Ziffern fehlen')
                       if (/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?/~`]/.test(pw)) score += 15; else warnings.push('Sonderzeichen fehlen')
-                      if (ext && pw.includes(ext)) { score = Math.max(0, score - 20); warnings.push('Enthält Extension') }
+                      if (ext && pw.includes(ext)) { score = Math.max(0, score - 20); warnings.push('Enthält Nebenstelle') }
                       if (pw.length >= 20) score = Math.min(100, score + 10)
                       const level = score >= 70 ? 'strong' : score >= 40 ? 'medium' : 'weak'
                       const color = level === 'strong' ? 'bg-green-500' : level === 'medium' ? 'bg-yellow-500' : 'bg-red-500'
@@ -388,7 +366,7 @@ export default function ExtensionsPage() {
                     onChange={(e) => setPeerForm({...peerForm, enabled: e.target.checked})}
                     className="w-4 h-4 text-primary-500 rounded"
                   />
-                  <label htmlFor="peer-enabled" className="text-sm text-gray-700">Extension aktiviert</label>
+                  <label htmlFor="peer-enabled" className="text-sm text-gray-700">Nebenstelle aktiviert</label>
                 </div>
                 <div className="flex gap-3 pt-4">
                   <button type="submit" className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600">
@@ -404,13 +382,13 @@ export default function ExtensionsPage() {
 
           <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b">
-              <h2 className="text-lg font-semibold">Aktive Extensions ({peers.length})</h2>
+              <h2 className="text-lg font-semibold">Aktive Nebenstellen ({peers.length})</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Extension</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nebenstelle</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Caller ID</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Context</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
@@ -466,7 +444,7 @@ export default function ExtensionsPage() {
           {showTrunkForm && (
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
               <h2 className="text-xl font-semibold mb-4">
-                {editingTrunk ? 'SIP-Trunk bearbeiten' : 'Neuen SIP-Trunk anlegen'}
+                {editingTrunk ? 'Leitung bearbeiten' : 'Neue Leitung anlegen'}
               </h2>
               <form onSubmit={handleTrunkSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -594,7 +572,7 @@ export default function ExtensionsPage() {
                     onChange={(e) => setTrunkForm({...trunkForm, enabled: e.target.checked})}
                     className="w-4 h-4 text-primary-500 rounded"
                   />
-                  <label htmlFor="trunk-enabled" className="text-sm text-gray-700">Trunk aktiviert</label>
+                  <label htmlFor="trunk-enabled" className="text-sm text-gray-700">Leitung aktiviert</label>
                 </div>
 
                 <div className="flex gap-3 pt-4">
@@ -611,7 +589,7 @@ export default function ExtensionsPage() {
 
           <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b">
-              <h2 className="text-lg font-semibold">SIP-Trunks ({trunks.length})</h2>
+              <h2 className="text-lg font-semibold">Leitungen ({trunks.length})</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -669,7 +647,7 @@ export default function ExtensionsPage() {
                   {trunks.length === 0 && (
                     <tr>
                       <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                        Keine SIP-Trunks konfiguriert. Klicken Sie auf "Neuer SIP-Trunk" um einen anzulegen.
+                        Keine Leitungen konfiguriert. Klicken Sie auf "Neue Leitung" um eine anzulegen.
                       </td>
                     </tr>
                   )}

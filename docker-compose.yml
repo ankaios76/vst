@@ -40,6 +40,7 @@ services:
     volumes:
       - ./asterisk/config:/etc/asterisk/custom
       - ./backend:/app
+      - user_uploads:/app/uploads
       - asterisk_voicemail:/var/spool/asterisk/voicemail
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/fail2ban/fail2ban.sqlite3:/var/lib/fail2ban/fail2ban.sqlite3:ro
@@ -85,6 +86,7 @@ services:
 volumes:
   postgres_data:
   asterisk_voicemail:
+  user_uploads:
 
 networks:
   pbx_network:

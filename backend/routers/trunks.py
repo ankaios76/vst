@@ -4,12 +4,13 @@ CRUD operations for SIP trunk management with PJSIP config generation
 """
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
-from typing import List
+from sqlalchemy import func, text
+from typing import List, Dict, Any
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 
-from database import get_db, SIPTrunk, SIPPeer, User, SystemSettings, InboundRoute
+from database import get_db, SIPTrunk, SIPPeer, User, SystemSettings, InboundRoute, CDR
 from pjsip_config import write_pjsip_config, reload_asterisk, DEFAULT_CODECS
 from auth import get_current_user
 from audit import log_action
@@ -17,6 +18,13 @@ from audit import log_action
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+# Reference to AMI client (set from main.py)
+ami_client = None
+
+def set_ami_client(client):
+    global ami_client
+    ami_client = client
 
 PROVIDER_SERVERS = {
     "plusnet_basic": "sip.ipfonie.de",
@@ -171,3 +179,183 @@ def delete_trunk(trunk_id: int, request: Request, current_user: User = Depends(g
     regenerate_config(db)
 
     return {"status": "deleted", "name": name}
+
+
+def expand_number_block(number_block: str) -> list[str]:
+    """Expand a number block like '012345678900-9' into individual DIDs.
+    Format: {base_number}-{end_digit}
+    The last digit of base_number is the start, end_digit is the end.
+    """
+    if not number_block or '-' not in number_block:
+        return []
+    parts = number_block.rsplit('-', 1)
+    if len(parts) != 2:
+        return []
+    base = parts[0]
+    end_str = parts[1].strip()
+    if not base or not end_str.isdigit():
+        return []
+    prefix = base[:-1]
+    start_digit = base[-1]
+    if not start_digit.isdigit():
+        return []
+    start = int(start_digit)
+    end = int(end_str)
+    if end < start:
+        return []
+    return [f"{prefix}{d}" for d in range(start, end + 1)]
+
+
+@router.get("/available-dids")
+def get_available_dids(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get all available DIDs from trunk number blocks, excluding already assigned ones."""
+    trunks = db.query(SIPTrunk).all()
+    assigned_dids = {r.did for r in db.query(InboundRoute).all()}
+
+    result = []
+    for trunk in trunks:
+        if not trunk.number_block:
+            continue
+        all_dids = expand_number_block(trunk.number_block)
+        available = [d for d in all_dids if d not in assigned_dids]
+        if available:
+            result.append({
+                "trunk_id": trunk.id,
+                "trunk_name": trunk.name,
+                "dids": available,
+            })
+    return result
+
+
+@router.get("/{trunk_id}/status")
+async def get_trunk_status(trunk_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> Dict[str, Any]:
+    """Get detailed status for a specific trunk including registration, endpoint, routes, and stats"""
+    db_trunk = db.query(SIPTrunk).filter(SIPTrunk.id == trunk_id).first()
+    if not db_trunk:
+        raise HTTPException(status_code=404, detail="Trunk not found")
+
+    trunk_data = {
+        "id": db_trunk.id,
+        "name": db_trunk.name,
+        "provider": db_trunk.provider,
+        "auth_mode": db_trunk.auth_mode,
+        "sip_server": db_trunk.sip_server,
+        "username": db_trunk.username,
+        "caller_id": db_trunk.caller_id,
+        "number_block": db_trunk.number_block,
+        "codecs": db_trunk.codecs,
+        "enabled": db_trunk.enabled,
+    }
+
+    ep_name = f"trunk-ep-{trunk_id}"
+
+    # Registration status
+    registration = {"status": "unknown", "expires": None, "last_response": None}
+    endpoint_info = {"state": "unknown", "rtt": None, "contact_uri": None}
+
+    if ami_client and ami_client.connected:
+        # Get outbound registration status
+        try:
+            reg_response = await ami_client.manager.send_action({
+                'Action': 'PJSIPShowRegistrationsOutbound'
+            })
+            if reg_response:
+                for item in reg_response:
+                    if item.get('Event') == 'OutboundRegistrationDetail':
+                        obj_name = item.get('ObjectName', '')
+                        if obj_name == f"trunk-{trunk_id}" or obj_name == f"trunk-reg-{trunk_id}":
+                            status_val = item.get('Status', '')
+                            registration['status'] = 'registered' if status_val == 'Registered' else status_val.lower() if status_val else 'unknown'
+                            registration['expires'] = item.get('NextRegisterAttempt', None)
+                            registration['last_response'] = item.get('ResponseBody', item.get('Response', None))
+                            break
+        except Exception as e:
+            logger.error(f"Error fetching registration status for trunk {trunk_id}: {e}")
+
+        # Get endpoint details
+        try:
+            ep_response = await ami_client.manager.send_action({
+                'Action': 'PJSIPShowEndpoint',
+                'Endpoint': ep_name
+            })
+            if ep_response:
+                for item in ep_response:
+                    if item.get('Event') == 'EndpointDetail':
+                        endpoint_info['state'] = item.get('DeviceState', 'unknown')
+                        break
+        except Exception as e:
+            logger.error(f"Error fetching endpoint for trunk {trunk_id}: {e}")
+
+        # Get contacts (RTT/latency)
+        try:
+            contact_response = await ami_client.manager.send_action({
+                'Action': 'PJSIPShowContacts',
+                'Endpoint': ep_name
+            })
+            if contact_response:
+                for item in contact_response:
+                    try:
+                        if item.get('Event') == 'ContactList':
+                            rtt = item.get('RoundtripUsec', '0')
+                            try:
+                                endpoint_info['rtt'] = round(float(rtt) / 1000, 1)
+                            except (ValueError, TypeError):
+                                endpoint_info['rtt'] = 0
+                            endpoint_info['contact_uri'] = item.get('Uri', None)
+                            break
+                    except AttributeError:
+                        continue
+        except Exception as e:
+            logger.error(f"Error fetching contacts for trunk {trunk_id}: {e}")
+
+    # Inbound routes for this trunk
+    trunk_routes = db.query(InboundRoute).filter(InboundRoute.trunk_id == trunk_id).all()
+    routes_data = [
+        {
+            "id": r.id,
+            "did": r.did,
+            "destination_extension": r.destination_extension,
+            "description": r.description,
+            "enabled": r.enabled,
+        }
+        for r in trunk_routes
+    ]
+
+    # CDR statistics
+    now = datetime.utcnow()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_start = today_start - timedelta(days=today_start.weekday())
+    trunk_channel_pattern = f"%{ep_name}%"
+
+    calls_today = db.query(func.count(CDR.id)).filter(
+        CDR.call_date >= today_start,
+        (CDR.channel.like(trunk_channel_pattern) | CDR.dstchannel.like(trunk_channel_pattern))
+    ).scalar() or 0
+
+    calls_week = db.query(func.count(CDR.id)).filter(
+        CDR.call_date >= week_start,
+        (CDR.channel.like(trunk_channel_pattern) | CDR.dstchannel.like(trunk_channel_pattern))
+    ).scalar() or 0
+
+    inbound_today = db.query(func.count(CDR.id)).filter(
+        CDR.call_date >= today_start,
+        CDR.channel.like(trunk_channel_pattern)
+    ).scalar() or 0
+
+    outbound_today = db.query(func.count(CDR.id)).filter(
+        CDR.call_date >= today_start,
+        CDR.dstchannel.like(trunk_channel_pattern)
+    ).scalar() or 0
+
+    return {
+        "trunk": trunk_data,
+        "registration": registration,
+        "endpoint": endpoint_info,
+        "routes": routes_data,
+        "stats": {
+            "calls_today": calls_today,
+            "calls_week": calls_week,
+            "inbound_today": inbound_today,
+            "outbound_today": outbound_today,
+        }
+    }

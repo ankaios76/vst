@@ -135,11 +135,16 @@ class SIPPeerUpdate(SIPPeerBase):
     pass
 
 
+class PeerUserAssign(BaseModel):
+    user_id: int | None = None
+
+
 class SIPPeerResponse(SIPPeerBase):
     id: int
+    user_id: int | None = None
     created_at: datetime
     updated_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -297,3 +302,29 @@ def update_peer_codecs(peer_id: int, data: PeerCodecUpdate, current_user: User =
     regenerate_pjsip_config(db)
 
     return {"status": "ok", "codecs": db_peer.codecs}
+
+
+@router.patch("/{peer_id}/user")
+def assign_user_to_peer(
+    peer_id: int,
+    data: PeerUserAssign,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    db_peer = db.query(SIPPeer).filter(SIPPeer.id == peer_id).first()
+    if not db_peer:
+        raise HTTPException(status_code=404, detail="Peer not found")
+
+    if data.user_id is not None:
+        user = db.query(User).filter(User.id == data.user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+    db_peer.user_id = data.user_id
+    db_peer.updated_at = datetime.utcnow()
+    db.commit()
+
+    log_action(db, current_user.username, "peer_user_assigned", "peer", db_peer.extension,
+               {"user_id": data.user_id}, request.client.host if request.client else None)
+    return {"status": "ok", "user_id": db_peer.user_id}

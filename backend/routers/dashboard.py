@@ -84,10 +84,21 @@ async def get_dashboard_status(current_user: User = Depends(get_current_user)) -
         db.execute(text("SELECT 1"))
         db_status = "connected"
 
-        # Map extension -> caller_id for peers
+        # Map extension -> {caller_id, user_name, avatar_url} for peers
         peer_map = {}
+        user_info_map = {}
         for p in db.query(SIPPeer).all():
             peer_map[p.extension] = p.caller_id or p.extension
+            if p.user_id:
+                user_info_map[p.extension] = p.user_id
+
+        # Bulk-load users for peers that have user_id
+        user_map = {}
+        if user_info_map:
+            user_ids = list(set(user_info_map.values()))
+            users = db.query(User).filter(User.id.in_(user_ids)).all()
+            for u in users:
+                user_map[u.id] = {"full_name": u.full_name, "avatar_url": u.avatar_url}
 
         # Map "trunk-ep-{id}" -> {name, provider} for trunks
         trunk_map = {}
@@ -106,6 +117,11 @@ async def get_dashboard_status(current_user: User = Depends(get_current_user)) -
             elif ep_name in peer_map:
                 ep['display_name'] = peer_map[ep_name]
                 ep['type'] = 'peer'
+                # Add user info if assigned
+                uid = user_info_map.get(ep_name)
+                if uid and uid in user_map:
+                    ep['user_name'] = user_map[uid].get('full_name')
+                    ep['avatar_url'] = user_map[uid].get('avatar_url')
             else:
                 ep['display_name'] = ep_name
                 ep['type'] = 'peer'

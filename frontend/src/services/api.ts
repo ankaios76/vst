@@ -120,6 +120,14 @@ class ApiService {
     })
   }
 
+  async getAvailableDids() {
+    return this.request<{ trunk_id: number; trunk_name: string; dids: string[] }[]>('/api/trunks/available-dids')
+  }
+
+  async getTrunkStatus(id: number) {
+    return this.request<any>(`/api/trunks/${id}/status`)
+  }
+
   // Inbound Routes
   async getRoutes() {
     return this.request<any[]>('/api/routes/')
@@ -234,6 +242,62 @@ class ApiService {
   async deleteUser(id: number) {
     return this.request<any>(`/api/users/${id}`, {
       method: 'DELETE',
+    })
+  }
+
+  async sendWelcomeEmail(id: number, loginPassword: string) {
+    return this.request<any>(`/api/users/${id}/send-welcome`, {
+      method: 'POST',
+      body: JSON.stringify({ login_password: loginPassword }),
+    })
+  }
+
+  async changeUserPassword(id: number, password: string) {
+    return this.request<any>(`/api/users/${id}/password`, {
+      method: 'PATCH',
+      body: JSON.stringify({ password }),
+    })
+  }
+
+  async updateUser(id: number, data: { full_name?: string; email?: string; role?: string }) {
+    return this.request<any>(`/api/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async uploadUserAvatar(id: number, file: File) {
+    const formData = new FormData()
+    formData.append('file', file)
+    const url = `${this.baseUrl}/api/users/${id}/avatar`
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: formData,
+    })
+    if (response.status === 401) {
+      localStorage.removeItem('token')
+      window.location.reload()
+      throw new Error('Sitzung abgelaufen')
+    }
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}))
+      throw new Error(data.detail || `API Error: ${response.status}`)
+    }
+    return response.json()
+  }
+
+  async assignExtensionToUser(userId: number, extension: string | null) {
+    return this.request<any>(`/api/users/${userId}/extension`, {
+      method: 'PATCH',
+      body: JSON.stringify({ extension }),
+    })
+  }
+
+  async assignUserToPeer(peerId: number, userId: number | null) {
+    return this.request<any>(`/api/peers/${peerId}/user`, {
+      method: 'PATCH',
+      body: JSON.stringify({ user_id: userId }),
     })
   }
 

@@ -11,6 +11,8 @@ interface SystemStatus {
     provider?: string
     status: string
     rtt?: number
+    user_name?: string
+    avatar_url?: string
   }>
   system?: {
     health: string
@@ -48,10 +50,11 @@ interface CDRRecord {
 
 interface DashboardProps {
   onExtensionClick?: (extension: string) => void
+  onTrunkClick?: (trunkId: number) => void
   onNavigate?: (page: string) => void
 }
 
-export default function Dashboard({ onExtensionClick, onNavigate }: DashboardProps) {
+export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }: DashboardProps) {
   const [status, setStatus] = useState<SystemStatus | null>(null)
   const [routes, setRoutes] = useState<InboundRoute[]>([])
   const [recentCalls, setRecentCalls] = useState<CDRRecord[]>([])
@@ -130,33 +133,6 @@ export default function Dashboard({ onExtensionClick, onNavigate }: DashboardPro
     }
   }
 
-  const getDispositionLabel = (disposition: string | null) => {
-    switch (disposition) {
-      case 'ANSWERED':
-        return 'Angenommen'
-      case 'NO ANSWER':
-        return 'Verpasst'
-      case 'BUSY':
-        return 'Besetzt'
-      case 'FAILED':
-        return 'Fehlgeschlagen'
-      default:
-        return disposition || 'Unbekannt'
-    }
-  }
-
-  const getDispositionColor = (disposition: string | null) => {
-    switch (disposition) {
-      case 'ANSWERED':
-        return 'text-green-600 bg-green-50'
-      case 'NO ANSWER':
-        return 'text-red-600 bg-red-50'
-      case 'BUSY':
-        return 'text-orange-600 bg-orange-50'
-      default:
-        return 'text-gray-600 bg-gray-50'
-    }
-  }
 
   const formatDuration = (seconds: number | null) => {
     if (!seconds) return '0:00'
@@ -325,13 +301,16 @@ export default function Dashboard({ onExtensionClick, onNavigate }: DashboardPro
             {status.endpoints.filter(e => e.type === 'trunk').map(endpoint => {
               const providerKey = endpoint.provider || ''
               const provider = PROVIDER_INFO[providerKey]
+              const trunkIdMatch = endpoint.endpoint.match(/^trunk-ep-(\d+)$/)
+              const trunkId = trunkIdMatch ? parseInt(trunkIdMatch[1], 10) : null
               return (
               <div
                 key={endpoint.endpoint}
-                className={`flex items-center gap-3 p-3 rounded-lg border ${
+                onClick={() => trunkId != null && onTrunkClick?.(trunkId)}
+                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition hover:shadow-md ${
                   endpoint.status === 'online'
-                    ? 'bg-green-50 border-green-200'
-                    : 'bg-gray-50 border-gray-200'
+                    ? 'bg-green-50 border-green-200 hover:border-green-300'
+                    : 'bg-gray-50 border-gray-200 hover:border-gray-300'
                 }`}
               >
                 {provider?.logo ? (
@@ -383,10 +362,20 @@ export default function Dashboard({ onExtensionClick, onNavigate }: DashboardPro
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-gray-400" />
+                  {endpoint.avatar_url ? (
+                    <img
+                      src={endpoint.avatar_url}
+                      alt=""
+                      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  )}
                   <div>
-                    <span className="font-medium">{endpoint.display_name || endpoint.endpoint}</span>
-                    {endpoint.display_name && endpoint.display_name !== endpoint.endpoint && (
+                    <span className="font-medium">
+                      {endpoint.user_name || endpoint.display_name || endpoint.endpoint}
+                    </span>
+                    {(endpoint.user_name || endpoint.display_name) && (
                       <span className="text-xs text-gray-400 ml-2">{endpoint.endpoint}</span>
                     )}
                     {(() => {
@@ -459,13 +448,10 @@ export default function Dashboard({ onExtensionClick, onNavigate }: DashboardPro
                     )}
                   </div>
                 </div>
-                {/* Status-Badges */}
-                <div className="flex-shrink-0 flex items-center gap-2">
+                {/* Richtungs-Badge */}
+                <div className="flex-shrink-0">
                   <span className={`px-2 py-0.5 rounded text-xs border ${getDirectionColor(direction)}`}>
                     {getDirectionLabel(direction)}
-                  </span>
-                  <span className={`px-2 py-0.5 rounded text-xs ${getDispositionColor(call.disposition)}`}>
-                    {getDispositionLabel(call.disposition)}
                   </span>
                 </div>
               </div>

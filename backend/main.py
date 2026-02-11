@@ -106,6 +106,19 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"Migration check for ring_timeout column: {e}")
 
+    # Migrate: add avatar_url column to users if missing
+    try:
+        from sqlalchemy import text, inspect as sa_inspect_users
+        users_inspector = sa_inspect_users(engine)
+        users_columns = [c['name'] for c in users_inspector.get_columns('users')]
+        if 'avatar_url' not in users_columns:
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE users ADD COLUMN avatar_url VARCHAR(255)"))
+                conn.commit()
+            logger.info("Migration: added avatar_url column to users")
+    except Exception as e:
+        logger.warning(f"Migration check for avatar_url column: {e}")
+
     # Migrate: create audit_logs table if missing
     try:
         from sqlalchemy import text, inspect as sa_inspect2
@@ -173,8 +186,9 @@ async def lifespan(app: FastAPI):
     # Initialize AMI client
     ami_client = AsteriskAMIClient()
     
-    # Set AMI client in dashboard router
+    # Set AMI client in dashboard and trunks router
     dashboard.set_ami_client(ami_client)
+    trunks.set_ami_client(ami_client)
     
     # Set broadcast callback
     ami_client.set_broadcast_callback(manager.broadcast)

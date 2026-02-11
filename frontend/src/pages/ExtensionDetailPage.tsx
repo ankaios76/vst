@@ -597,7 +597,7 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
               <div className="px-6 py-8 text-center text-gray-500">
                 {trunks.length > 0
                   ? 'Keine Rufnummern zugeordnet. Klicken Sie auf "Rufnummer zuordnen" um eine Nummer zuzuweisen.'
-                  : 'Bitte zuerst einen SIP-Trunk unter Extensions > SIP-Trunks anlegen.'}
+                  : 'Bitte zuerst eine Leitung unter dem Menüpunkt "Leitungen" anlegen.'}
               </div>
             )}
           </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect, FormEvent } from 'react'
-import { Save, Send, Eye, EyeOff, Mail, Volume2, Shield, Plus, Trash2, AlertTriangle, ServerIcon, RefreshCw, Power, Download, HardDrive, Cpu, Clock, CheckCircle, XCircle, ArrowUpCircle, FileText, ShieldAlert, Ban, Unlock } from 'lucide-react'
+import { Save, Send, Eye, EyeOff, Mail, Volume2, Shield, Plus, Trash2, AlertTriangle, ServerIcon, RefreshCw, Power, Download, HardDrive, Cpu, Clock, CheckCircle, XCircle, ArrowUpCircle, FileText, ShieldAlert, Ban, Unlock, Users } from 'lucide-react'
 import { api } from '../services/api'
+import UsersPage from './UsersPage'
 
 interface AvailableCodec {
   id: string
@@ -25,9 +26,10 @@ interface UpdateInfo {
   release_url: string
 }
 
-type SettingsTab = 'email' | 'audio' | 'security' | 'audit' | 'server'
+type SettingsTab = 'users' | 'email' | 'audio' | 'security' | 'audit' | 'server'
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Mail }[] = [
+  { id: 'users', label: 'Benutzer', icon: Users },
   { id: 'email', label: 'E-Mail', icon: Mail },
   { id: 'audio', label: 'Audio', icon: Volume2 },
   { id: 'security', label: 'Sicherheit', icon: Shield },
@@ -36,7 +38,7 @@ const tabs: { id: SettingsTab; label: string; icon: typeof Mail }[] = [
 ]
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<SettingsTab>('email')
+  const [activeTab, setActiveTab] = useState<SettingsTab>('users')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState(false)
@@ -350,6 +352,9 @@ export default function SettingsPage() {
           })}
         </nav>
       </div>
+
+      {/* Users Tab */}
+      {activeTab === 'users' && <UsersPage />}
 
       {/* Email Tab */}
       {activeTab === 'email' && (

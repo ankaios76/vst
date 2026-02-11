@@ -1,26 +1,32 @@
 import { useState } from 'react'
-import { Phone, Users, History, Menu, X, LogOut, Shield, Settings } from 'lucide-react'
+import { Phone, Users, History, Menu, X, LogOut, Settings, Server } from 'lucide-react'
 import packageJson from '../package.json'
 import Dashboard from './pages/Dashboard'
 import ExtensionsPage from './pages/ExtensionsPage'
 import ExtensionDetailPage from './pages/ExtensionDetailPage'
+import TrunkDetailPage from './pages/TrunkDetailPage'
 import CDRPage from './pages/CDRPage'
 import LoginPage from './pages/LoginPage'
-import UsersPage from './pages/UsersPage'
 import SettingsPage from './pages/SettingsPage'
 import { AuthProvider, useAuth } from './context/AuthContext'
 
-type Page = 'dashboard' | 'extensions' | 'extension-detail' | 'cdr' | 'users' | 'settings'
+type Page = 'dashboard' | 'nebenstellen' | 'leitungen' | 'extension-detail' | 'trunk-detail' | 'cdr' | 'settings'
 
 function AppContent() {
   const { user, isAuthenticated, isLoading, logout } = useAuth()
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
   const [selectedExtension, setSelectedExtension] = useState<string>('')
+  const [selectedTrunkId, setSelectedTrunkId] = useState<number>(0)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navigateToExtensionDetail = (ext: string) => {
     setSelectedExtension(ext)
     setCurrentPage('extension-detail')
+  }
+
+  const navigateToTrunkDetail = (id: number) => {
+    setSelectedTrunkId(id)
+    setCurrentPage('trunk-detail')
   }
 
   if (isLoading) {
@@ -37,11 +43,11 @@ function AppContent() {
 
   const navigation = [
     { id: 'dashboard' as Page, name: 'Dashboard', icon: Phone },
-    { id: 'extensions' as Page, name: 'Extensions', icon: Users },
+    { id: 'nebenstellen' as Page, name: 'Nebenstellen', icon: Users },
+    { id: 'leitungen' as Page, name: 'Leitungen', icon: Server },
     { id: 'cdr' as Page, name: 'Anrufverlauf', icon: History },
     ...(user?.role === 'admin'
       ? [
-          { id: 'users' as Page, name: 'Benutzer', icon: Shield },
           { id: 'settings' as Page, name: 'Einstellungen', icon: Settings },
         ]
       : []),
@@ -50,15 +56,17 @@ function AppContent() {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard onExtensionClick={navigateToExtensionDetail} onNavigate={(page) => setCurrentPage(page as Page)} />
-      case 'extensions':
-        return <ExtensionsPage />
+        return <Dashboard onExtensionClick={navigateToExtensionDetail} onTrunkClick={navigateToTrunkDetail} onNavigate={(page) => setCurrentPage(page as Page)} />
+      case 'nebenstellen':
+        return <ExtensionsPage mode="peers" />
+      case 'leitungen':
+        return <ExtensionsPage mode="trunks" />
       case 'extension-detail':
         return <ExtensionDetailPage extension={selectedExtension} onBack={() => setCurrentPage('dashboard')} />
+      case 'trunk-detail':
+        return <TrunkDetailPage trunkId={selectedTrunkId} onBack={() => setCurrentPage('dashboard')} />
       case 'cdr':
         return <CDRPage />
-      case 'users':
-        return user?.role === 'admin' ? <UsersPage /> : <Dashboard />
       case 'settings':
         return user?.role === 'admin' ? <SettingsPage /> : <Dashboard />
       default:

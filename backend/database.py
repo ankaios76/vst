@@ -41,8 +41,9 @@ class User(Base):
     full_name = Column(String(100))
     role = Column(String(20), default="user")
     created_at = Column(DateTime, default=datetime.utcnow)
+    avatar_url = Column(String(255), nullable=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationships
     sip_peers = relationship("SIPPeer", back_populates="user")
     extensions = relationship("Extension", back_populates="user")

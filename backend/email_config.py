@@ -3,8 +3,14 @@ SMTP Email Configuration
 Generates msmtprc config and writes it into the Asterisk container
 """
 
+import base64
 import logging
+import os
 import subprocess
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email import encoders
 
 logger = logging.getLogger(__name__)
 
@@ -89,3 +95,177 @@ def send_test_email(settings: dict, to_address: str) -> bool:
     except Exception as e:
         logger.error(f"Failed to send test email: {e}")
         return False
+
+
+LOGO_PATH = "/app/static/logo.png"
+
+
+def send_html_email(settings: dict, to_address: str, subject: str, html_body: str, inline_images: dict | None = None) -> bool:
+    """Send an HTML email via the Asterisk container.
+    inline_images: dict of {cid: filepath} for embedded images.
+    """
+    from_addr = settings.get("smtp_from", "noreply@gonopbx.local")
+
+    msg = MIMEMultipart("related")
+    msg["To"] = to_address
+    msg["From"] = from_addr
+    msg["Subject"] = subject
+
+    alt = MIMEMultipart("alternative")
+    alt.attach(MIMEText(html_body, "html", "utf-8"))
+    msg.attach(alt)
+
+    # Attach inline images
+    if inline_images:
+        for cid, filepath in inline_images.items():
+            try:
+                with open(filepath, "rb") as f:
+                    img_data = f.read()
+                img_part = MIMEBase("image", "png")
+                img_part.set_payload(img_data)
+                encoders.encode_base64(img_part)
+                img_part.add_header("Content-ID", f"<{cid}>")
+                img_part.add_header("Content-Disposition", "inline", filename=os.path.basename(filepath))
+                msg.attach(img_part)
+            except FileNotFoundError:
+                logger.warning(f"Inline image not found: {filepath}")
+
+    try:
+        result = subprocess.run(
+            ['docker', 'exec', '-i', 'pbx_asterisk', 'msmtp', '-t'],
+            input=msg.as_string(),
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        if result.returncode == 0:
+            logger.info(f"HTML email sent to {to_address}: {subject}")
+            return True
+        else:
+            logger.error(f"HTML email failed: {result.stderr}")
+            return False
+    except Exception as e:
+        logger.error(f"Failed to send HTML email: {e}")
+        return False
+
+
+def send_welcome_email(
+    settings: dict,
+    to_address: str,
+    full_name: str,
+    username: str,
+    login_password: str,
+    extension: str | None = None,
+    sip_password: str | None = None,
+    server_ip: str | None = None,
+) -> bool:
+    """Send a welcome email with login and SIP registration details"""
+    if not server_ip:
+        server_ip = os.getenv("EXTERNAL_IP", "").strip() or "your-server-ip"
+
+    server_url = f"http://{server_ip}"
+
+    sip_section = ""
+    if extension and sip_password:
+        sip_section = f"""
+        <tr><td colspan="2" style="padding: 20px 0 10px 0;">
+          <h3 style="margin:0; color:#3b82f6; font-size:16px;">Telefon-Registrierung (SIP)</h3>
+          <p style="margin:5px 0 0 0; color:#6b7280; font-size:13px;">
+            Verwenden Sie diese Daten, um Ihr IP-Telefon oder Softphone zu konfigurieren.
+          </p>
+        </td></tr>
+        <tr>
+          <td style="padding:8px 12px; background:#eff6ff; border:1px solid #dbeafe; border-radius:6px 0 0 6px; font-weight:600; color:#374151; width:180px;">SIP-Server</td>
+          <td style="padding:8px 12px; background:#eff6ff; border:1px solid #dbeafe; border-left:none; border-radius:0 6px 6px 0; font-family:monospace; color:#3b82f6;">{server_ip}</td>
+        </tr>
+        <tr><td colspan="2" style="height:4px;"></td></tr>
+        <tr>
+          <td style="padding:8px 12px; background:#eff6ff; border:1px solid #dbeafe; border-radius:6px 0 0 6px; font-weight:600; color:#374151;">Nebenstelle / Benutzer</td>
+          <td style="padding:8px 12px; background:#eff6ff; border:1px solid #dbeafe; border-left:none; border-radius:0 6px 6px 0; font-family:monospace; color:#3b82f6;">{extension}</td>
+        </tr>
+        <tr><td colspan="2" style="height:4px;"></td></tr>
+        <tr>
+          <td style="padding:8px 12px; background:#eff6ff; border:1px solid #dbeafe; border-radius:6px 0 0 6px; font-weight:600; color:#374151;">SIP-Passwort</td>
+          <td style="padding:8px 12px; background:#eff6ff; border:1px solid #dbeafe; border-left:none; border-radius:0 6px 6px 0; font-family:monospace; color:#3b82f6;">{sip_password}</td>
+        </tr>
+        <tr><td colspan="2" style="height:4px;"></td></tr>
+        <tr>
+          <td style="padding:8px 12px; background:#eff6ff; border:1px solid #dbeafe; border-radius:6px 0 0 6px; font-weight:600; color:#374151;">Port</td>
+          <td style="padding:8px 12px; background:#eff6ff; border:1px solid #dbeafe; border-left:none; border-radius:0 6px 6px 0; font-family:monospace; color:#3b82f6;">5060 (UDP)</td>
+        </tr>
+        """
+
+    html = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0; padding:0; background-color:#f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f4f6; padding:40px 20px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+
+        <!-- Header -->
+        <tr><td style="background: linear-gradient(135deg, #60a5fa, #93c5fd); padding:30px 40px; text-align:center;">
+          <img src="cid:logo" alt="GonoPBX" style="height:50px; margin-bottom:10px;" />
+          <h1 style="margin:0; color:#ffffff; font-size:22px; font-weight:600;">Willkommen bei GonoPBX</h1>
+        </td></tr>
+
+        <!-- Body -->
+        <tr><td style="padding:30px 40px;">
+          <p style="color:#374151; font-size:15px; line-height:1.6; margin:0 0 20px 0;">
+            Hallo <strong>{full_name}</strong>,<br><br>
+            Ihr Benutzerkonto wurde eingerichtet. Nachfolgend finden Sie alle Zugangsdaten.
+          </p>
+
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <!-- Login Section -->
+            <tr><td colspan="2" style="padding: 0 0 10px 0;">
+              <h3 style="margin:0; color:#3b82f6; font-size:16px;">Web-Zugang</h3>
+            </td></tr>
+            <tr>
+              <td style="padding:8px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px 0 0 6px; font-weight:600; color:#374151; width:180px;">URL</td>
+              <td style="padding:8px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-left:none; border-radius:0 6px 6px 0;">
+                <a href="{server_url}" style="color:#3b82f6; text-decoration:none; font-family:monospace;">{server_url}</a>
+              </td>
+            </tr>
+            <tr><td colspan="2" style="height:4px;"></td></tr>
+            <tr>
+              <td style="padding:8px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px 0 0 6px; font-weight:600; color:#374151;">Benutzername</td>
+              <td style="padding:8px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-left:none; border-radius:0 6px 6px 0; font-family:monospace; color:#166534;">{username}</td>
+            </tr>
+            <tr><td colspan="2" style="height:4px;"></td></tr>
+            <tr>
+              <td style="padding:8px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px 0 0 6px; font-weight:600; color:#374151;">Passwort</td>
+              <td style="padding:8px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-left:none; border-radius:0 6px 6px 0; font-family:monospace; color:#166534;">{login_password}</td>
+            </tr>
+
+            {sip_section}
+          </table>
+
+          <div style="margin-top:30px; padding:16px; background:#fefce8; border:1px solid #fde68a; border-radius:8px;">
+            <p style="margin:0; color:#92400e; font-size:13px; line-height:1.5;">
+              <strong>Sicherheitshinweis:</strong> Bitte ändern Sie Ihr Passwort nach der ersten Anmeldung.
+              Sie können Ihr Passwort jederzeit über die Weboberfläche ändern unter
+              <strong>Einstellungen &rarr; Benutzer</strong> (Schlüssel-Symbol neben Ihrem Benutzernamen).
+            </p>
+          </div>
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td style="padding:20px 40px; background:#f9fafb; border-top:1px solid #e5e7eb; text-align:center;">
+          <p style="margin:0; color:#9ca3af; font-size:12px;">
+            Diese E-Mail wurde automatisch von GonoPBX gesendet.
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+    # Embed logo as inline image
+    inline_images = {}
+    if os.path.exists(LOGO_PATH):
+        inline_images["logo"] = LOGO_PATH
+
+    return send_html_email(settings, to_address, "Willkommen bei GonoPBX – Ihre Zugangsdaten", html, inline_images)

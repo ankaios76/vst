@@ -79,12 +79,12 @@ cat > .env <<'ENVEOF'
 ENVEOF
 # Write values with proper quoting for special characters
 {
-    echo "EXTERNAL_IP=${EXTERNAL_IP}"
-    echo "ADMIN_PASSWORD='${ADMIN_PASSWORD}'"
-    echo "JWT_SECRET='${JWT_SECRET}'"
-    echo "DB_PASSWORD='${DB_PASSWORD}'"
-    echo "AMI_PASSWORD='${AMI_PASSWORD}'"
-    echo "BIND_ADDRESS=${BIND_ADDRESS}"
+    printf 'EXTERNAL_IP=%s\n' "$EXTERNAL_IP"
+    printf "ADMIN_PASSWORD='%s'\n" "$ADMIN_PASSWORD"
+    printf "JWT_SECRET='%s'\n" "$JWT_SECRET"
+    printf "DB_PASSWORD='%s'\n" "$DB_PASSWORD"
+    printf "AMI_PASSWORD='%s'\n" "$AMI_PASSWORD"
+    printf 'BIND_ADDRESS=%s\n' "$BIND_ADDRESS"
 } >> .env
 
 echo "[OK] .env created"
@@ -131,7 +131,7 @@ else
     echo "  (Reverse Proxy noetig fuer externen Zugriff)"
 fi
 echo ""
-echo "  Login:      admin / ${ADMIN_PASSWORD}"
+printf '  Login:      admin / %s\n' "$ADMIN_PASSWORD"
 echo ""
 echo "  Credentials are saved in .env"
 echo "============================================"

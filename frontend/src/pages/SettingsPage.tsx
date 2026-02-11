@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react'
-import { Save, Send, Eye, EyeOff, Mail, Volume2, Shield, Plus, Trash2, AlertTriangle, ServerIcon, RefreshCw, Power, Download, HardDrive, Cpu, Clock, CheckCircle, XCircle, ArrowUpCircle, FileText, ShieldAlert, Ban } from 'lucide-react'
+import { Save, Send, Eye, EyeOff, Mail, Volume2, Shield, Plus, Trash2, AlertTriangle, ServerIcon, RefreshCw, Power, Download, HardDrive, Cpu, Clock, CheckCircle, XCircle, ArrowUpCircle, FileText, ShieldAlert, Ban, Unlock } from 'lucide-react'
 import { api } from '../services/api'
 
 interface AvailableCodec {
@@ -723,6 +723,7 @@ export default function SettingsPage() {
                             <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Jail</th>
                             <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Zeitpunkt</th>
                             <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aktion</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
@@ -735,6 +736,25 @@ export default function SettingsPage() {
                                 <span className={`px-2 py-0.5 rounded text-xs font-medium ${ban.active ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}>
                                   {ban.active ? 'Aktiv' : 'Abgelaufen'}
                                 </span>
+                              </td>
+                              <td className="px-3 py-2">
+                                {ban.active && (
+                                  <button
+                                    onClick={async () => {
+                                      if (!confirm(`IP ${ban.ip} aus Jail "${ban.jail}" entbannen?`)) return
+                                      try {
+                                        await api.unbanIp(ban.jail, ban.ip)
+                                        fetchFail2ban()
+                                      } catch (e: any) {
+                                        alert(e.message || 'Entbannung fehlgeschlagen')
+                                      }
+                                    }}
+                                    className="text-xs text-orange-600 hover:text-orange-800 flex items-center gap-1"
+                                  >
+                                    <Unlock className="w-3.5 h-3.5" />
+                                    Entbannen
+                                  </button>
+                                )}
                               </td>
                             </tr>
                           ))}

@@ -38,6 +38,24 @@ else
     read -rp "Enter external IP: " EXTERNAL_IP
 fi
 
+# Detect local LAN IP
+LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || echo "")
+
+echo ""
+
+# Network mode
+echo "Nutzt du einen Reverse Proxy (z.B. Nginx) vor GonoPBX?"
+echo "  [1] Nein  - Direkter Zugriff aus dem Netzwerk (empfohlen fuer Heimnetz)"
+echo "  [2] Ja    - Zugriff nur ueber localhost/Reverse Proxy"
+read -rp "Auswahl [1]: " PROXY_CHOICE
+if [ "$PROXY_CHOICE" = "2" ]; then
+    BIND_ADDRESS="127.0.0.1"
+    echo "-> Bind: 127.0.0.1 (nur localhost)"
+else
+    BIND_ADDRESS="0.0.0.0"
+    echo "-> Bind: 0.0.0.0 (Zugriff aus dem Netzwerk)"
+fi
+
 echo ""
 
 # Admin password
@@ -63,6 +81,7 @@ ADMIN_PASSWORD=${ADMIN_PASSWORD}
 JWT_SECRET=${JWT_SECRET}
 DB_PASSWORD=${DB_PASSWORD}
 AMI_PASSWORD=${AMI_PASSWORD}
+BIND_ADDRESS=${BIND_ADDRESS}
 EOF
 
 echo "[OK] .env created"
@@ -77,13 +96,37 @@ echo ""
 echo "Starting containers..."
 docker compose up -d --build
 
+# Send anonymous install telemetry (non-blocking, no personal data)
+INSTALL_OS=$(. /etc/os-release 2>/dev/null && echo "$ID $VERSION_ID" || echo "unknown")
+INSTALL_ARCH=$(uname -m)
+INSTALL_VERSION=$(grep '^VERSION' backend/version.py 2>/dev/null | cut -d'"' -f2 || echo "unknown")
+curl -s -o /dev/null --max-time 5 \
+  -X POST "https://analytics.gonopbx.de/api/send" \
+  -H "Content-Type: application/json" \
+  -H "User-Agent: GonoPBX-Installer/${INSTALL_VERSION}" \
+  -d "{\"payload\":{\"hostname\":\"gonopbx.de\",\"url\":\"/install\",\"website\":\"cc8fa162-1aef-4c89-8e13-4fdbfa9bc6f7\",\"name\":\"install\",\"data\":{\"os\":\"${INSTALL_OS}\",\"arch\":\"${INSTALL_ARCH}\",\"version\":\"${INSTALL_VERSION}\"}}}" \
+  2>/dev/null || true
+
 echo ""
 echo "============================================"
 echo "  GonoPBX Installation Complete!"
 echo "============================================"
 echo ""
-echo "  Web GUI:    http://${EXTERNAL_IP}:3000"
-echo "  API:        http://${EXTERNAL_IP}:8000"
+if [ "$BIND_ADDRESS" = "0.0.0.0" ]; then
+    ACCESS_IP="${LOCAL_IP:-$EXTERNAL_IP}"
+    echo "  Web GUI:    http://${ACCESS_IP}:3000"
+    echo "  API:        http://${ACCESS_IP}:8000"
+    if [ -n "$LOCAL_IP" ] && [ "$LOCAL_IP" != "$EXTERNAL_IP" ]; then
+        echo ""
+        echo "  Lokales Netzwerk: http://${LOCAL_IP}:3000"
+        echo "  Extern:           http://${EXTERNAL_IP}:3000"
+        echo "                     (Port 3000 muss im Router freigegeben sein)"
+    fi
+else
+    echo "  Web GUI:    http://localhost:3000"
+    echo "  API:        http://localhost:8000"
+    echo "  (Reverse Proxy noetig fuer externen Zugriff)"
+fi
 echo ""
 echo "  Login:      admin / ${ADMIN_PASSWORD}"
 echo ""

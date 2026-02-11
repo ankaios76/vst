@@ -5,7 +5,9 @@ Settings Router - Admin-only system settings management
 import json
 import ipaddress
 import os
+import pickle
 import shutil
+import socket
 import subprocess
 import logging
 import urllib.request
@@ -384,6 +386,74 @@ def get_fail2ban_status(
 ):
     """Get Fail2Ban status from its SQLite database."""
     return _get_fail2ban_status()
+
+
+FAIL2BAN_SOCK_PATH = "/var/run/fail2ban/fail2ban.sock"
+F2B_END_COMMAND = b"<F2B_END_COMMAND>"
+F2B_CLOSE_COMMAND = b"<F2B_CLOSE_COMMAND>"
+
+
+def _fail2ban_send_command(cmd: list):
+    """Send a command to fail2ban via its Unix socket (pickle protocol)."""
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    sock.settimeout(5)
+    try:
+        sock.connect(FAIL2BAN_SOCK_PATH)
+        # Send command
+        data = pickle.dumps(cmd, 2)
+        sock.sendall(data + F2B_END_COMMAND)
+        # Receive response
+        response = b""
+        while True:
+            chunk = sock.recv(4096)
+            if not chunk:
+                break
+            response += chunk
+            if response.endswith(F2B_END_COMMAND):
+                response = response[: -len(F2B_END_COMMAND)]
+                break
+        # Close connection
+        sock.sendall(F2B_CLOSE_COMMAND + F2B_END_COMMAND)
+        return pickle.loads(response)
+    finally:
+        sock.close()
+
+
+class Fail2banUnbanRequest(BaseModel):
+    jail: str
+    ip: str
+
+
+@router.post("/fail2ban/unban")
+def unban_ip(
+    data: Fail2banUnbanRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    """Unban an IP address from a fail2ban jail."""
+    # Validate IP format
+    try:
+        ipaddress.ip_address(data.ip)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Ungültige IP-Adresse: {data.ip}")
+
+    # Validate jail name (alphanumeric + hyphen/underscore only)
+    if not all(c.isalnum() or c in "-_" for c in data.jail):
+        raise HTTPException(status_code=400, detail=f"Ungültiger Jail-Name: {data.jail}")
+
+    if not os.path.exists(FAIL2BAN_SOCK_PATH):
+        raise HTTPException(status_code=503, detail="Fail2Ban-Socket nicht verfügbar")
+
+    try:
+        result = _fail2ban_send_command(["set", data.jail, "unbanip", data.ip])
+        logger.info(f"Fail2Ban unban: IP {data.ip} from jail {data.jail} by {current_user.username}, result: {result}")
+        log_action(db, current_user.username, "ip_unbanned", "fail2ban", data.ip,
+                   {"jail": data.jail}, request.client.host if request.client else None)
+        return {"status": "ok", "ip": data.ip, "jail": data.jail}
+    except Exception as e:
+        logger.error(f"Fail2Ban unban failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Entbannung fehlgeschlagen: {str(e)}")
 
 
 # --- Server Management ---

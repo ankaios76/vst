@@ -327,6 +327,13 @@ class ApiService {
   async getFail2banStatus() {
     return this.request<any>('/api/settings/fail2ban')
   }
+
+  async unbanIp(jail: string, ip: string) {
+    return this.request<any>('/api/settings/fail2ban/unban', {
+      method: 'POST',
+      body: JSON.stringify({ jail, ip }),
+    })
+  }
 }
 
 export const api = new ApiService(API_BASE_URL)

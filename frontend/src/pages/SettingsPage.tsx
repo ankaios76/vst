@@ -89,6 +89,7 @@ export default function SettingsPage() {
   const [checkingUpdate, setCheckingUpdate] = useState(false)
   const [restartingService, setRestartingService] = useState<string | null>(null)
   const [rebooting, setRebooting] = useState(false)
+  const [installingUpdate, setInstallingUpdate] = useState(false)
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -1005,7 +1006,7 @@ export default function SettingsPage() {
             {updateInfo?.update_available && (
               <div className="flex items-start gap-3 p-4 mb-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <ArrowUpCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div>
+                <div className="flex-1">
                   <div className="text-sm font-medium text-blue-800">
                     Neue Version verfügbar: v{updateInfo.latest_version}
                   </div>
@@ -1027,6 +1028,39 @@ export default function SettingsPage() {
                       Release auf GitHub ansehen
                     </a>
                   )}
+                  <button
+                    onClick={async () => {
+                      if (!confirm(`Update auf v${updateInfo.latest_version} installieren? Alle Container werden neu gebaut. Aktive Gespräche werden nicht unterbrochen, aber die Weboberfläche ist kurzzeitig nicht erreichbar.`)) return
+                      setInstallingUpdate(true)
+                      setError('')
+                      setSuccess('')
+                      try {
+                        const result = await api.installUpdate()
+                        setSuccess(result.message || 'Update wird installiert...')
+                        setTimeout(() => window.location.reload(), 90000)
+                      } catch (err: any) {
+                        setError(err.message || 'Update fehlgeschlagen')
+                        setInstallingUpdate(false)
+                      }
+                    }}
+                    disabled={installingUpdate}
+                    className="mt-3 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-5 py-2 rounded-lg transition-colors text-sm"
+                  >
+                    <Download className={`w-4 h-4 ${installingUpdate ? 'animate-bounce' : ''}`} />
+                    {installingUpdate ? 'Update wird installiert...' : `Update auf v${updateInfo.latest_version} installieren`}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {installingUpdate && (
+              <div className="flex items-center gap-3 p-4 mb-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <RefreshCw className="w-5 h-5 text-amber-600 animate-spin flex-shrink-0" />
+                <div>
+                  <div className="text-sm font-medium text-amber-800">Update wird installiert...</div>
+                  <div className="text-xs text-amber-600 mt-1">
+                    Die Container werden neu gebaut. Die Seite wird automatisch neu geladen.
+                  </div>
                 </div>
               </div>
             )}
@@ -1040,7 +1074,7 @@ export default function SettingsPage() {
 
             <button
               onClick={handleCheckUpdate}
-              disabled={checkingUpdate}
+              disabled={checkingUpdate || installingUpdate}
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg transition-colors"
             >
               <RefreshCw className={`w-4 h-4 ${checkingUpdate ? 'animate-spin' : ''}`} />

@@ -657,3 +657,59 @@ def reboot_server(
         return {"status": "ok", "message": "Server wird in 2 Sekunden neu gestartet"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Reboot fehlgeschlagen: {str(e)}")
+
+
+@router.post("/install-update")
+def install_update(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    """Pull latest code from GitHub and rebuild containers."""
+    project_dir = "/root/asterisk-pbx-gui"
+
+    # Step 1: git pull
+    try:
+        pull_result = subprocess.run(
+            ["git", "pull", "origin", "main"],
+            capture_output=True, text=True, timeout=60,
+            cwd=project_dir,
+        )
+        if pull_result.returncode != 0:
+            raise HTTPException(status_code=500, detail=f"Git pull fehlgeschlagen: {pull_result.stderr}")
+        pull_output = pull_result.stdout.strip()
+        logger.info(f"Git pull by {current_user.username}: {pull_output}")
+    except subprocess.TimeoutExpired:
+        raise HTTPException(status_code=504, detail="Timeout bei git pull")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Git pull Fehler: {str(e)}")
+
+    # Step 2: Regenerate manager.conf from template
+    try:
+        import os
+        ami_password = os.getenv("AMI_PASSWORD", "")
+        template_path = os.path.join(project_dir, "asterisk/config/manager.conf.template")
+        output_path = os.path.join(project_dir, "asterisk/config/manager.conf")
+        if os.path.exists(template_path) and ami_password:
+            with open(template_path) as f:
+                template = f.read()
+            with open(output_path, "w") as f:
+                f.write(template.replace("%%AMI_PASSWORD%%", ami_password))
+    except Exception as e:
+        logger.warning(f"manager.conf regeneration failed: {e}")
+
+    log_action(db, current_user.username, "update_installed", "system", None,
+               {"git_output": pull_output}, request.client.host if request.client else None)
+
+    # Step 3: Rebuild and restart containers (async - backend will restart itself)
+    try:
+        subprocess.Popen(
+            ["sh", "-c", "sleep 2 && docker compose up -d --build"],
+            start_new_session=True,
+            cwd=project_dir,
+        )
+        return {"status": "ok", "message": "Update wird installiert. Die Seite wird in ca. 1-2 Minuten neu geladen."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Container-Rebuild fehlgeschlagen: {str(e)}")

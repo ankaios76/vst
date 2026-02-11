@@ -374,6 +374,12 @@ class ApiService {
     })
   }
 
+  async installUpdate() {
+    return this.request<any>('/api/settings/install-update', {
+      method: 'POST',
+    })
+  }
+
   async updatePeerCodecs(peerId: number, codecs: string | null) {
     return this.request<any>(`/api/peers/${peerId}/codecs`, {
       method: 'PATCH',

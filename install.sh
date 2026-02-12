@@ -161,6 +161,7 @@ ENVEOF
     printf 'AMI_PASSWORD=%s\n' "$AMI_PASSWORD"
     printf 'BIND_ADDRESS=%s\n' "$BIND_ADDRESS"
     printf 'SIP_PORT=%s\n' "$SIP_PORT"
+    printf 'PROJECT_DIR=%s\n' "$(pwd)"
 } >> .env
 
 echo "[OK] .env created"

@@ -43,6 +43,7 @@ services:
       - user_uploads:/app/uploads
       - asterisk_voicemail:/var/spool/asterisk/voicemail
       - /var/run/docker.sock:/var/run/docker.sock
+      - ${PROJECT_DIR:-.}:/project
       - /var/lib/fail2ban/fail2ban.sqlite3:/var/lib/fail2ban/fail2ban.sqlite3:ro
       - /var/run/fail2ban/fail2ban.sock:/var/run/fail2ban/fail2ban.sock
     depends_on:

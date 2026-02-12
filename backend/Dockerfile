@@ -5,10 +5,14 @@ WORKDIR /app
 # Install system dependencies including Docker CLI
 RUN apt-get update && apt-get install -y \
     gcc \
+    git \
     postgresql-client \
     curl \
     && curl -fsSL https://get.docker.com | sh \
     && rm -rf /var/lib/apt/lists/*
+
+# Allow git operations on mounted project directory
+RUN git config --global --add safe.directory /project
 
 # Copy requirements first for better caching
 COPY requirements.txt .

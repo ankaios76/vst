@@ -522,7 +522,7 @@ def _get_container_status() -> list:
         result = subprocess.run(
             ["docker", "compose", "ps", "--format", "json"],
             capture_output=True, text=True, timeout=10,
-            cwd="/root/asterisk-pbx-gui"
+            cwd="/project"
         )
         if result.returncode != 0:
             return []
@@ -626,7 +626,7 @@ def restart_service(
         result = subprocess.run(
             ["docker", "compose", "restart", data.service],
             capture_output=True, text=True, timeout=60,
-            cwd="/root/asterisk-pbx-gui"
+            cwd="/project"
         )
         if result.returncode != 0:
             raise HTTPException(status_code=500, detail=f"Neustart fehlgeschlagen: {result.stderr}")
@@ -666,7 +666,7 @@ def install_update(
     current_user: User = Depends(require_admin),
 ):
     """Pull latest code from GitHub and rebuild containers."""
-    project_dir = "/root/asterisk-pbx-gui"
+    project_dir = "/project"
 
     # Step 1: git pull
     try:

@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 # Database import for CDR
 from database import SessionLocal, CDR
+from mqtt_client import mqtt_publisher
 
 
 class AsteriskAMIClient:
@@ -88,10 +89,23 @@ class AsteriskAMIClient:
         elif event_name == 'Hangup':
             await self.handle_hangup(event)
         
+        # Publish peer/trunk status changes via MQTT
+        if event_name == 'PeerStatus':
+            peer = event.get('Peer', '')  # e.g. "PJSIP/1001"
+            status = event.get('PeerStatus', '')
+            ext = peer.split('/')[-1] if '/' in peer else peer
+            mqtt_status = 'online' if status == 'Reachable' else 'offline'
+            mqtt_publisher.publish_extension_status(ext, mqtt_status)
+        elif event_name == 'Registry':
+            trunk_name = event.get('Username', '') or event.get('Domain', '')
+            reg_status = event.get('Status', '')
+            mqtt_status = 'registered' if reg_status == 'Registered' else 'unregistered'
+            mqtt_publisher.publish_trunk_status(trunk_name, mqtt_status)
+
         # Log important events
         if event_name in ['PeerStatus', 'Registry', 'Newchannel', 'Hangup', 'NewCallerid', 'DialBegin', 'DialEnd']:
             logger.info(f"AMI Event: {event_name}")
-            
+
             # Broadcast to WebSocket clients
             if self.broadcast_callback:
                 await self.broadcast_callback({
@@ -124,6 +138,7 @@ class AsteriskAMIClient:
                 'answer_time': None
             }
             logger.info(f"📞 Call started: {caller} -> {destination} (ID: {linkedid})")
+            mqtt_publisher.publish_call_started(caller, destination)
 
     async def handle_dial_end(self, event):
         """Handle dial end - call answered or failed"""
@@ -135,6 +150,8 @@ class AsteriskAMIClient:
                 self.active_calls[linkedid]['state'] = 'connected'
                 self.active_calls[linkedid]['answer_time'] = datetime.utcnow()
                 logger.info(f"✅ Call answered: {linkedid}")
+                call = self.active_calls[linkedid]
+                mqtt_publisher.publish_call_answered(call['caller'], call['destination'])
             else:
                 self.active_calls[linkedid]['state'] = dial_status.lower()
                 logger.info(f"❌ Call failed: {linkedid} - {dial_status}")
@@ -171,6 +188,9 @@ class AsteriskAMIClient:
             except Exception as e:
                 logger.error(f"Failed to save CDR: {e}")
             
+            mqtt_publisher.publish_call_ended(
+                call['caller'], call['destination'], duration, disposition
+            )
             logger.info(f"📵 Call ended: {linkedid}")
             del self.active_calls[linkedid]
 

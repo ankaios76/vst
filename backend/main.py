@@ -29,6 +29,7 @@ from auth import get_password_hash, get_current_user
 from database import SessionLocal, User, SIPPeer, VoicemailMailbox, SystemSettings
 from voicemail_config import write_voicemail_config, reload_voicemail
 from email_config import write_msmtp_config
+from mqtt_client import mqtt_publisher
 from version import VERSION
 
 # Global AMI client instance
@@ -203,18 +204,22 @@ async def lifespan(app: FastAPI):
     # Set broadcast callback
     ami_client.set_broadcast_callback(manager.broadcast)
     
+    # Connect MQTT publisher (non-blocking, runs its own thread)
+    mqtt_publisher.connect()
+
     # Start AMI connection in background
     asyncio.create_task(ami_client.connect())
-    
+
     # Wait a bit for AMI to connect
     await asyncio.sleep(2)
-    
+
     logger.info("Backend startup complete")
     
     yield
     
     # Shutdown
     logger.info("Shutting down backend...")
+    mqtt_publisher.disconnect()
     if ami_client:
         await ami_client.disconnect()
     logger.info("Shutdown complete")
@@ -282,6 +287,42 @@ async def health_check():
             "database": "connected"
         }
     }
+
+
+from pydantic import BaseModel
+
+
+class OriginateRequest(BaseModel):
+    extension: str
+    number: str
+
+
+# Originate a call (used by Home Assistant integration)
+@app.post("/api/calls/originate")
+async def originate_call(
+    req: OriginateRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """Originate a call: rings the extension first, then dials the number."""
+    global ami_client
+
+    if not ami_client or not ami_client.connected:
+        raise HTTPException(status_code=503, detail="Asterisk not connected")
+
+    try:
+        response = await ami_client.send_action(
+            'Originate',
+            Channel=f'PJSIP/{req.extension}',
+            Exten=req.number,
+            Context='from-internal',
+            Priority='1',
+            CallerID=req.extension,
+            Timeout='30000',
+            Async='true',
+        )
+        return {"status": "ok", "message": f"Calling {req.number} from {req.extension}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # Active calls endpoint

@@ -145,6 +145,29 @@ JWT_SECRET=$(openssl rand -base64 48 | tr -d '/+=')
 DB_PASSWORD=$(openssl rand -base64 24 | tr -d '/+=')
 AMI_PASSWORD=$(openssl rand -base64 24 | tr -d '/+=')
 
+# Home Assistant integration (optional)
+echo ""
+echo "Home Assistant Integration (optional)"
+read -rp "Generate API key for Home Assistant? [y/N]: " HA_CHOICE
+if [ "$HA_CHOICE" = "y" ] || [ "$HA_CHOICE" = "Y" ]; then
+    HA_API_KEY=$(openssl rand -hex 32)
+    printf 'Generated HA API Key: %s\n' "$HA_API_KEY"
+    echo ""
+    read -rp "MQTT broker address (leave empty to skip): " MQTT_BROKER
+    if [ -n "$MQTT_BROKER" ]; then
+        read -rp "MQTT port [1883]: " MQTT_PORT
+        MQTT_PORT="${MQTT_PORT:-1883}"
+        read -rp "MQTT user (leave empty if none): " MQTT_USER
+        if [ -n "$MQTT_USER" ]; then
+            printf "MQTT password: "
+            IFS= read -r MQTT_PASSWORD
+        fi
+    fi
+else
+    HA_API_KEY=""
+    MQTT_BROKER=""
+fi
+
 echo ""
 echo "Generating configuration..."
 
@@ -162,6 +185,11 @@ ENVEOF
     printf 'BIND_ADDRESS=%s\n' "$BIND_ADDRESS"
     printf 'SIP_PORT=%s\n' "$SIP_PORT"
     printf 'PROJECT_DIR=%s\n' "$(pwd)"
+    printf 'HA_API_KEY=%s\n' "${HA_API_KEY:-}"
+    printf 'MQTT_BROKER=%s\n' "${MQTT_BROKER:-}"
+    printf 'MQTT_PORT=%s\n' "${MQTT_PORT:-1883}"
+    printf 'MQTT_USER=%s\n' "${MQTT_USER:-}"
+    printf 'MQTT_PASSWORD=%s\n' "${MQTT_PASSWORD:-}"
 } >> .env
 
 echo "[OK] .env created"

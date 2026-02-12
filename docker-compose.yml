@@ -37,6 +37,11 @@ services:
       - ASTERISK_PORT=5038
       - ASTERISK_USER=admin
       - ASTERISK_PASSWORD=${AMI_PASSWORD}
+      - HA_API_KEY=${HA_API_KEY:-}
+      - MQTT_BROKER=${MQTT_BROKER:-}
+      - MQTT_PORT=${MQTT_PORT:-1883}
+      - MQTT_USER=${MQTT_USER:-}
+      - MQTT_PASSWORD=${MQTT_PASSWORD:-}
     volumes:
       - ./asterisk/config:/etc/asterisk/custom
       - ./backend:/app

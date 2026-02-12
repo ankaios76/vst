@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.5.1] - 2026-02-12
+
+### Verbesserungen
+
+- **Dashboard-Redesign**: Persoenliche Begruessung (Moin/Hallo/Guten Abend)
+  mit Benutzername, Wochentag und Datum. System-Health-Karte entfernt.
+- **Versionsanzeige im Dashboard**: Backend liefert die aktuelle Version
+  ueber die Dashboard-API, angezeigt unter dem GonoPBX-Status.
+- **dus.net Server korrigiert**: SIP-Server von sip.dus.net auf proxy.dus.net geaendert.
+- **Footer bereinigt**: Versionsanzeige aus dem Footer entfernt (nur noch im Dashboard).
+
+## [1.5.0] - 2026-02-11
+
+### Neue Features
+
+- **Benutzerprofile**: Vollstaendiger Name, Avatar-Upload und Nebenstellen-Zuweisung pro User.
+- **Multi-DID-Routing**: Mehrere eingehende Rufnummern pro Extension konfigurierbar.
+- **Willkommens-E-Mail**: Automatischer Versand der Zugangsdaten an neue Benutzer.
+- **Self-Service Passwortwechsel**: Benutzer koennen ihr eigenes Passwort aendern.
+- **FAQ-Seite**: Haeufig gestellte Fragen direkt in der Oberflaeche.
+- **Navigation ueberarbeitet**: Extensions und Trunks unter Settings zusammengefasst.
+- **One-Click Update**: System-Update direkt aus der Web-Oberflaeche ausfuehren.
+
+### Bugfixes
+
+- User-Erstellung korrigiert (Unique-Email-Constraint entfernt).
+
 ## [1.4.0] - 2026-02-11
 
 ### Neue Features

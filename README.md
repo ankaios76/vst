@@ -119,6 +119,28 @@ gonopbx/
 
 ## 📋 Changelog
 
+### v1.5.1 (2026-02-12)
+
+**Improvements:**
+- Dashboard redesign: personalized greeting (Moin/Hallo/Guten Abend) with username, weekday and date
+- Version display moved from footer to Dashboard status card
+- dus.net SIP server corrected to proxy.dus.net
+- System Health card removed from Dashboard
+
+### v1.5.0 (2026-02-11)
+
+**New Features:**
+- User profiles with full name, avatar upload and extension assignment
+- Multi-DID routing: multiple inbound numbers per extension
+- Welcome email with credentials for new users
+- Self-service password change for all users
+- FAQ page built into the web interface
+- Navigation restructured: Extensions and Trunks moved under Settings
+- One-click system update from the web GUI
+
+**Bugfixes:**
+- Fixed user creation error (removed unique email constraint)
+
 ### v1.4.0 (2026-02-11)
 
 **New Features:**

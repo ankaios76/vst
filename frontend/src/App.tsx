@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Phone, History, Menu, X, LogOut, Settings, HelpCircle, KeyRound } from 'lucide-react'
-import packageJson from '../package.json'
 import Dashboard from './pages/Dashboard'
 import ExtensionDetailPage from './pages/ExtensionDetailPage'
 import TrunkDetailPage from './pages/TrunkDetailPage'
@@ -243,7 +242,7 @@ function AppContent() {
 
       {/* Footer */}
       <footer className="text-center py-4 text-xs text-gray-400">
-        GonoPBX v{packageJson.version} &mdash; &copy; {new Date().getFullYear()} Norbert Hengsteler. Alle Rechte vorbehalten.
+        &copy; {new Date().getFullYear()} Norbert Hengsteler. Alle Rechte vorbehalten.
       </footer>
 
       {/* Password Change Modal */}

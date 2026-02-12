@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Phone, PhoneIncoming, PhoneOutgoing, Activity, CheckCircle, XCircle, AlertTriangle, Server, History, ArrowRight, ArrowDownLeft, ArrowUpRight, Repeat2, Clock } from 'lucide-react'
+import { Phone, PhoneIncoming, PhoneOutgoing, CheckCircle, XCircle, Server, History, ArrowRight, ArrowDownLeft, ArrowUpRight, Repeat2, Clock } from 'lucide-react'
 import { api } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 
 interface SystemStatus {
   asterisk: string
+  version?: string
   endpoints: Array<{
     endpoint: string
     display_name: string
@@ -88,52 +90,23 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
   const onlineEndpoints = status?.endpoints?.filter(e => e.status === 'online').length || 0
   const totalEndpoints = status?.endpoints?.length || 0
 
-  const getHealthIcon = () => {
-    const health = status?.system?.health || 'unknown'
-    switch (health) {
-      case 'healthy':
-        return <CheckCircle className="w-6 h-6 text-green-600" />
-      case 'warning':
-      case 'degraded':
-        return <AlertTriangle className="w-6 h-6 text-yellow-600" />
-      case 'critical':
-        return <XCircle className="w-6 h-6 text-red-600" />
-      default:
-        return <Activity className="w-6 h-6 text-gray-600" />
-    }
+  const { user } = useAuth()
+
+  const getGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour < 10) return 'Moin'
+    if (hour < 17) return 'Hallo'
+    return 'Guten Abend'
   }
 
-  const getHealthColor = () => {
-    const health = status?.system?.health || 'unknown'
-    switch (health) {
-      case 'healthy':
-        return 'bg-green-100'
-      case 'warning':
-      case 'degraded':
-        return 'bg-yellow-100'
-      case 'critical':
-        return 'bg-red-100'
-      default:
-        return 'bg-gray-100'
-    }
+  const getFormattedDate = () => {
+    return new Date().toLocaleDateString('de-DE', {
+      weekday: 'long',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    })
   }
-
-  const getHealthText = () => {
-    const health = status?.system?.health || 'unknown'
-    switch (health) {
-      case 'healthy':
-        return 'Healthy'
-      case 'warning':
-        return 'Warning'
-      case 'degraded':
-        return 'Degraded'
-      case 'critical':
-        return 'Critical'
-      default:
-        return 'Unknown'
-    }
-  }
-
 
   const formatDuration = (seconds: number | null) => {
     if (!seconds) return '0:00'
@@ -247,13 +220,26 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
       {/* ===== HEADER STATUS CARDS ===== */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[120px]">
 
-        {/* Asterisk */}
+        {/* Begrüßung */}
+        <div className="bg-white rounded-lg shadow px-6 h-full flex items-center">
+          <div>
+            <p className="text-2xl font-bold text-gray-900">
+              {getGreeting()}, {user?.full_name || user?.username || 'User'}
+            </p>
+            <p className="text-sm text-gray-500 mt-1">{getFormattedDate()}</p>
+          </div>
+        </div>
+
+        {/* GonoPBX Status */}
         <div className="bg-white rounded-lg shadow px-6 h-full flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-600">Asterisk</p>
+            <p className="text-sm text-gray-600">GonoPBX</p>
             <p className="text-2xl font-bold text-gray-900">
               {status?.asterisk === 'connected' ? 'Online' : 'Offline'}
             </p>
+            {status?.version && (
+              <p className="text-xs text-gray-400 mt-0.5">v{status.version}</p>
+            )}
           </div>
           <div className={`p-3 rounded-full ${status?.asterisk === 'connected' ? 'bg-green-100' : 'bg-red-100'}`}>
             {status?.asterisk === 'connected'
@@ -323,17 +309,6 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
               </div>
             )
           })()}
-        </div>
-
-        {/* System */}
-        <div className="bg-white rounded-lg shadow px-6 h-full flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-600">System</p>
-            <p className="text-2xl font-bold text-gray-900">{getHealthText()}</p>
-          </div>
-          <div className={`p-3 rounded-full ${getHealthColor()}`}>
-            {getHealthIcon()}
-          </div>
         </div>
 
       </div>

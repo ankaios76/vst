@@ -9,6 +9,7 @@ from sqlalchemy import text
 import logging
 from database import SessionLocal, User, SIPPeer, SIPTrunk
 from auth import get_current_user
+from version import VERSION
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -151,6 +152,7 @@ async def get_dashboard_status(current_user: User = Depends(get_current_user)) -
     
     return {
         "timestamp": datetime.utcnow().isoformat(),
+        "version": VERSION,
         "asterisk": asterisk_status,
         "endpoints": endpoints,
         "system": {

@@ -194,6 +194,29 @@ async def lifespan(app: FastAPI):
     finally:
         db.close()
 
+    # Load Home Assistant settings from DB
+    try:
+        from auth import update_ha_api_key
+        ha_settings = {}
+        for key in ["ha_enabled", "ha_api_key", "mqtt_broker", "mqtt_port", "mqtt_user", "mqtt_password"]:
+            s = db.query(SystemSettings).filter(SystemSettings.key == key).first()
+            ha_settings[key] = s.value if s else ""
+
+        if ha_settings.get("ha_api_key"):
+            update_ha_api_key(ha_settings["ha_api_key"])
+            logger.info("HA API key loaded from DB")
+
+        if ha_settings.get("ha_enabled") == "true" and ha_settings.get("mqtt_broker"):
+            mqtt_publisher.reconfigure(
+                broker=ha_settings["mqtt_broker"],
+                port=int(ha_settings.get("mqtt_port") or 1883),
+                user=ha_settings.get("mqtt_user", ""),
+                password=ha_settings.get("mqtt_password", ""),
+            )
+            logger.info(f"MQTT configured from DB: {ha_settings['mqtt_broker']}")
+    except Exception as e:
+        logger.warning(f"Failed to load HA settings from DB: {e}")
+
     # Initialize AMI client
     ami_client = AsteriskAMIClient()
     
@@ -204,8 +227,9 @@ async def lifespan(app: FastAPI):
     # Set broadcast callback
     ami_client.set_broadcast_callback(manager.broadcast)
     
-    # Connect MQTT publisher (non-blocking, runs its own thread)
-    mqtt_publisher.connect()
+    # Connect MQTT publisher if not already configured from DB settings
+    if not mqtt_publisher.connected and mqtt_publisher.enabled:
+        mqtt_publisher.connect()
 
     # Start AMI connection in background
     asyncio.create_task(ami_client.connect())

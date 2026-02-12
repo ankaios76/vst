@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react'
-import { Save, Send, Eye, EyeOff, Mail, Volume2, Shield, Plus, Trash2, AlertTriangle, ServerIcon, RefreshCw, Power, Download, HardDrive, Cpu, Clock, CheckCircle, XCircle, ArrowUpCircle, FileText, ShieldAlert, Ban, Unlock, Users, Phone, Server } from 'lucide-react'
+import { Save, Send, Eye, EyeOff, Mail, Volume2, Shield, Plus, Trash2, AlertTriangle, ServerIcon, RefreshCw, Power, Download, HardDrive, Cpu, Clock, CheckCircle, XCircle, ArrowUpCircle, FileText, ShieldAlert, Ban, Unlock, Users, Phone, Server, Home, Key, Wifi, WifiOff, Info, Copy } from 'lucide-react'
 import { api } from '../services/api'
 import UsersPage from './UsersPage'
 import ExtensionsPage from './ExtensionsPage'
@@ -27,7 +27,7 @@ interface UpdateInfo {
   release_url: string
 }
 
-type SettingsTab = 'extensions' | 'trunks' | 'users' | 'email' | 'audio' | 'security' | 'audit' | 'server'
+type SettingsTab = 'extensions' | 'trunks' | 'users' | 'email' | 'audio' | 'security' | 'audit' | 'homeassistant' | 'server'
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Mail }[] = [
   { id: 'extensions', label: 'Nebenstellen', icon: Phone },
@@ -37,6 +37,7 @@ const tabs: { id: SettingsTab; label: string; icon: typeof Mail }[] = [
   { id: 'audio', label: 'Audio', icon: Volume2 },
   { id: 'security', label: 'Sicherheit', icon: Shield },
   { id: 'audit', label: 'Audit-Log', icon: FileText },
+  { id: 'homeassistant', label: 'Home Assistant', icon: Home },
   { id: 'server', label: 'Server', icon: ServerIcon },
 ]
 
@@ -90,6 +91,23 @@ export default function SettingsPage() {
   const [restartingService, setRestartingService] = useState<string | null>(null)
   const [rebooting, setRebooting] = useState(false)
   const [installingUpdate, setInstallingUpdate] = useState(false)
+
+  // Home Assistant state
+  const [haData, setHaData] = useState({
+    ha_enabled: 'false',
+    ha_api_key: '',
+    mqtt_broker: '',
+    mqtt_port: '1883',
+    mqtt_user: '',
+    mqtt_password: '',
+  })
+  const [savingHA, setSavingHA] = useState(false)
+  const [showHaApiKey, setShowHaApiKey] = useState(false)
+  const [showMqttPassword, setShowMqttPassword] = useState(false)
+  const [testingMqtt, setTestingMqtt] = useState(false)
+  const [mqttTestResult, setMqttTestResult] = useState<{ ok: boolean; message: string } | null>(null)
+  const [generatingKey, setGeneratingKey] = useState(false)
+  const [haLoaded, setHaLoaded] = useState(false)
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -313,6 +331,74 @@ export default function SettingsPage() {
       fetchServerInfo()
     }
   }, [activeTab])
+
+  // Load HA settings when switching to HA tab
+  useEffect(() => {
+    if (activeTab === 'homeassistant' && !haLoaded) {
+      const fetchHA = async () => {
+        try {
+          const data = await api.getHASettings()
+          setHaData({
+            ha_enabled: data.ha_enabled || 'false',
+            ha_api_key: data.ha_api_key || '',
+            mqtt_broker: data.mqtt_broker || '',
+            mqtt_port: data.mqtt_port || '1883',
+            mqtt_user: data.mqtt_user || '',
+            mqtt_password: data.mqtt_password || '',
+          })
+          setHaLoaded(true)
+        } catch {
+          setError('Home Assistant-Einstellungen konnten nicht geladen werden')
+        }
+      }
+      fetchHA()
+    }
+  }, [activeTab])
+
+  const handleSaveHA = async () => {
+    setError('')
+    setSuccess('')
+    setSavingHA(true)
+    try {
+      await api.updateHASettings(haData)
+      setSuccess('Home Assistant-Einstellungen gespeichert')
+    } catch (err: any) {
+      setError(err.message || 'Fehler beim Speichern')
+    } finally {
+      setSavingHA(false)
+    }
+  }
+
+  const handleGenerateKey = async () => {
+    setGeneratingKey(true)
+    try {
+      const result = await api.generateHAApiKey()
+      setHaData(prev => ({ ...prev, ha_api_key: result.key }))
+      setShowHaApiKey(true)
+    } catch (err: any) {
+      setError(err.message || 'Key-Generierung fehlgeschlagen')
+    } finally {
+      setGeneratingKey(false)
+    }
+  }
+
+  const handleTestMqtt = async () => {
+    setTestingMqtt(true)
+    setMqttTestResult(null)
+    try {
+      await api.testMqttConnection({
+        broker: haData.mqtt_broker,
+        port: parseInt(haData.mqtt_port) || 1883,
+        user: haData.mqtt_user,
+        password: haData.mqtt_password,
+      })
+      setMqttTestResult({ ok: true, message: 'Verbindung erfolgreich' })
+    } catch (err: any) {
+      setMqttTestResult({ ok: false, message: err.message || 'Verbindung fehlgeschlagen' })
+    } finally {
+      setTestingMqtt(false)
+    }
+  }
 
   if (loading) {
     return <div className="text-center py-12 text-gray-500 dark:text-gray-400">Lade Einstellungen...</div>
@@ -841,6 +927,7 @@ export default function SettingsPage() {
                         whitelist_updated: 'IP-Whitelist geändert',
                         service_restarted: 'Service neu gestartet',
                         server_reboot: 'Server-Neustart',
+                        ha_settings_updated: 'Home Assistant geändert',
                       }
                       return (
                         <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
@@ -880,6 +967,196 @@ export default function SettingsPage() {
               )}
             </>
           )}
+        </div>
+      )}
+
+      {/* Home Assistant Tab */}
+      {activeTab === 'homeassistant' && (
+        <div className="space-y-6">
+          {/* Card 1: API-Zugang */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">API-Zugang</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              Konfigurieren Sie den API-Zugang für die Home Assistant-Integration.
+            </p>
+
+            <div className="space-y-4">
+              {/* Enable Toggle */}
+              <div className="mb-4">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <div
+                    onClick={() => setHaData(prev => ({ ...prev, ha_enabled: prev.ha_enabled === 'true' ? 'false' : 'true' }))}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${
+                      haData.ha_enabled === 'true' ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <div
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                        haData.ha_enabled === 'true' ? 'translate-x-5' : ''
+                      }`}
+                    />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Integration {haData.ha_enabled === 'true' ? 'aktiviert' : 'deaktiviert'}
+                  </span>
+                </label>
+              </div>
+
+              {/* API Key */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">API Key</label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type={showHaApiKey ? 'text' : 'password'}
+                      value={haData.ha_api_key}
+                      onChange={(e) => setHaData(prev => ({ ...prev, ha_api_key: e.target.value }))}
+                      className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-mono text-sm"
+                      placeholder="API Key"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowHaApiKey(!showHaApiKey)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      {showHaApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <button
+                    onClick={handleGenerateKey}
+                    disabled={generatingKey}
+                    className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap"
+                  >
+                    <Key className="w-4 h-4" />
+                    {generatingKey ? 'Generiere...' : 'Neuen Key generieren'}
+                  </button>
+                  {haData.ha_api_key && haData.ha_api_key !== '****' && (
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(haData.ha_api_key); setSuccess('API Key kopiert') }}
+                      className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg transition-colors"
+                      title="In Zwischenablage kopieren"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Info Box */}
+              <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-blue-800 dark:text-blue-300">
+                  <p>Verwenden Sie diesen API Key in Ihrer Home Assistant <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded">configuration.yaml</code>:</p>
+                  <pre className="mt-2 text-xs bg-blue-100 dark:bg-blue-900/50 p-2 rounded font-mono overflow-x-auto">
+{`rest_command:
+  gonopbx_call:
+    url: "https://IHRE-PBX-IP/api/calls/originate"
+    method: POST
+    headers:
+      X-API-Key: "IHR-API-KEY"
+    payload: '{"extension":"{{extension}}","number":"{{number}}"}'`}
+                  </pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: MQTT Echtzeit-Events */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">MQTT Echtzeit-Events</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              GonoPBX publiziert Anruf-Events, Extension- und Trunk-Status per MQTT.
+              Verbinden Sie es mit Ihrem MQTT-Broker (z.B. Mosquitto in Home Assistant).
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Broker (IP/Hostname)</label>
+                <input
+                  type="text"
+                  value={haData.mqtt_broker}
+                  onChange={(e) => setHaData(prev => ({ ...prev, mqtt_broker: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  placeholder="192.168.1.100"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Port</label>
+                <input
+                  type="text"
+                  value={haData.mqtt_port}
+                  onChange={(e) => setHaData(prev => ({ ...prev, mqtt_port: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  placeholder="1883"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Benutzername <span className="text-gray-400 font-normal">(optional)</span></label>
+                <input
+                  type="text"
+                  value={haData.mqtt_user}
+                  onChange={(e) => setHaData(prev => ({ ...prev, mqtt_user: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  placeholder="mqtt_user"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Passwort <span className="text-gray-400 font-normal">(optional)</span></label>
+                <div className="relative">
+                  <input
+                    type={showMqttPassword ? 'text' : 'password'}
+                    value={haData.mqtt_password}
+                    onChange={(e) => setHaData(prev => ({ ...prev, mqtt_password: e.target.value }))}
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    placeholder="Passwort"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowMqttPassword(!showMqttPassword)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    {showMqttPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* MQTT Test Result */}
+            {mqttTestResult && (
+              <div className={`flex items-center gap-2 p-3 mb-4 rounded-lg border ${
+                mqttTestResult.ok
+                  ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800'
+                  : 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800'
+              }`}>
+                {mqttTestResult.ok
+                  ? <Wifi className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  : <WifiOff className="w-4 h-4 text-red-600 dark:text-red-400" />
+                }
+                <span className={`text-sm ${mqttTestResult.ok ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>
+                  {mqttTestResult.message}
+                </span>
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={handleTestMqtt}
+                disabled={testingMqtt || !haData.mqtt_broker}
+                className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 text-gray-700 dark:text-gray-300 px-5 py-2 rounded-lg transition-colors"
+              >
+                <Wifi className={`w-4 h-4 ${testingMqtt ? 'animate-pulse' : ''}`} />
+                {testingMqtt ? 'Teste...' : 'Verbindung testen'}
+              </button>
+              <button
+                onClick={handleSaveHA}
+                disabled={savingHA}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg transition-colors"
+              >
+                <Save className="w-4 h-4" />
+                {savingHA ? 'Speichern...' : 'Speichern'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

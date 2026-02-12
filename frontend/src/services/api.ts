@@ -401,6 +401,31 @@ class ApiService {
     return this.request<{ total: number; logs: any[] }>(`/api/audit/?limit=${limit}&offset=${offset}`)
   }
 
+  // Home Assistant Settings
+  async getHASettings() {
+    return this.request<any>('/api/settings/home-assistant')
+  }
+
+  async updateHASettings(data: any) {
+    return this.request<any>('/api/settings/home-assistant', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async generateHAApiKey() {
+    return this.request<{ key: string }>('/api/settings/home-assistant/generate-key', {
+      method: 'POST',
+    })
+  }
+
+  async testMqttConnection(data: { broker: string; port: number; user: string; password: string }) {
+    return this.request<any>('/api/settings/home-assistant/test-mqtt', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
   // Fail2Ban
   async getFail2banStatus() {
     return this.request<any>('/api/settings/fail2ban')

@@ -6,6 +6,7 @@ import json
 import ipaddress
 import os
 import pickle
+import secrets
 import shutil
 import socket
 import subprocess
@@ -150,6 +151,146 @@ def test_email(
         raise HTTPException(status_code=500, detail="E-Mail konnte nicht gesendet werden. Bitte SMTP-Einstellungen prüfen.")
 
     return {"status": "ok", "message": f"Test-E-Mail an {data.to} gesendet"}
+
+
+# --- Home Assistant Settings ---
+
+HA_KEYS = ["ha_enabled", "ha_api_key", "mqtt_broker", "mqtt_port", "mqtt_user", "mqtt_password"]
+
+
+class HASettingsUpdate(BaseModel):
+    ha_enabled: Optional[str] = "false"
+    ha_api_key: Optional[str] = ""
+    mqtt_broker: Optional[str] = ""
+    mqtt_port: Optional[str] = "1883"
+    mqtt_user: Optional[str] = ""
+    mqtt_password: Optional[str] = ""
+
+
+@router.get("/home-assistant")
+def get_ha_settings(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    """Get Home Assistant integration settings (secrets masked)."""
+    result = {}
+    for key in HA_KEYS:
+        setting = db.query(SystemSettings).filter(SystemSettings.key == key).first()
+        if setting:
+            if key in ("ha_api_key", "mqtt_password"):
+                result[key] = "****" if setting.value else ""
+            else:
+                result[key] = setting.value or ""
+        else:
+            if key == "mqtt_port":
+                result[key] = "1883"
+            elif key == "ha_enabled":
+                result[key] = "false"
+            else:
+                result[key] = ""
+    return result
+
+
+@router.put("/home-assistant")
+def update_ha_settings(
+    data: HASettingsUpdate,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    """Save Home Assistant settings, reconnect MQTT, update API key."""
+    from mqtt_client import mqtt_publisher
+    from auth import update_ha_api_key
+
+    settings_dict = data.model_dump()
+
+    # Keep masked secrets
+    for secret_key in ("ha_api_key", "mqtt_password"):
+        if settings_dict.get(secret_key) == "****":
+            existing = db.query(SystemSettings).filter(SystemSettings.key == secret_key).first()
+            if existing:
+                settings_dict[secret_key] = existing.value
+
+    for key, value in settings_dict.items():
+        setting = db.query(SystemSettings).filter(SystemSettings.key == key).first()
+        if setting:
+            setting.value = value or ""
+        else:
+            setting = SystemSettings(key=key, value=value or "")
+            db.add(setting)
+    db.commit()
+
+    # Reload full settings from DB
+    full = {}
+    for key in HA_KEYS:
+        s = db.query(SystemSettings).filter(SystemSettings.key == key).first()
+        full[key] = s.value if s else ""
+
+    # Update API key in auth module
+    if full.get("ha_api_key"):
+        update_ha_api_key(full["ha_api_key"])
+
+    # Reconnect MQTT if enabled
+    if full.get("ha_enabled") == "true" and full.get("mqtt_broker"):
+        mqtt_publisher.reconfigure(
+            broker=full["mqtt_broker"],
+            port=int(full.get("mqtt_port") or 1883),
+            user=full.get("mqtt_user", ""),
+            password=full.get("mqtt_password", ""),
+        )
+    else:
+        mqtt_publisher.disconnect()
+
+    log_action(db, current_user.username, "ha_settings_updated", "settings", "home-assistant",
+               None, request.client.host if request.client else None)
+    return {"status": "ok"}
+
+
+@router.post("/home-assistant/generate-key")
+def generate_ha_api_key(
+    current_user: User = Depends(require_admin),
+):
+    """Generate a new random API key for Home Assistant."""
+    return {"key": secrets.token_hex(32)}
+
+
+class MqttTestRequest(BaseModel):
+    broker: str
+    port: Optional[int] = 1883
+    user: Optional[str] = ""
+    password: Optional[str] = ""
+
+
+@router.post("/home-assistant/test-mqtt")
+def test_mqtt_connection(
+    data: MqttTestRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    """Test MQTT broker connection with provided credentials."""
+    try:
+        import paho.mqtt.client as mqtt
+    except ImportError:
+        raise HTTPException(status_code=500, detail="paho-mqtt ist nicht installiert")
+
+    # If password is masked, read real value from DB
+    password = data.password
+    if password == "****":
+        s = db.query(SystemSettings).filter(SystemSettings.key == "mqtt_password").first()
+        password = s.value if s else ""
+
+    try:
+        client = mqtt.Client(
+            callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
+            client_id="gonopbx-test",
+        )
+        if data.user:
+            client.username_pw_set(data.user, password)
+        client.connect(data.broker, data.port or 1883, keepalive=5)
+        client.disconnect()
+        return {"status": "ok", "message": "Verbindung erfolgreich"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Verbindung fehlgeschlagen: {str(e)}")
 
 
 class CodecUpdate(BaseModel):

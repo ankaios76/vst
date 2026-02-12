@@ -19,7 +19,16 @@ from database import get_db, User
 JWT_SECRET = os.getenv("JWT_SECRET", "change-me-in-production")
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24
-HA_API_KEY = os.getenv("HA_API_KEY", "")
+_ha_api_key = os.getenv("HA_API_KEY", "")
+
+
+def get_ha_api_key() -> str:
+    return _ha_api_key
+
+
+def update_ha_api_key(key: str):
+    global _ha_api_key
+    _ha_api_key = key
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -56,7 +65,7 @@ def get_current_user(
 
     # Check X-API-Key header first (for Home Assistant / external integrations)
     api_key = request.headers.get("X-API-Key")
-    if api_key and HA_API_KEY and api_key == HA_API_KEY:
+    if api_key and _ha_api_key and api_key == _ha_api_key:
         admin = db.query(User).filter(User.username == "admin").first()
         if admin:
             return admin

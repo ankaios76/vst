@@ -138,5 +138,17 @@ class MQTTPublisher:
         self.publish(f"gonopbx/trunk/{trunk_name}/status", status, retain=True)
 
 
+    def reconfigure(self, broker: str, port: int, user: str, password: str):
+        """Disconnect, update settings, and reconnect."""
+        self.disconnect()
+        self.broker = broker
+        self.port = port
+        self.username = user
+        self.password = password
+        self.enabled = bool(self.broker) and PAHO_AVAILABLE
+        if self.enabled:
+            self.connect()
+
+
 # Singleton instance
 mqtt_publisher = MQTTPublisher()

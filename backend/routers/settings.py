@@ -703,7 +703,37 @@ def install_update(
     log_action(db, current_user.username, "update_installed", "system", None,
                {"git_output": pull_output}, request.client.host if request.client else None)
 
-    # Step 3: Rebuild and restart containers (async - backend will restart itself)
+    # Step 3: Rebuild and restart containers.
+    # Running docker compose inside this container is unreliable because the
+    # backend container gets killed mid-rebuild. Instead, launch a short-lived
+    # helper container that survives the restart of all project containers.
+    import os
+    host_project_dir = os.getenv("PROJECT_DIR", "")
+
+    if host_project_dir:
+        try:
+            # Remove any leftover updater container
+            subprocess.run(
+                ["docker", "rm", "-f", "gonopbx-updater"],
+                capture_output=True, timeout=10,
+            )
+            subprocess.Popen(
+                [
+                    "docker", "run", "--rm", "-d",
+                    "--name", "gonopbx-updater",
+                    "-v", "/var/run/docker.sock:/var/run/docker.sock",
+                    "-v", f"{host_project_dir}:{host_project_dir}",
+                    "-w", host_project_dir,
+                    "docker:cli",
+                    "sh", "-c", "sleep 3 && docker compose up -d --build",
+                ],
+                start_new_session=True,
+            )
+            return {"status": "ok", "message": "Update wird installiert. Die Seite wird in ca. 1-2 Minuten neu geladen."}
+        except Exception as e:
+            logger.warning(f"Helper container approach failed: {e}, trying direct approach")
+
+    # Fallback: run directly (may be interrupted when this container restarts)
     try:
         subprocess.Popen(
             ["sh", "-c", "sleep 2 && docker compose up -d --build"],

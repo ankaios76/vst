@@ -61,6 +61,7 @@ if [ -f .env ]; then
 
         echo ""
         echo "Starte Container neu..."
+        docker pull docker:cli >/dev/null 2>&1 &
         docker compose up -d --build
 
         # Detect local LAN IP
@@ -198,6 +199,11 @@ echo "[OK] .env created"
 sed "s/%%AMI_PASSWORD%%/${AMI_PASSWORD}/" asterisk/config/manager.conf.template > asterisk/config/manager.conf
 
 echo "[OK] manager.conf updated"
+
+# Pre-pull helper image for web-based updates
+echo ""
+echo "Preparing update system..."
+docker pull docker:cli >/dev/null 2>&1 &
 
 # Start containers
 echo ""

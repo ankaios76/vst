@@ -50,7 +50,9 @@ def regenerate_dialplan(db: Session):
         all_routes = db.query(InboundRoute).filter(InboundRoute.enabled == True).all()
         all_forwards = db.query(CallForward).filter(CallForward.enabled == True).all()
         all_mailboxes = db.query(VoicemailMailbox).all()
-        write_extensions_config(all_routes, all_forwards, all_mailboxes)
+        all_peers = db.query(SIPPeer).all()
+        all_trunks = db.query(SIPTrunk).all()
+        write_extensions_config(all_routes, all_forwards, all_mailboxes, all_peers, all_trunks)
         reload_dialplan()
         logger.info(f"Dialplan regenerated with {len(all_routes)} inbound routes")
     except Exception as e:
@@ -132,6 +134,14 @@ def delete_route(route_id: int, request: Request, current_user: User = Depends(g
         raise HTTPException(status_code=404, detail="Route not found")
 
     did = db_route.did
+    dest_ext = db_route.destination_extension
+
+    # Clear outbound_cid on the peer if it was set to this DID
+    peer = db.query(SIPPeer).filter(SIPPeer.extension == dest_ext, SIPPeer.outbound_cid == did).first()
+    if peer:
+        peer.outbound_cid = None
+        logger.info(f"Cleared outbound_cid on peer {dest_ext} (was {did})")
+
     db.delete(db_route)
     db.commit()
 

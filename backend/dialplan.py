@@ -6,7 +6,7 @@ import os
 import logging
 import subprocess
 from typing import List, Optional
-from database import InboundRoute, CallForward, VoicemailMailbox
+from database import InboundRoute, CallForward, VoicemailMailbox, SIPPeer, SIPTrunk
 
 logger = logging.getLogger(__name__)
 
@@ -94,13 +94,37 @@ def _generate_dial_logic(extension: str, fwd_map: dict, ring_time: int = 30, ear
     return "\n".join(lines)
 
 
-def _build_outbound_map(routes: List[InboundRoute]) -> dict:
-    """Build a dict: extension -> first route (DID + trunk_id) for outbound calling"""
-    outbound: dict = {}
+def _build_outbound_map(routes: List[InboundRoute], peers: Optional[List[SIPPeer]] = None) -> dict:
+    """Build a dict: extension -> {route, did, pai} for outbound calling.
+    Uses peer.outbound_cid if set, otherwise falls back to first route's DID."""
+    # Build peer lookup
+    peer_map = {}
+    if peers:
+        for p in peers:
+            peer_map[p.extension] = p
+
+    # Build routes-per-extension
+    routes_by_ext: dict = {}
     for route in routes:
         ext = route.destination_extension
-        if ext not in outbound:
-            outbound[ext] = route
+        if ext not in routes_by_ext:
+            routes_by_ext[ext] = []
+        routes_by_ext[ext].append(route)
+
+    outbound: dict = {}
+    for ext, ext_routes in routes_by_ext.items():
+        peer = peer_map.get(ext)
+        # Determine outbound DID: peer.outbound_cid if set and valid, else first route
+        selected_route = ext_routes[0]
+        if peer and peer.outbound_cid:
+            for r in ext_routes:
+                if r.did == peer.outbound_cid:
+                    selected_route = r
+                    break
+        outbound[ext] = {
+            "route": selected_route,
+            "pai": peer.pai if peer else None,
+        }
     return outbound
 
 
@@ -109,11 +133,17 @@ def _build_ring_timeout_map(mailboxes: List[VoicemailMailbox]) -> dict:
     return {mb.extension: (mb.ring_timeout or 20) for mb in mailboxes}
 
 
-def generate_extensions_config(routes: List[InboundRoute], forwards: Optional[List[CallForward]] = None, mailboxes: Optional[List[VoicemailMailbox]] = None) -> str:
+def generate_extensions_config(routes: List[InboundRoute], forwards: Optional[List[CallForward]] = None, mailboxes: Optional[List[VoicemailMailbox]] = None, peers: Optional[List[SIPPeer]] = None, trunks: Optional[List[SIPTrunk]] = None) -> str:
     """Generate extensions.conf with internal context, outbound routing, call forwarding, and from-trunk inbound routing"""
 
     fwd_map = _build_forward_map(forwards or [])
-    outbound_map = _build_outbound_map(routes)
+    outbound_map = _build_outbound_map(routes, peers)
+
+    # Build trunk lookup for PAI domain
+    trunk_map = {}
+    if trunks:
+        for t in trunks:
+            trunk_map[t.id] = t
     ring_timeout_map = _build_ring_timeout_map(mailboxes or [])
 
     config = """; Auto-generated dialplan configuration
@@ -155,15 +185,21 @@ exten => _1XXX,1,NoOp(Internal Call from ${CALLERID(all)} to ${EXTEN})
         config += "; === Outbound calling via assigned trunks ===\n"
         # Match external numbers: 0X. (national/international German dialing)
         config += "exten => _0X.,1,NoOp(Outbound call from ${CHANNEL(endpoint)} to ${EXTEN})\n"
-        for ext, route in outbound_map.items():
+        for ext in outbound_map:
             config += f' same => n,GotoIf($["${{CHANNEL(endpoint)}}x" = "{ext}x"]?out-{ext})\n'
         config += " same => n,NoOp(No outbound route for this extension)\n"
         config += " same => n,Playback(ss-noservice)\n"
         config += " same => n,Hangup()\n"
-        for ext, route in outbound_map.items():
+        for ext, info in outbound_map.items():
+            route = info["route"]
+            pai = info["pai"]
             tid = route.trunk_id
             config += f"\n same => n(out-{ext}),NoOp(Outbound via trunk-ep-{tid} with CID {route.did})\n"
             config += f" same => n,Set(CALLERID(num)={route.did})\n"
+            if pai:
+                trunk = trunk_map.get(tid)
+                pai_domain = trunk.sip_server if trunk else "localhost"
+                config += f" same => n,Set(PJSIP_HEADER(add,P-Asserted-Identity)=<sip:{pai}@{pai_domain}>)\n"
             config += f" same => n,Dial(PJSIP/${{EXTEN}}@trunk-ep-{tid},120,tT)\n"
             config += f" same => n,Hangup()\n"
         config += "\n"
@@ -171,14 +207,20 @@ exten => _1XXX,1,NoOp(Internal Call from ${CALLERID(all)} to ${EXTEN})
         # Also match + prefixed numbers (international with +)
         config += "; International with + prefix\n"
         config += "exten => _+X.,1,NoOp(Outbound intl call from ${CHANNEL(endpoint)} to ${EXTEN})\n"
-        for ext, route in outbound_map.items():
+        for ext in outbound_map:
             config += f' same => n,GotoIf($["${{CHANNEL(endpoint)}}x" = "{ext}x"]?out-{ext})\n'
         config += " same => n,Playback(ss-noservice)\n"
         config += " same => n,Hangup()\n"
-        for ext, route in outbound_map.items():
+        for ext, info in outbound_map.items():
+            route = info["route"]
+            pai = info["pai"]
             tid = route.trunk_id
             config += f"\n same => n(out-{ext}),NoOp(Outbound via trunk-ep-{tid} with CID {route.did})\n"
             config += f" same => n,Set(CALLERID(num)={route.did})\n"
+            if pai:
+                trunk = trunk_map.get(tid)
+                pai_domain = trunk.sip_server if trunk else "localhost"
+                config += f" same => n,Set(PJSIP_HEADER(add,P-Asserted-Identity)=<sip:{pai}@{pai_domain}>)\n"
             config += f" same => n,Dial(PJSIP/${{EXTEN}}@trunk-ep-{tid},120,tT)\n"
             config += f" same => n,Hangup()\n"
         config += "\n"
@@ -246,10 +288,10 @@ exten => _[+0-9].,1,NoOp(Unmatched inbound DID ${EXTEN})
     return config
 
 
-def write_extensions_config(routes: List[InboundRoute], forwards: Optional[List[CallForward]] = None, mailboxes: Optional[List[VoicemailMailbox]] = None) -> bool:
+def write_extensions_config(routes: List[InboundRoute], forwards: Optional[List[CallForward]] = None, mailboxes: Optional[List[VoicemailMailbox]] = None, peers: Optional[List[SIPPeer]] = None, trunks: Optional[List[SIPTrunk]] = None) -> bool:
     """Write extensions.conf to shared volume"""
     try:
-        config_content = generate_extensions_config(routes, forwards, mailboxes)
+        config_content = generate_extensions_config(routes, forwards, mailboxes, peers, trunks)
 
         os.makedirs(os.path.dirname(EXTENSIONS_CONFIG_PATH), exist_ok=True)
 

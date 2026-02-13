@@ -139,9 +139,16 @@ class PeerUserAssign(BaseModel):
     user_id: int | None = None
 
 
+class PeerOutboundUpdate(BaseModel):
+    outbound_cid: str | None = None
+    pai: str | None = None
+
+
 class SIPPeerResponse(SIPPeerBase):
     id: int
     user_id: int | None = None
+    outbound_cid: str | None = None
+    pai: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -282,7 +289,9 @@ def delete_peer(peer_id: int, request: Request, current_user: User = Depends(get
     all_routes = db.query(InboundRoute).all()
     all_forwards = db.query(CallForward).all()
     all_mailboxes = db.query(VoicemailMailbox).all()
-    write_extensions_config(all_routes, all_forwards, all_mailboxes)
+    all_peers = db.query(SIPPeer).all()
+    all_trunks = db.query(SIPTrunk).all()
+    write_extensions_config(all_routes, all_forwards, all_mailboxes, all_peers, all_trunks)
     reload_dialplan()
 
     return {"status": "deleted", "extension": extension}
@@ -328,3 +337,46 @@ def assign_user_to_peer(
     log_action(db, current_user.username, "peer_user_assigned", "peer", db_peer.extension,
                {"user_id": data.user_id}, request.client.host if request.client else None)
     return {"status": "ok", "user_id": db_peer.user_id}
+
+
+@router.patch("/{peer_id}/outbound")
+def update_peer_outbound(
+    peer_id: int,
+    data: PeerOutboundUpdate,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Update outbound CID and PAI for a peer"""
+    db_peer = db.query(SIPPeer).filter(SIPPeer.id == peer_id).first()
+    if not db_peer:
+        raise HTTPException(status_code=404, detail="Peer not found")
+
+    # Validate outbound_cid: must be a DID assigned to this extension
+    if data.outbound_cid:
+        route = db.query(InboundRoute).filter(
+            InboundRoute.did == data.outbound_cid,
+            InboundRoute.destination_extension == db_peer.extension,
+        ).first()
+        if not route:
+            raise HTTPException(status_code=400, detail="DID is not assigned to this extension")
+
+    db_peer.outbound_cid = data.outbound_cid
+    db_peer.pai = data.pai
+    db_peer.updated_at = datetime.utcnow()
+    db.commit()
+
+    logger.info(f"Updated outbound settings for peer {db_peer.extension}: CID={data.outbound_cid}, PAI={data.pai}")
+    log_action(db, current_user.username, "peer_outbound_updated", "peer", db_peer.extension,
+               {"outbound_cid": data.outbound_cid, "pai": data.pai}, request.client.host if request.client else None)
+
+    # Regenerate dialplan with new outbound CID / PAI
+    all_routes = db.query(InboundRoute).filter(InboundRoute.enabled == True).all()
+    all_forwards = db.query(CallForward).filter(CallForward.enabled == True).all()
+    all_mailboxes = db.query(VoicemailMailbox).all()
+    all_peers = db.query(SIPPeer).all()
+    all_trunks = db.query(SIPTrunk).all()
+    write_extensions_config(all_routes, all_forwards, all_mailboxes, all_peers, all_trunks)
+    reload_dialplan()
+
+    return {"status": "ok", "outbound_cid": db_peer.outbound_cid, "pai": db_peer.pai}

@@ -107,6 +107,22 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"Migration check for ring_timeout column: {e}")
 
+    # Migrate: add outbound_cid and pai columns to sip_peers if missing
+    try:
+        from sqlalchemy import text, inspect as sa_inspect_peers
+        peers_inspector = sa_inspect_peers(engine)
+        peer_columns = [c['name'] for c in peers_inspector.get_columns('sip_peers')]
+        with engine.connect() as conn:
+            if 'outbound_cid' not in peer_columns:
+                conn.execute(text("ALTER TABLE sip_peers ADD COLUMN outbound_cid VARCHAR(50)"))
+                logger.info("Migration: added outbound_cid column to sip_peers")
+            if 'pai' not in peer_columns:
+                conn.execute(text("ALTER TABLE sip_peers ADD COLUMN pai VARCHAR(50)"))
+                logger.info("Migration: added pai column to sip_peers")
+            conn.commit()
+    except Exception as e:
+        logger.warning(f"Migration check for outbound_cid/pai columns: {e}")
+
     # Migrate: add avatar_url column to users if missing
     try:
         from sqlalchemy import text, inspect as sa_inspect_users

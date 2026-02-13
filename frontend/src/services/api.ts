@@ -380,6 +380,13 @@ class ApiService {
     })
   }
 
+  async updatePeerOutbound(peerId: number, data: { outbound_cid: string | null; pai: string | null }) {
+    return this.request<any>(`/api/peers/${peerId}/outbound`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  }
+
   async updatePeerCodecs(peerId: number, codecs: string | null) {
     return this.request<any>(`/api/peers/${peerId}/codecs`, {
       method: 'PATCH',

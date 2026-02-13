@@ -35,6 +35,8 @@ interface SIPPeer {
   extension: string
   caller_id: string | null
   codecs: string | null
+  outbound_cid: string | null
+  pai: string | null
   enabled: boolean
 }
 
@@ -120,6 +122,11 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
   const [playingId, setPlayingId] = useState<number | null>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
 
+  // Outbound CID / PAI state
+  const [outboundCid, setOutboundCid] = useState<string>('')
+  const [pai, setPai] = useState<string>('')
+  const [savingOutbound, setSavingOutbound] = useState(false)
+
   // Codec state
   const [availableCodecs, setAvailableCodecs] = useState<AvailableCodec[]>([])
   const [globalCodecs, setGlobalCodecs] = useState<string[]>([])
@@ -144,6 +151,9 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
       const currentPeer = peersData.find((p: SIPPeer) => p.extension === extension) || null
       setPeer(currentPeer)
 
+      // Outbound CID / PAI setup (deferred until routes are available below)
+      // Will be set after setRoutes
+
       // Codec setup
       const gCodecs = (codecData.global_codecs || '').split(',').filter(Boolean)
       setAvailableCodecs(codecData.available_codecs || [])
@@ -162,6 +172,10 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
       if (trunksData.length > 0 && routeFormData.trunk_id === 0) {
         setRouteFormData(f => ({ ...f, trunk_id: trunksData[0].id }))
       }
+
+      // Initialize outbound CID / PAI from peer
+      setOutboundCid(currentPeer?.outbound_cid || '')
+      setPai(currentPeer?.pai || '')
 
       // Fetch voicemail mailbox config
       try {
@@ -335,6 +349,23 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
     return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
   }
 
+  // ==================== OUTBOUND CID / PAI ====================
+  const handleSaveOutbound = async () => {
+    if (!peer) return
+    setSavingOutbound(true)
+    try {
+      await api.updatePeerOutbound(peer.id, {
+        outbound_cid: outboundCid || null,
+        pai: pai || null,
+      })
+      fetchData()
+    } catch (error: any) {
+      alert(error.message || 'Fehler beim Speichern der ausgehenden Rufnummer')
+    } finally {
+      setSavingOutbound(false)
+    }
+  }
+
   // ==================== CODECS ====================
   const handleToggleGlobalCodecs = (useGlobal: boolean) => {
     setUseGlobalCodecs(useGlobal)
@@ -403,15 +434,50 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
 
       {/* Ausgehende Rufnummer - immer sichtbar wenn vorhanden */}
       {routes.length > 0 && (
-        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg px-6 py-4 mb-6 flex items-center gap-4">
-          <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-full">
-            <PhoneOutgoing className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div>
-            <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">Ausgehende Rufnummer</div>
-            <div className="text-lg font-bold text-blue-900 dark:text-blue-200">{routes[0].did}</div>
-            <div className="text-xs text-blue-500 dark:text-blue-400">
-              Wird bei ausgehenden Anrufen als Caller-ID gesendet (via {getTrunkName(routes[0].trunk_id)})
+        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg px-6 py-4 mb-6">
+          <div className="flex items-start gap-4">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-full mt-1">
+              <PhoneOutgoing className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div className="flex-1 space-y-3">
+              <div>
+                <div className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">Ausgehende Rufnummer</div>
+                <select
+                  value={outboundCid || routes[0].did}
+                  onChange={(e) => setOutboundCid(e.target.value === routes[0].did ? '' : e.target.value)}
+                  className="w-full max-w-xs px-3 py-2 border border-blue-300 dark:border-blue-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500"
+                >
+                  {routes.map((route, index) => (
+                    <option key={route.id} value={route.did}>
+                      {route.did}{index === 0 && !outboundCid ? ' (Standard)' : ''}{route.description ? ` — ${route.description}` : ''}
+                    </option>
+                  ))}
+                </select>
+                <div className="text-xs text-blue-500 dark:text-blue-400 mt-1">
+                  Wird bei ausgehenden Anrufen als Caller-ID gesendet (via {getTrunkName((routes.find(r => r.did === (outboundCid || routes[0].did)) || routes[0]).trunk_id)})
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">P-Asserted-Identity (PAI)</div>
+                <input
+                  type="text"
+                  value={pai}
+                  onChange={(e) => setPai(e.target.value)}
+                  placeholder="z.B. +49221123456 (optional)"
+                  className="w-full max-w-xs px-3 py-2 border border-blue-300 dark:border-blue-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500"
+                />
+                <div className="text-xs text-blue-500 dark:text-blue-400 mt-1">
+                  Optionaler PAI-Header, z.B. die Kopfnummer des Nummernblocks
+                </div>
+              </div>
+              <button
+                onClick={handleSaveOutbound}
+                disabled={savingOutbound}
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                {savingOutbound ? 'Speichere...' : 'Speichern'}
+              </button>
             </div>
           </div>
         </div>
@@ -572,7 +638,7 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
                       <div className="font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
                         {route.did}
                         <span className="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded">Eingehend</span>
-                        {index === 0 && (
+                        {(outboundCid ? route.did === outboundCid : index === 0) && (
                           <span className="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 px-1.5 py-0.5 rounded">Ausgehend</span>
                         )}
                       </div>

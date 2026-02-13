@@ -62,6 +62,8 @@ class SIPPeer(Base):
     nat = Column(String(20), default="force_rport,comedia")
     type = Column(String(20), default="friend")
     codecs = Column(String(200), nullable=True)  # NULL = use global codecs
+    outbound_cid = Column(String(50), nullable=True)  # Selected outbound DID, NULL = first route's DID
+    pai = Column(String(50), nullable=True)  # P-Asserted-Identity number, NULL = no PAI header
     enabled = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

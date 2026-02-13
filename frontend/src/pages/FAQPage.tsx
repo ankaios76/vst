@@ -50,11 +50,15 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
       },
       {
         question: 'Wie funktionieren ausgehende Anrufe?',
-        answer: 'Bei ausgehenden Anrufen wird automatisch die zugewiesene ausgehende Rufnummer als Caller-ID verwendet. Die Verbindung läuft über die entsprechende Leitung (Trunk).',
+        answer: 'Bei ausgehenden Anrufen wird die ausgehende Rufnummer als Caller-ID verwendet. Wenn einer Nebenstelle mehrere Rufnummern zugeordnet sind, können Sie unter Nebenstellen-Detail im Dropdown "Ausgehende Rufnummer" wählen, welche DID gesendet wird. Ohne Auswahl wird die erste zugeordnete Nummer verwendet.',
       },
       {
         question: 'Wo finde ich den Anrufverlauf?',
         answer: 'Unter "Anrufverlauf" im Hauptmenü sehen Sie alle ein- und ausgehenden Anrufe mit Datum, Uhrzeit, Dauer und Status. Sie können nach Datum und Nebenstelle filtern.',
+      },
+      {
+        question: 'Was ist P-Asserted-Identity (PAI)?',
+        answer: 'PAI ist ein SIP-Header, der die Identität des Anrufers gegenüber dem Provider bestätigt. Bei Nummernblöcken verlangen viele Provider, dass die Kopfnummer des Blocks als PAI gesendet wird. Sie können den PAI-Header pro Nebenstelle unter Nebenstellen-Detail → "P-Asserted-Identity (PAI)" konfigurieren. Die Domain wird automatisch vom Trunk übernommen.',
       },
       {
         question: 'Was ist eine Rufweiterleitung und wie richte ich sie ein?',
@@ -76,6 +80,14 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
       {
         question: 'Wie konfiguriere ich den E-Mail-Versand?',
         answer: 'Unter Einstellungen → E-Mail können Sie den SMTP-Server konfigurieren. Dieser wird für Willkommens-E-Mails an neue Benutzer und Voicemail-Benachrichtigungen verwendet.',
+      },
+      {
+        question: 'Wie aktualisiere ich GonoPBX?',
+        answer: 'Am einfachsten über das Webinterface: Einstellungen → Server → Update → "Update installieren". Alternativ manuell per SSH: git pull origin main && docker compose up -d --build. Die Datenbank-Migrationen laufen automatisch beim Start.',
+      },
+      {
+        question: 'Wie verbinde ich GonoPBX mit Home Assistant?',
+        answer: 'Unter Einstellungen → Home Assistant können Sie die Integration aktivieren. Tragen Sie den MQTT-Broker ein und generieren Sie einen API-Key. GonoPBX sendet dann Anruf-Events per MQTT und stellt Sensoren für Nebenstellen, Trunks und aktive Anrufe bereit.',
       },
     ],
   },

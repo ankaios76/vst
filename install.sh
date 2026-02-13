@@ -218,7 +218,7 @@ curl -s -o /dev/null --max-time 5 \
   -X POST "https://analytics.gonopbx.de/api/send" \
   -H "Content-Type: application/json" \
   -H "User-Agent: GonoPBX-Installer/${INSTALL_VERSION}" \
-  -d "{\"payload\":{\"hostname\":\"gonopbx.de\",\"url\":\"/install\",\"website\":\"cc8fa162-1aef-4c89-8e13-4fdbfa9bc6f7\",\"name\":\"install\",\"data\":{\"os\":\"${INSTALL_OS}\",\"arch\":\"${INSTALL_ARCH}\",\"version\":\"${INSTALL_VERSION}\"}}}" \
+  -d "{\"type\":\"event\",\"payload\":{\"hostname\":\"gonopbx.de\",\"language\":\"de-DE\",\"referrer\":\"\",\"screen\":\"1920x1080\",\"title\":\"install\",\"url\":\"/install\",\"website\":\"cc8fa162-1aef-4c89-8e13-4fdbfa9bc6f7\",\"name\":\"install\",\"data\":{\"os\":\"${INSTALL_OS}\",\"arch\":\"${INSTALL_ARCH}\",\"version\":\"${INSTALL_VERSION}\"}}}" \
   2>/dev/null || true
 
 echo ""

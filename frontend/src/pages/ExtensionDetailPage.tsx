@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { ArrowLeft, Phone, Plus, Trash2, Server, PhoneForwarded, PhoneOutgoing, ToggleLeft, ToggleRight, Voicemail, Save, Play, Pause, Clock, Volume2 } from 'lucide-react'
+import { ArrowLeft, Phone, Plus, Trash2, Server, PhoneForwarded, PhoneOutgoing, ToggleLeft, ToggleRight, Voicemail, Save, Play, Pause, Clock, Volume2, CheckCircle } from 'lucide-react'
 import { api } from '../services/api'
 
 interface Props {
@@ -126,6 +126,8 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
   const [outboundCid, setOutboundCid] = useState<string>('')
   const [pai, setPai] = useState<string>('')
   const [savingOutbound, setSavingOutbound] = useState(false)
+  const [outboundSaved, setOutboundSaved] = useState(false)
+  const [outboundDirty, setOutboundDirty] = useState(false)
 
   // Codec state
   const [availableCodecs, setAvailableCodecs] = useState<AvailableCodec[]>([])
@@ -353,17 +355,33 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
   const handleSaveOutbound = async () => {
     if (!peer) return
     setSavingOutbound(true)
+    setOutboundSaved(false)
     try {
       await api.updatePeerOutbound(peer.id, {
         outbound_cid: outboundCid || null,
         pai: pai || null,
       })
+      setOutboundSaved(true)
+      setOutboundDirty(false)
       fetchData()
+      setTimeout(() => setOutboundSaved(false), 5000)
     } catch (error: any) {
       alert(error.message || 'Fehler beim Speichern der ausgehenden Rufnummer')
     } finally {
       setSavingOutbound(false)
     }
+  }
+
+  const handleOutboundCidChange = (value: string) => {
+    setOutboundCid(value === routes[0]?.did ? '' : value)
+    setOutboundDirty(true)
+    setOutboundSaved(false)
+  }
+
+  const handlePaiChange = (value: string) => {
+    setPai(value)
+    setOutboundDirty(true)
+    setOutboundSaved(false)
   }
 
   // ==================== CODECS ====================
@@ -444,12 +462,12 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
                 <div className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">Ausgehende Rufnummer</div>
                 <select
                   value={outboundCid || routes[0].did}
-                  onChange={(e) => setOutboundCid(e.target.value === routes[0].did ? '' : e.target.value)}
+                  onChange={(e) => handleOutboundCidChange(e.target.value)}
                   className="w-full max-w-xs px-3 py-2 border border-blue-300 dark:border-blue-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500"
                 >
                   {routes.map((route, index) => (
                     <option key={route.id} value={route.did}>
-                      {route.did}{index === 0 && !outboundCid ? ' (Standard)' : ''}{route.description ? ` — ${route.description}` : ''}
+                      {route.did}{index === 0 && !peer?.outbound_cid ? ' (Standard)' : ''}{route.description ? ` — ${route.description}` : ''}
                     </option>
                   ))}
                 </select>
@@ -462,7 +480,7 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
                 <input
                   type="text"
                   value={pai}
-                  onChange={(e) => setPai(e.target.value)}
+                  onChange={(e) => handlePaiChange(e.target.value)}
                   placeholder="z.B. +49221123456 (optional)"
                   className="w-full max-w-xs px-3 py-2 border border-blue-300 dark:border-blue-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500"
                 />
@@ -470,14 +488,51 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
                   Optionaler PAI-Header, z.B. die Kopfnummer des Nummernblocks
                 </div>
               </div>
-              <button
-                onClick={handleSaveOutbound}
-                disabled={savingOutbound}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm disabled:opacity-50"
-              >
-                <Save className="w-4 h-4" />
-                {savingOutbound ? 'Speichere...' : 'Speichern'}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleSaveOutbound}
+                  disabled={savingOutbound || !outboundDirty}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition text-sm disabled:opacity-50 ${
+                    outboundDirty
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400'
+                  }`}
+                >
+                  <Save className="w-4 h-4" />
+                  {savingOutbound ? 'Speichere...' : 'Speichern'}
+                </button>
+                {outboundSaved && (
+                  <span className="flex items-center gap-1.5 text-green-600 dark:text-green-400 text-sm font-medium animate-fade-in">
+                    <CheckCircle className="w-4 h-4" />
+                    Gespeichert &amp; Dialplan aktualisiert
+                  </span>
+                )}
+                {outboundDirty && !outboundSaved && (
+                  <span className="text-orange-500 dark:text-orange-400 text-xs">Ungespeicherte Änderungen</span>
+                )}
+              </div>
+
+              {/* Aktive Konfiguration */}
+              {!outboundDirty && !outboundSaved && (peer?.outbound_cid || peer?.pai) && (
+                <div className="bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded-lg px-4 py-3 mt-1">
+                  <div className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-2">Aktive Konfiguration</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">Caller-ID: </span>
+                      <span className="font-mono font-medium text-gray-900 dark:text-gray-100">{peer?.outbound_cid || routes[0].did}</span>
+                      {!peer?.outbound_cid && <span className="text-gray-400 dark:text-gray-500 text-xs ml-1">(Standard)</span>}
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">PAI: </span>
+                      {peer?.pai ? (
+                        <span className="font-mono font-medium text-gray-900 dark:text-gray-100">{peer.pai}</span>
+                      ) : (
+                        <span className="text-gray-400 dark:text-gray-500">nicht gesetzt</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

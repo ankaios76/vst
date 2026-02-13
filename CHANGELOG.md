@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.0.0] - 2026-02-13
+
+### Neue Features
+
+- **Telefonbuch**: Globales und nebenstellenbasiertes Telefonbuch mit CSV-Import/Export.
+- **BLF & Pickup-Gruppen**: BLF-Hints und Pickup-Gruppen pro Nebenstelle konfigurierbar.
+- **Sammelruf (Ring Groups)**: Gruppen mit Strategien und Zuweisung eingehender DIDs.
+- **IVR-Verbesserungen**: Ansagen-Upload mit Konvertierung/Validierung, Retries, und Inbound-DID-Mapping.
+- **UI-Updates**: SIP Debug in die Einstellungen verschoben, Audio-Tab zu Audio-Codecs umbenannt.
+
 ## [1.7.0] - 2026-02-13
 
 ### Neue Features

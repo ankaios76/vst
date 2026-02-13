@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuth } from '../context/AuthContext'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 
 interface FAQItem {
@@ -95,6 +96,7 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
 
 export default function FAQPage() {
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
+  const { user } = useAuth()
 
   const toggleItem = (key: string) => {
     setOpenItems(prev => {
@@ -111,6 +113,26 @@ export default function FAQPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Häufig gestellte Fragen</h1>
+
+      {user?.role === 'admin' && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Admin‑Handbuch</h2>
+          </div>
+          <div className="px-6 py-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+              Download der aktuellen PDF‑Version für Betrieb, Wartung und Sicherheit.
+            </p>
+            <a
+              href="https://gonopbx.de/admin-handbuch.pdf"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-sm transition-colors"
+              download
+            >
+              Handbuch (PDF)
+            </a>
+          </div>
+        </div>
+      )}
 
       {faqSections.map((section, si) => (
         <div key={si} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">

@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 import os
 from ami_client import AsteriskAMIClient
 from database import engine, Base
-from routers import peers, trunks, routes, dashboard, cdr, voicemail, callforward
+from routers import peers, trunks, routes, dashboard, cdr, voicemail, callforward, groups, ivr, contacts
 from routers import auth as auth_router, users as users_router
 from routers import settings as settings_router
 from routers import audit as audit_router
@@ -146,6 +146,85 @@ async def lifespan(app: FastAPI):
         logger.info("Migration: dropped unique constraint on users.email")
     except Exception as e:
         logger.warning(f"Migration check for users.email unique constraint: {e}")
+
+    # Migrate: add blf_enabled column to sip_peers if missing
+    try:
+        from sqlalchemy import text, inspect as sa_inspect_blf
+        blf_inspector = sa_inspect_blf(engine)
+        blf_columns = [c['name'] for c in blf_inspector.get_columns('sip_peers')]
+        if 'blf_enabled' not in blf_columns:
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE sip_peers ADD COLUMN blf_enabled BOOLEAN DEFAULT TRUE"))
+                conn.commit()
+            logger.info("Migration: added blf_enabled column to sip_peers")
+    except Exception as e:
+        logger.warning(f"Migration check for blf_enabled column: {e}")
+
+    # Migrate: add pickup_group column to sip_peers if missing
+    try:
+        from sqlalchemy import text, inspect as sa_inspect_pg
+        pg_inspector = sa_inspect_pg(engine)
+        pg_columns = [c['name'] for c in pg_inspector.get_columns('sip_peers')]
+        if 'pickup_group' not in pg_columns:
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE sip_peers ADD COLUMN pickup_group VARCHAR(50)"))
+                conn.commit()
+            logger.info("Migration: added pickup_group column to sip_peers")
+    except Exception as e:
+        logger.warning(f"Migration check for pickup_group column: {e}")
+
+    # Migrate: create ivr tables if missing
+    try:
+        from sqlalchemy import inspect as sa_inspect_ivr
+        ivr_inspector = sa_inspect_ivr(engine)
+        tables = ivr_inspector.get_table_names()
+        if 'ivr_menus' not in tables:
+            from database import IVRMenu
+            IVRMenu.__table__.create(bind=engine)
+            logger.info("Migration: created ivr_menus table")
+        if 'ivr_options' not in tables:
+            from database import IVROption
+            IVROption.__table__.create(bind=engine)
+            logger.info("Migration: created ivr_options table")
+    except Exception as e:
+        logger.warning(f"Migration check for ivr tables: {e}")
+
+    # Migrate: add retries/inbound columns to ivr_menus if missing
+    try:
+        from sqlalchemy import text, inspect as sa_inspect_ivr_cols
+        ivr_col_inspector = sa_inspect_ivr_cols(engine)
+        if 'ivr_menus' in ivr_col_inspector.get_table_names():
+            ivr_cols = [c['name'] for c in ivr_col_inspector.get_columns('ivr_menus')]
+            with engine.connect() as conn:
+                if 'retries' not in ivr_cols:
+                    conn.execute(text("ALTER TABLE ivr_menus ADD COLUMN retries INTEGER DEFAULT 2"))
+                    logger.info("Migration: added retries column to ivr_menus")
+                if 'inbound_trunk_id' not in ivr_cols:
+                    conn.execute(text("ALTER TABLE ivr_menus ADD COLUMN inbound_trunk_id INTEGER"))
+                    logger.info("Migration: added inbound_trunk_id column to ivr_menus")
+                if 'inbound_did' not in ivr_cols:
+                    conn.execute(text("ALTER TABLE ivr_menus ADD COLUMN inbound_did VARCHAR(50)"))
+                    logger.info("Migration: added inbound_did column to ivr_menus")
+                conn.commit()
+    except Exception as e:
+        logger.warning(f"Migration check for ivr_menus columns: {e}")
+
+    # Migrate: add inbound_trunk_id and inbound_did columns to ring_groups if missing
+    try:
+        from sqlalchemy import text, inspect as sa_inspect_rg
+        rg_inspector = sa_inspect_rg(engine)
+        if 'ring_groups' in rg_inspector.get_table_names():
+            rg_columns = [c['name'] for c in rg_inspector.get_columns('ring_groups')]
+            with engine.connect() as conn:
+                if 'inbound_trunk_id' not in rg_columns:
+                    conn.execute(text("ALTER TABLE ring_groups ADD COLUMN inbound_trunk_id INTEGER"))
+                    logger.info("Migration: added inbound_trunk_id column to ring_groups")
+                if 'inbound_did' not in rg_columns:
+                    conn.execute(text("ALTER TABLE ring_groups ADD COLUMN inbound_did VARCHAR(50)"))
+                    logger.info("Migration: added inbound_did column to ring_groups")
+                conn.commit()
+    except Exception as e:
+        logger.warning(f"Migration check for ring_groups inbound columns: {e}")
 
     # Migrate: create audit_logs table if missing
     try:
@@ -294,6 +373,9 @@ app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"]
 app.include_router(cdr.router, prefix="/api/cdr", tags=["Call Records"])
 app.include_router(voicemail.router, prefix="/api/voicemail", tags=["Voicemail"])
 app.include_router(callforward.router, prefix="/api/callforward", tags=["Call Forwarding"])
+app.include_router(groups.router, prefix="/api/groups", tags=["Ring Groups"])
+app.include_router(ivr.router, prefix="/api/ivr", tags=["IVR"])
+app.include_router(contacts.router, prefix="/api/contacts", tags=["Contacts"])
 app.include_router(settings_router.router, prefix="/api/settings", tags=["Settings"])
 app.include_router(audit_router.router, prefix="/api/audit", tags=["Audit"])
 app.include_router(sip_debug_router.router, prefix="/api/sip-debug", tags=["SIP Debug"])

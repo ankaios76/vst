@@ -70,6 +70,13 @@ class ApiService {
     return this.request<any>('/api/calls/active')
   }
 
+  async originateCall(extension: string, number: string) {
+    return this.request<any>('/api/calls/originate', {
+      method: 'POST',
+      body: JSON.stringify({ extension, number }),
+    })
+  }
+
   async getRegisteredPeers() {
     return this.request<any>('/api/dashboard/registered-peers')
   }
@@ -128,12 +135,151 @@ class ApiService {
     })
   }
 
+  // Ring Groups
+  async getRingGroups() {
+    return this.request<any[]>('/api/groups/')
+  }
+
+  async createRingGroup(data: any) {
+    return this.request<any>('/api/groups/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updateRingGroup(id: number, data: any) {
+    return this.request<any>(`/api/groups/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteRingGroup(id: number) {
+    return this.request<any>(`/api/groups/${id}`, {
+      method: 'DELETE',
+    })
+  }
+
+  // IVR
+  async getIvrMenus() {
+    return this.request<any[]>('/api/ivr/')
+  }
+
+  async getIvrPrompts() {
+    return this.request<any[]>('/api/ivr/prompts')
+  }
+
+  async uploadIvrPrompt(file: File) {
+    const form = new FormData()
+    form.append('file', file)
+    const url = `${this.baseUrl}/api/ivr/upload`
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        ...this.getAuthHeaders(),
+      },
+      body: form,
+    })
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}))
+      throw new Error(data.detail || `API Error: ${response.status} ${response.statusText}`)
+    }
+    return await response.json()
+  }
+
+  async createIvrMenu(data: any) {
+    return this.request<any>('/api/ivr/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updateIvrMenu(id: number, data: any) {
+    return this.request<any>(`/api/ivr/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteIvrMenu(id: number) {
+    return this.request<any>(`/api/ivr/${id}`, {
+      method: 'DELETE',
+    })
+  }
+
   async getAvailableDids() {
     return this.request<{ trunk_id: number; trunk_name: string; dids: string[] }[]>('/api/trunks/available-dids')
   }
 
   async getTrunkStatus(id: number) {
     return this.request<any>(`/api/trunks/${id}/status`)
+  }
+
+  // Contacts
+  async getContacts(scope: 'global' | 'extension', extension?: string) {
+    const params = new URLSearchParams({ scope })
+    if (extension) params.set('extension', extension)
+    return this.request<any[]>(`/api/contacts/?${params.toString()}`)
+  }
+
+  async createContact(data: any) {
+    return this.request<any>('/api/contacts/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updateContact(id: number, data: any) {
+    return this.request<any>(`/api/contacts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteContact(id: number) {
+    return this.request<any>(`/api/contacts/${id}`, {
+      method: 'DELETE',
+    })
+  }
+
+  async exportContacts(scope: 'global' | 'extension', extension?: string) {
+    const params = new URLSearchParams({ scope })
+    if (extension) params.set('extension', extension)
+    const url = `${this.baseUrl}/api/contacts/export?${params.toString()}`
+    const response = await fetch(url, { headers: { ...this.getAuthHeaders() } })
+    if (response.status === 401) {
+      localStorage.removeItem('token')
+      window.location.reload()
+      throw new Error('Sitzung abgelaufen')
+    }
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}))
+      throw new Error(data.detail || `API Error: ${response.status} ${response.statusText}`)
+    }
+    return await response.blob()
+  }
+
+  async importContacts(scope: 'global' | 'extension', file: File, extension?: string) {
+    const params = new URLSearchParams({ scope })
+    if (extension) params.set('extension', extension)
+    const url = `${this.baseUrl}/api/contacts/import?${params.toString()}`
+    const form = new FormData()
+    form.append('file', file)
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { ...this.getAuthHeaders() },
+      body: form,
+    })
+    if (response.status === 401) {
+      localStorage.removeItem('token')
+      window.location.reload()
+      throw new Error('Sitzung abgelaufen')
+    }
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}))
+      throw new Error(data.detail || `API Error: ${response.status} ${response.statusText}`)
+    }
+    return await response.json()
   }
 
   // Inbound Routes

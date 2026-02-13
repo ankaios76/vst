@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from datetime import datetime
 import logging
 
-from database import get_db, SIPPeer, SIPTrunk, User, VoicemailMailbox, SystemSettings, InboundRoute, CallForward
+from database import get_db, SIPPeer, SIPTrunk, RingGroup, IVRMenu, User, VoicemailMailbox, SystemSettings, InboundRoute, CallForward
 from pjsip_config import write_pjsip_config, reload_asterisk, DEFAULT_CODECS
 from voicemail_config import write_voicemail_config, reload_voicemail
 from dialplan import write_extensions_config, reload_dialplan
@@ -120,6 +120,8 @@ class SIPPeerBase(BaseModel):
     caller_id: str | None = None
     context: str = "internal"
     codecs: str | None = None
+    blf_enabled: bool = True
+    pickup_group: str | None = None
     enabled: bool = True
 
 
@@ -291,7 +293,9 @@ def delete_peer(peer_id: int, request: Request, current_user: User = Depends(get
     all_mailboxes = db.query(VoicemailMailbox).all()
     all_peers = db.query(SIPPeer).all()
     all_trunks = db.query(SIPTrunk).all()
-    write_extensions_config(all_routes, all_forwards, all_mailboxes, all_peers, all_trunks)
+    all_groups = db.query(RingGroup).all()
+    all_ivr = db.query(IVRMenu).all()
+    write_extensions_config(all_routes, all_forwards, all_mailboxes, all_peers, all_trunks, all_groups, all_ivr)
     reload_dialplan()
 
     return {"status": "deleted", "extension": extension}
@@ -376,7 +380,9 @@ def update_peer_outbound(
     all_mailboxes = db.query(VoicemailMailbox).all()
     all_peers = db.query(SIPPeer).all()
     all_trunks = db.query(SIPTrunk).all()
-    write_extensions_config(all_routes, all_forwards, all_mailboxes, all_peers, all_trunks)
+    all_groups = db.query(RingGroup).all()
+    all_ivr = db.query(IVRMenu).all()
+    write_extensions_config(all_routes, all_forwards, all_mailboxes, all_peers, all_trunks, all_groups, all_ivr)
     reload_dialplan()
 
     return {"status": "ok", "outbound_cid": db_peer.outbound_cid, "pai": db_peer.pai}

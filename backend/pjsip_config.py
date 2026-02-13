@@ -119,11 +119,17 @@ qualify_frequency=60
                 peer_codecs = [c.strip() for c in peer.codecs.split(",") if c.strip()]
                 peer_codec_lines = "\ndisallow=all\n" + "\n".join(f"allow={c}" for c in peer_codecs)
 
+            pickup_lines = ""
+            if getattr(peer, "pickup_group", None):
+                pg = peer.pickup_group.strip()
+                if pg:
+                    pickup_lines = f"\ncallgroup={pg}\npickupgroup={pg}"
+
             config += f"""
 [{peer.extension}](endpoint-basic)
 auth=auth{peer.extension}
 aors={peer.extension}
-callerid="{peer.caller_id or peer.extension}" <{peer.extension}>{peer_codec_lines}
+callerid="{peer.caller_id or peer.extension}" <{peer.extension}>{peer_codec_lines}{pickup_lines}
 
 [auth{peer.extension}](auth-basic)
 username={peer.extension}
@@ -142,13 +148,25 @@ def generate_trunk_config(trunk: SIPTrunk, skip_identify: bool = False) -> str:
     tid = trunk.id
     config = f"\n; --- Trunk: {trunk.name} (ID {tid}) ---\n"
 
+    transport_line = ""
+    from_domain = trunk.sip_server
+    client_domain = trunk.sip_server
+    if trunk.provider == "telekom_deutschlandlan":
+        transport_line = "\ntransport=transport-tcp"
+        from_domain = "sip-trunk.telekom.de"
+        client_domain = "sip-trunk.telekom.de"
+    if trunk.provider == "telekom_companyflex":
+        transport_line = "\ntransport=transport-tcp"
+        from_domain = "tel.t-online.de"
+        client_domain = "tel.t-online.de"
+
     if trunk.auth_mode == "registration":
         config += f"""
 [trunk-{tid}]
 type=registration
 outbound_auth=trunk-auth-{tid}
 server_uri=sip:{trunk.sip_server}
-client_uri=sip:{trunk.username}@{trunk.sip_server}
+client_uri=sip:{trunk.username}@{client_domain}
 contact_user={trunk.username}
 
 [trunk-ep-{tid}]
@@ -157,13 +175,13 @@ outbound_auth=trunk-auth-{tid}
 aors=trunk-aor-{tid}
 context={trunk.context}
 language=de
-from_domain={trunk.sip_server}
+from_domain={from_domain}
 disallow=all
 allow={trunk.codecs}
 direct_media=no
 rtp_symmetric=yes
 force_rport=yes
-rewrite_contact=yes
+rewrite_contact=yes{transport_line}
 
 [trunk-auth-{tid}]
 type=auth
@@ -184,13 +202,13 @@ type=endpoint
 aors=trunk-aor-{tid}
 context={trunk.context}
 language=de
-from_domain={trunk.sip_server}
+from_domain={from_domain}
 disallow=all
 allow={trunk.codecs}
 direct_media=no
 rtp_symmetric=yes
 force_rport=yes
-rewrite_contact=yes
+rewrite_contact=yes{transport_line}
 
 [trunk-aor-{tid}]
 type=aor

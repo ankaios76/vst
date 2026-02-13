@@ -33,10 +33,14 @@ interface AvailableCodec {
 interface SIPPeer {
   id: number
   extension: string
+  secret: string
   caller_id: string | null
+  context: string
   codecs: string | null
   outbound_cid: string | null
   pai: string | null
+  blf_enabled?: boolean
+  pickup_group?: string | null
   enabled: boolean
 }
 
@@ -80,13 +84,14 @@ const FORWARD_TYPE_DESCRIPTIONS: Record<string, string> = {
   no_answer: 'Weiterleitung wenn nach einer bestimmten Zeit nicht abgenommen wird.',
 }
 
-type DetailTab = 'numbers' | 'forwarding' | 'voicemail' | 'audio'
+type DetailTab = 'numbers' | 'forwarding' | 'voicemail' | 'audio' | 'features'
 
 const detailTabs: { id: DetailTab; label: string; icon: typeof Phone }[] = [
   { id: 'numbers', label: 'Rufnummern', icon: Phone },
   { id: 'forwarding', label: 'Rufumleitung', icon: PhoneForwarded },
   { id: 'voicemail', label: 'Voicemail', icon: Voicemail },
-  { id: 'audio', label: 'Audio', icon: Volume2 },
+  { id: 'audio', label: 'Audio-Codecs', icon: Volume2 },
+  { id: 'features', label: 'Funktionen', icon: ToggleRight },
 ]
 
 export default function ExtensionDetailPage({ extension, onBack }: Props) {
@@ -136,6 +141,12 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
   const [peerCodecs, setPeerCodecs] = useState<string[]>([])
   const [savingCodecs, setSavingCodecs] = useState(false)
 
+  // BLF state
+  const [blfEnabled, setBlfEnabled] = useState(true)
+  const [savingBlf, setSavingBlf] = useState(false)
+  const [pickupGroup, setPickupGroup] = useState('')
+  const [savingPickup, setSavingPickup] = useState(false)
+
   useEffect(() => {
     fetchData()
   }, [extension])
@@ -178,6 +189,8 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
       // Initialize outbound CID / PAI from peer
       setOutboundCid(currentPeer?.outbound_cid || '')
       setPai(currentPeer?.pai || '')
+      setBlfEnabled(currentPeer?.blf_enabled ?? true)
+      setPickupGroup(currentPeer?.pickup_group || '')
 
       // Fetch voicemail mailbox config
       try {
@@ -372,6 +385,48 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
     }
   }
 
+  const handleSaveBlf = async () => {
+    if (!peer) return
+    setSavingBlf(true)
+    try {
+      await api.updateSipPeer(peer.id, {
+        extension: peer.extension,
+        secret: peer.secret,
+        caller_id: peer.caller_id || '',
+        context: peer.context || 'internal',
+        codecs: peer.codecs,
+        enabled: peer.enabled,
+        blf_enabled: blfEnabled,
+        pickup_group: pickupGroup || null,
+      })
+    } catch (err) {
+      console.error('BLF update failed', err)
+    } finally {
+      setSavingBlf(false)
+    }
+  }
+
+  const handleSavePickup = async () => {
+    if (!peer) return
+    setSavingPickup(true)
+    try {
+      await api.updateSipPeer(peer.id, {
+        extension: peer.extension,
+        secret: peer.secret,
+        caller_id: peer.caller_id || '',
+        context: peer.context || 'internal',
+        codecs: peer.codecs,
+        enabled: peer.enabled,
+        blf_enabled: blfEnabled,
+        pickup_group: pickupGroup || null,
+      })
+    } catch (err) {
+      console.error('Pickup group update failed', err)
+    } finally {
+      setSavingPickup(false)
+    }
+  }
+
   const handleOutboundCidChange = (value: string) => {
     setOutboundCid(value === routes[0]?.did ? '' : value)
     setOutboundDirty(true)
@@ -540,7 +595,7 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
 
       {/* Tab Navigation */}
       <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-        <nav className="flex gap-1" aria-label="Tabs">
+        <nav className="flex flex-wrap gap-1" aria-label="Tabs">
           {detailTabs.map(tab => {
             const Icon = tab.icon
             const isActive = activeTab === tab.id
@@ -721,6 +776,81 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
                   : 'Bitte zuerst eine Leitung unter dem Menüpunkt "Leitungen" anlegen.'}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ==================== Funktionen Tab ==================== */}
+      {activeTab === 'features' && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Funktionen</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Zusätzliche Nebenstellen‑Funktionen wie BLF und Pickup.</p>
+          </div>
+
+          {/* BLF */}
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/40">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div>
+                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">BLF (Busy Lamp Field)</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Veröffentlicht den Status dieser Nebenstelle für BLF‑Tasten und Präsenz.
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setBlfEnabled((v) => !v)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${
+                    blfEnabled
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400'
+                      : 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-200'
+                  }`}
+                >
+                  {blfEnabled ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                  {blfEnabled ? 'Aktiv' : 'Inaktiv'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveBlf}
+                  disabled={savingBlf}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 text-sm disabled:opacity-60"
+                >
+                  <Save className="w-4 h-4" />
+                  {savingBlf ? 'Speichert…' : 'Speichern'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Pickup Group */}
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/40">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div>
+                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">Pickup‑Gruppe</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Nebenstellen mit gleicher Gruppe können Anrufe mit `*8` abholen. Mehrere Gruppen mit Komma trennen.
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  value={pickupGroup}
+                  onChange={(e) => setPickupGroup(e.target.value)}
+                  placeholder="z.B. 1 oder 1,2"
+                  className="w-40 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={handleSavePickup}
+                  disabled={savingPickup}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 text-sm disabled:opacity-60"
+                >
+                  <Save className="w-4 h-4" />
+                  {savingPickup ? 'Speichert…' : 'Speichern'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from datetime import datetime
 import logging
 
-from database import get_db, InboundRoute, SIPTrunk, SIPPeer, User, CallForward, VoicemailMailbox
+from database import get_db, InboundRoute, SIPTrunk, SIPPeer, RingGroup, IVRMenu, User, CallForward, VoicemailMailbox
 from dialplan import write_extensions_config, reload_dialplan
 from auth import get_current_user
 from audit import log_action
@@ -52,7 +52,9 @@ def regenerate_dialplan(db: Session):
         all_mailboxes = db.query(VoicemailMailbox).all()
         all_peers = db.query(SIPPeer).all()
         all_trunks = db.query(SIPTrunk).all()
-        write_extensions_config(all_routes, all_forwards, all_mailboxes, all_peers, all_trunks)
+        all_groups = db.query(RingGroup).all()
+        all_ivr = db.query(IVRMenu).all()
+        write_extensions_config(all_routes, all_forwards, all_mailboxes, all_peers, all_trunks, all_groups, all_ivr)
         reload_dialplan()
         logger.info(f"Dialplan regenerated with {len(all_routes)} inbound routes")
     except Exception as e:
@@ -83,9 +85,11 @@ def create_route(route: InboundRouteCreate, request: Request, current_user: User
     if not trunk:
         raise HTTPException(status_code=400, detail="Trunk not found")
 
-    # Validate destination extension exists
+    # Validate destination exists (peer, ring group, or ivr)
     peer = db.query(SIPPeer).filter(SIPPeer.extension == route.destination_extension).first()
-    if not peer:
+    group = db.query(RingGroup).filter(RingGroup.extension == route.destination_extension).first()
+    ivr = db.query(IVRMenu).filter(IVRMenu.extension == route.destination_extension).first()
+    if not peer and not group and not ivr:
         raise HTTPException(status_code=400, detail="Destination extension not found")
 
     db_route = InboundRoute(**route.model_dump())
@@ -111,6 +115,13 @@ def update_route(route_id: int, route: InboundRouteUpdate, request: Request, cur
         existing = db.query(InboundRoute).filter(InboundRoute.did == route.did).first()
         if existing:
             raise HTTPException(status_code=400, detail="DID already assigned")
+
+    # Validate destination exists (peer, ring group, or ivr)
+    peer = db.query(SIPPeer).filter(SIPPeer.extension == route.destination_extension).first()
+    group = db.query(RingGroup).filter(RingGroup.extension == route.destination_extension).first()
+    ivr = db.query(IVRMenu).filter(IVRMenu.extension == route.destination_extension).first()
+    if not peer and not group and not ivr:
+        raise HTTPException(status_code=400, detail="Destination extension not found")
 
     for key, value in route.model_dump().items():
         setattr(db_route, key, value)

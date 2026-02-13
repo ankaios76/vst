@@ -32,6 +32,12 @@ PROVIDER_SERVERS = {
 }
 
 
+def resolve_provider_server(provider: str, auth_mode: str) -> str | None:
+    if provider == "telekom_deutschlandlan":
+        return "reg.sip-trunk.telekom.de" if auth_mode == "registration" else "stat.sip-trunk.telekom.de"
+    return PROVIDER_SERVERS.get(provider)
+
+
 class SIPTrunkBase(BaseModel):
     name: str
     provider: str
@@ -96,14 +102,23 @@ def create_trunk(trunk: SIPTrunkCreate, request: Request, current_user: User = D
         raise HTTPException(status_code=400, detail="Username and password required for registration auth")
 
     # Determine SIP server: known provider or custom
-    if trunk.provider in PROVIDER_SERVERS:
-        sip_server = PROVIDER_SERVERS[trunk.provider]
+    sip_server = resolve_provider_server(trunk.provider, trunk.auth_mode)
+    if sip_server:
+        pass
+    elif trunk.provider == "telekom_companyflex":
+        if trunk.sip_server:
+            sip_server = trunk.sip_server
+        else:
+            raise HTTPException(status_code=400, detail="Outbound-Proxy (CompanyFlex-ID) muss angegeben werden")
     elif trunk.sip_server:
         sip_server = trunk.sip_server
     else:
         raise HTTPException(status_code=400, detail="SIP-Server muss angegeben werden")
 
     trunk_data = trunk.model_dump()
+    # Override codecs for Telekom DeutschlandLAN SIP-Trunk if default is used
+    if trunk.provider == "telekom_deutschlandlan" and trunk_data.get("codecs") in (DEFAULT_CODECS, "", None):
+        trunk_data["codecs"] = "alaw,g722"
     trunk_data["sip_server"] = sip_server
 
     db_trunk = SIPTrunk(**trunk_data)
@@ -134,8 +149,14 @@ def update_trunk(trunk_id: int, trunk: SIPTrunkUpdate, request: Request, current
         raise HTTPException(status_code=400, detail="Username and password required for registration auth")
 
     # Determine SIP server: known provider or custom
-    if trunk.provider in PROVIDER_SERVERS:
-        sip_server = PROVIDER_SERVERS[trunk.provider]
+    sip_server = resolve_provider_server(trunk.provider, trunk.auth_mode)
+    if sip_server:
+        pass
+    elif trunk.provider == "telekom_companyflex":
+        if trunk.sip_server:
+            sip_server = trunk.sip_server
+        else:
+            raise HTTPException(status_code=400, detail="Outbound-Proxy (CompanyFlex-ID) muss angegeben werden")
     elif trunk.sip_server:
         sip_server = trunk.sip_server
     else:
@@ -144,6 +165,9 @@ def update_trunk(trunk_id: int, trunk: SIPTrunkUpdate, request: Request, current
     for key, value in trunk.model_dump().items():
         setattr(db_trunk, key, value)
 
+    # Override codecs for Telekom DeutschlandLAN SIP-Trunk if default is used
+    if trunk.provider == "telekom_deutschlandlan" and db_trunk.codecs in (DEFAULT_CODECS, "", None):
+        db_trunk.codecs = "alaw,g722"
     db_trunk.sip_server = sip_server
     db_trunk.updated_at = datetime.utcnow()
     db.commit()

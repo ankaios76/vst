@@ -64,6 +64,8 @@ class SIPPeer(Base):
     codecs = Column(String(200), nullable=True)  # NULL = use global codecs
     outbound_cid = Column(String(50), nullable=True)  # Selected outbound DID, NULL = first route's DID
     pai = Column(String(50), nullable=True)  # P-Asserted-Identity number, NULL = no PAI header
+    blf_enabled = Column(Boolean, default=True)  # Enable BLF hints for this peer
+    pickup_group = Column(String(50), nullable=True)  # Call/Pickup group(s), e.g. "1" or "1,2"
     enabled = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -89,6 +91,21 @@ class Extension(Base):
     user = relationship("User", back_populates="extensions")
 
 
+class Contact(Base):
+    __tablename__ = "contacts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    owner_extension = Column(String(20), nullable=True, index=True)  # NULL = global address book
+    name = Column(String(100), nullable=False)
+    internal_extension = Column(String(20), nullable=True)
+    external_number = Column(String(50), nullable=True)
+    company = Column(String(100), nullable=True)
+    tag = Column(String(50), nullable=True)
+    note = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class SIPTrunk(Base):
     __tablename__ = "sip_trunks"
 
@@ -107,6 +124,62 @@ class SIPTrunk(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+class RingGroup(Base):
+    __tablename__ = "ring_groups"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), unique=True, nullable=False)
+    extension = Column(String(20), unique=True, nullable=False, index=True)
+    inbound_trunk_id = Column(Integer, ForeignKey("sip_trunks.id"), nullable=True)
+    inbound_did = Column(String(50), nullable=True)
+    strategy = Column(String(30), default="ringall")  # ringall | roundrobin | leastrecent
+    ring_time = Column(Integer, default=20)
+    enabled = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    members = relationship("RingGroupMember", back_populates="group", cascade="all, delete-orphan")
+
+
+class RingGroupMember(Base):
+    __tablename__ = "ring_group_members"
+
+    id = Column(Integer, primary_key=True, index=True)
+    group_id = Column(Integer, ForeignKey("ring_groups.id"), nullable=False)
+    extension = Column(String(20), nullable=False)
+    position = Column(Integer, default=0)
+
+    group = relationship("RingGroup", back_populates="members")
+
+class IVRMenu(Base):
+    __tablename__ = "ivr_menus"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), unique=True, nullable=False)
+    extension = Column(String(20), unique=True, nullable=False, index=True)
+    prompt = Column(String(200), nullable=True)  # Audio file name in Asterisk sounds
+    timeout_seconds = Column(Integer, default=5)
+    timeout_destination = Column(String(20), nullable=True)
+    retries = Column(Integer, default=2)
+    inbound_trunk_id = Column(Integer, ForeignKey("sip_trunks.id"), nullable=True)
+    inbound_did = Column(String(50), nullable=True)
+    enabled = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    options = relationship("IVROption", back_populates="menu", cascade="all, delete-orphan")
+
+
+class IVROption(Base):
+    __tablename__ = "ivr_options"
+
+    id = Column(Integer, primary_key=True, index=True)
+    menu_id = Column(Integer, ForeignKey("ivr_menus.id"), nullable=False)
+    digit = Column(String(5), nullable=False)  # 0-9,*,#
+    destination = Column(String(20), nullable=False)
+    position = Column(Integer, default=0)
+
+    menu = relationship("IVRMenu", back_populates="options")
 
 class InboundRoute(Base):
     __tablename__ = "inbound_routes"

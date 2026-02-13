@@ -10,6 +10,7 @@ interface User {
   role: string
   full_name: string | null
   avatar_url: string | null
+  extension?: string | null
 }
 
 interface AuthContextType {

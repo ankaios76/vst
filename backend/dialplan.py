@@ -6,7 +6,7 @@ import os
 import logging
 import subprocess
 from typing import List, Optional
-from database import InboundRoute, CallForward, VoicemailMailbox, SIPPeer, SIPTrunk
+from database import InboundRoute, CallForward, VoicemailMailbox, SIPPeer, SIPTrunk, RingGroup, IVRMenu
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +133,51 @@ def _build_ring_timeout_map(mailboxes: List[VoicemailMailbox]) -> dict:
     return {mb.extension: (mb.ring_timeout or 20) for mb in mailboxes}
 
 
-def generate_extensions_config(routes: List[InboundRoute], forwards: Optional[List[CallForward]] = None, mailboxes: Optional[List[VoicemailMailbox]] = None, peers: Optional[List[SIPPeer]] = None, trunks: Optional[List[SIPTrunk]] = None) -> str:
+def _generate_ring_group_logic(group: RingGroup) -> str:
+    """Generate dial logic for a ring group (queue)."""
+    queue_name = f"rg_{group.id}"
+    ring_time = group.ring_time or 20
+    lines = []
+    lines.append(f" same => n,Queue({queue_name},tT,,,{ring_time})")
+    lines.append(" same => n,Hangup()")
+    return "\n".join(lines)
+
+
+def _generate_ivr_context(menu: IVRMenu) -> str:
+    ctx = f"[ivr-{menu.id}]\n"
+    ctx += "exten => s,1,NoOp(IVR Menu)\n"
+    ctx += " same => n,Set(IVR_TRIES=${IF($[\"${IVR_TRIES}\"=\"\"]?0:${IVR_TRIES})})\n"
+    ctx += f" same => n,Set(IVR_MAX={menu.retries or 0})\n"
+    ctx += " same => n,Answer()\n"
+    ctx += " same => n,Wait(0.5)\n"
+    if menu.prompt:
+        ctx += f" same => n,Background({menu.prompt})\n"
+    ctx += f" same => n,WaitExten({menu.timeout_seconds or 5})\n"
+    for opt in sorted(menu.options, key=lambda o: o.position):
+        ctx += f"exten => {opt.digit},1,NoOp(IVR Option {opt.digit} -> {opt.destination})\n"
+        ctx += f" same => n,Goto(internal,{opt.destination},1)\n"
+    if menu.timeout_destination:
+        ctx += "exten => i,1,NoOp(IVR Invalid)\n"
+        ctx += " same => n,Set(IVR_TRIES=$[${IVR_TRIES}+1])\n"
+        ctx += " same => n,GotoIf($[${IVR_TRIES} <= ${IVR_MAX}]?s,1)\n"
+        ctx += f" same => n,Goto(internal,{menu.timeout_destination},1)\n"
+        ctx += "exten => t,1,NoOp(IVR Timeout)\n"
+        ctx += " same => n,Set(IVR_TRIES=$[${IVR_TRIES}+1])\n"
+        ctx += " same => n,GotoIf($[${IVR_TRIES} <= ${IVR_MAX}]?s,1)\n"
+        ctx += f" same => n,Goto(internal,{menu.timeout_destination},1)\n"
+    else:
+        ctx += "exten => i,1,Playback(pbx-invalid)\n"
+        ctx += " same => n,Set(IVR_TRIES=$[${IVR_TRIES}+1])\n"
+        ctx += " same => n,GotoIf($[${IVR_TRIES} <= ${IVR_MAX}]?s,1)\n"
+        ctx += " same => n,Hangup()\n"
+        ctx += "exten => t,1,Set(IVR_TRIES=$[${IVR_TRIES}+1])\n"
+        ctx += " same => n,GotoIf($[${IVR_TRIES} <= ${IVR_MAX}]?s,1)\n"
+        ctx += " same => n,Hangup()\n"
+    ctx += "\n"
+    return ctx
+
+
+def generate_extensions_config(routes: List[InboundRoute], forwards: Optional[List[CallForward]] = None, mailboxes: Optional[List[VoicemailMailbox]] = None, peers: Optional[List[SIPPeer]] = None, trunks: Optional[List[SIPTrunk]] = None, ring_groups: Optional[List[RingGroup]] = None, ivr_menus: Optional[List[IVRMenu]] = None) -> str:
     """Generate extensions.conf with internal context, outbound routing, call forwarding, and from-trunk inbound routing"""
 
     fwd_map = _build_forward_map(forwards or [])
@@ -158,9 +202,46 @@ clearglobalvars=no
 
 [internal]
 ; Internal Extension Dialing (PJSIP)
-exten => _1XXX,1,NoOp(Internal Call from ${CALLERID(all)} to ${EXTEN})
- same => n,Set(CALLERID(name)=${CALLERID(name)})
 """
+    # Build ring group map
+    ring_group_map = {}
+    if ring_groups:
+        for g in ring_groups:
+            ring_group_map[g.extension] = g
+    ivr_map = {}
+    if ivr_menus:
+        for m in ivr_menus:
+            ivr_map[m.extension] = m
+
+    # Ring groups (exact extensions)
+    if ring_groups:
+        for g in ring_groups:
+            if not g.enabled:
+                continue
+            config += f"exten => {g.extension},1,NoOp(Ring Group {g.name})\n"
+            config += f" same => n,Set(CALLERID(name)=${{CALLERID(name)}})\n"
+            config += _generate_ring_group_logic(g)
+            config += "\n\n"
+
+    # IVR menus (exact extensions)
+    if ivr_menus:
+        for m in ivr_menus:
+            if not m.enabled:
+                continue
+            config += f"exten => {m.extension},1,NoOp(IVR {m.name})\n"
+            config += f" same => n,Goto(ivr-{m.id},s,1)\n\n"
+
+    # Internal extension dialing pattern
+    config += "exten => _1XXX,1,NoOp(Internal Call from ${CALLERID(all)} to ${EXTEN})\n"
+    config += " same => n,Set(CALLERID(name)=${CALLERID(name)})\n"
+    # BLF hints for peers
+    if peers:
+        for p in peers:
+            try:
+                if p.enabled and getattr(p, "blf_enabled", True):
+                    config += f"exten => {p.extension},hint,PJSIP/{p.extension}\n"
+            except Exception:
+                continue
     # Collect extensions that need per-extension overrides (forwarding or custom ring_timeout)
     override_extensions = set(fwd_map.keys())
     for ext, timeout in ring_timeout_map.items():
@@ -239,6 +320,11 @@ exten => _*97XXXX,1,NoOp(Direct Voicemail for ${EXTEN:3})
  same => n,VoiceMail(${EXTEN:3}@default)
  same => n,Hangup()
 
+; Call Pickup (Gruppen)
+exten => *8,1,NoOp(Call Pickup)
+ same => n,Pickup()
+ same => n,Hangup()
+
 ; Echo test
 exten => *43,1,Answer()
  same => n,Echo()
@@ -268,8 +354,20 @@ exten => s,1,NoOp(Inbound call with no DID in Request-URI)
             config += f"\n; {desc}\n"
             config += f"exten => {route.did},1,NoOp(Inbound call to DID {route.did})\n"
             config += f" same => n,Set(CALLERID(name)=${{CALLERID(name)}})\n"
-            ext_ring = ring_timeout_map.get(ext, 20)
-            config += _generate_dial_logic(ext, fwd_map, ext_ring, early_answer=True)
+            # If destination is a ring group, route to queue
+            rg = ring_group_map.get(ext)
+            ivr = ivr_map.get(ext)
+            if ivr and ivr.enabled:
+                config += " same => n,Answer()\n"
+                config += " same => n,Wait(0.5)\n"
+                config += f" same => n,Goto(ivr-{ivr.id},s,1)\n"
+            elif rg and rg.enabled:
+                config += " same => n,Answer()\n"
+                config += " same => n,Wait(0.5)\n"
+                config += _generate_ring_group_logic(rg)
+            else:
+                ext_ring = ring_timeout_map.get(ext, 20)
+                config += _generate_dial_logic(ext, fwd_map, ext_ring, early_answer=True)
             config += "\n"
     else:
         config += """
@@ -285,13 +383,19 @@ exten => _[+0-9].,1,NoOp(Unmatched inbound DID ${EXTEN})
  same => n,Hangup()
 """
 
+    # Append IVR contexts
+    if ivr_menus:
+        for m in ivr_menus:
+            if m.enabled:
+                config += _generate_ivr_context(m)
+
     return config
 
 
-def write_extensions_config(routes: List[InboundRoute], forwards: Optional[List[CallForward]] = None, mailboxes: Optional[List[VoicemailMailbox]] = None, peers: Optional[List[SIPPeer]] = None, trunks: Optional[List[SIPTrunk]] = None) -> bool:
+def write_extensions_config(routes: List[InboundRoute], forwards: Optional[List[CallForward]] = None, mailboxes: Optional[List[VoicemailMailbox]] = None, peers: Optional[List[SIPPeer]] = None, trunks: Optional[List[SIPTrunk]] = None, ring_groups: Optional[List[RingGroup]] = None, ivr_menus: Optional[List[IVRMenu]] = None) -> bool:
     """Write extensions.conf to shared volume"""
     try:
-        config_content = generate_extensions_config(routes, forwards, mailboxes, peers, trunks)
+        config_content = generate_extensions_config(routes, forwards, mailboxes, peers, trunks, ring_groups, ivr_menus)
 
         os.makedirs(os.path.dirname(EXTENSIONS_CONFIG_PATH), exist_ok=True)
 

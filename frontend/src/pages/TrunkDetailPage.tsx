@@ -10,6 +10,8 @@ interface Props {
 const PROVIDER_INFO: Record<string, { label: string; logo?: string }> = {
   plusnet_basic: { label: 'Plusnet IPfonie Basic/Extended', logo: '/logos/plusnet.svg' },
   plusnet_connect: { label: 'Plusnet IPfonie Extended Connect', logo: '/logos/plusnet.svg' },
+  telekom_deutschlandlan: { label: 'Telekom DeutschlandLAN SIP-Trunk', logo: '/logos/telekom.jpg' },
+  telekom_companyflex: { label: 'Telekom CompanyFlex SIP-Trunk', logo: '/logos/telekom.jpg' },
 }
 
 export default function TrunkDetailPage({ trunkId, onBack }: Props) {

@@ -36,11 +36,15 @@
 ## ✨ Features
 
 - **📞 Extension Management** – Create, edit, and manage SIP extensions with caller ID, context, and activation status
+- **📖 Phonebook** – Global and per-extension address books with CSV import/export
 - **🔌 SIP Trunk Configuration** – Connect to any SIP provider via registration or IP authentication, with built-in templates for Plusnet IPfonie and support for custom providers
 - **📠 DID Routing** – Flexibly assign incoming phone numbers to extensions with number block management per trunk
 - **📤 Outbound CID Selection** – Choose which assigned DID to use as outbound caller-ID per extension via dropdown
 - **🆔 P-Asserted-Identity (PAI)** – Optional PAI header per extension (e.g. main number of a number block)
 - **🔄 Call Forwarding** – Unconditional, busy, and no-answer forwarding per extension, toggled with one click
+- **🔔 BLF & Pickup Groups** – Busy lamp field hints and call pickup groups per extension
+- **📞 Ring Groups (Sammelruf)** – Create ring groups with strategies and assign inbound numbers
+- **🎛️ IVR** – Multi-level IVR menus with prompt upload/conversion, retries, and inbound DID assignment
 - **📩 Voicemail** – Per-extension voicemail boxes with PIN, email notifications (HTML), configurable ring timeout, and built-in audio player
 - **📧 SMTP Email Configuration** – Configure your mail server for voicemail-to-email delivery, with built-in test email function (Port 465/587 auto-detection)
 - **🏠 Home Assistant Integration** – API-key authentication, MQTT publisher for call events, and click-to-call via originate endpoint
@@ -140,6 +144,15 @@ docker compose up -d --build
 Database migrations run automatically on startup — no manual steps required.
 
 ## 📋 Changelog
+
+### v2.0.0 (2026-02-13)
+
+**New Features:**
+- **Phonebook** – Global and per-extension address books with CSV import/export
+- **BLF & Pickup Groups** – BLF hints and pickup groups per extension
+- **Ring Groups (Sammelruf)** – Ring groups with strategies and inbound DID assignment
+- **IVR Enhancements** – Prompt upload with conversion/validation, retries, and inbound DID mapping
+- **UI Improvements** – SIP Debug moved to Settings, Audio tab renamed to Audio-Codecs
 
 ### v1.7.0 (2026-02-13)
 

@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
-from database import get_db, User
+from database import get_db, User, SIPPeer
 from auth import verify_password, get_password_hash, create_access_token, get_current_user
 
 router = APIRouter()
@@ -39,6 +39,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         )
 
     token = create_access_token(data={"sub": user.username})
+    peer = db.query(SIPPeer).filter(SIPPeer.user_id == user.id).first()
     return LoginResponse(
         access_token=token,
         user={
@@ -46,13 +47,15 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
             "username": user.username,
             "role": user.role,
             "full_name": user.full_name,
+            "extension": peer.extension if peer else None,
         },
     )
 
 
 @router.get("/me")
-def get_me(current_user: User = Depends(get_current_user)):
+def get_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     avatar_url = f"/api/users/{current_user.id}/avatar" if current_user.avatar_url else None
+    peer = db.query(SIPPeer).filter(SIPPeer.user_id == current_user.id).first()
     return {
         "id": current_user.id,
         "username": current_user.username,
@@ -60,6 +63,7 @@ def get_me(current_user: User = Depends(get_current_user)):
         "full_name": current_user.full_name,
         "email": current_user.email,
         "avatar_url": avatar_url,
+        "extension": peer.extension if peer else None,
     }
 
 

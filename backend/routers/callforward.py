@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from datetime import datetime
 import logging
 
-from database import get_db, CallForward, SIPPeer, User, VoicemailMailbox
+from database import get_db, CallForward, SIPPeer, SIPTrunk, RingGroup, IVRMenu, User, VoicemailMailbox
 from dialplan import write_extensions_config, reload_dialplan
 from database import InboundRoute
 from auth import get_current_user
@@ -56,7 +56,11 @@ def regenerate_dialplan(db: Session):
         all_routes = db.query(InboundRoute).filter(InboundRoute.enabled == True).all()
         all_forwards = db.query(CallForward).filter(CallForward.enabled == True).all()
         all_mailboxes = db.query(VoicemailMailbox).all()
-        write_extensions_config(all_routes, all_forwards, all_mailboxes)
+        all_peers = db.query(SIPPeer).all()
+        all_trunks = db.query(SIPTrunk).all()
+        all_groups = db.query(RingGroup).all()
+        all_ivr = db.query(IVRMenu).all()
+        write_extensions_config(all_routes, all_forwards, all_mailboxes, all_peers, all_trunks, all_groups, all_ivr)
         reload_dialplan()
         logger.info("Dialplan regenerated after call forward change")
     except Exception as e:

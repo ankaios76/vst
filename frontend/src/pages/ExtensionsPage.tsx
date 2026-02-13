@@ -12,6 +12,7 @@ interface SIPPeer {
   secret: string
   caller_id: string | null
   context: string
+  pickup_group?: string | null
   enabled: boolean
   created_at: string
   updated_at: string
@@ -34,11 +35,24 @@ interface SIPTrunk {
   updated_at: string
 }
 
-const PROVIDERS: Record<string, { label: string; server: string; supportsIp: boolean }> = {
+const PROVIDERS: Record<string, { label: string; supportsIp: boolean; requiresServerInput?: boolean; server?: string; serverRegistration?: string; serverIp?: string; hint?: string }> = {
   plusnet_basic: { label: 'Plusnet IPfonie Basic/Extended', server: 'sip.ipfonie.de', supportsIp: false },
   plusnet_connect: { label: 'Plusnet IPfonie Extended Connect', server: 'sipconnect.ipfonie.de', supportsIp: true },
   dusnet: { label: 'dus.net', server: 'proxy.dus.net', supportsIp: false },
-  custom: { label: 'Anderer Provider', server: '', supportsIp: true },
+  telekom_deutschlandlan: {
+    label: 'Telekom DeutschlandLAN SIP-Trunk',
+    supportsIp: true,
+    serverRegistration: 'reg.sip-trunk.telekom.de',
+    serverIp: 'stat.sip-trunk.telekom.de',
+    hint: 'Telekom: SIP-Signalisierung nur TCP. Outbound-Proxy per DNS; keine IP fest hinterlegen.',
+  },
+  telekom_companyflex: {
+    label: 'Telekom CompanyFlex SIP-Trunk',
+    supportsIp: false,
+    requiresServerInput: true,
+    hint: 'Outbound-Proxy enthält die 12-stellige CompanyFlex-ID, z.B. <id>.primary.companyflex.de',
+  },
+  custom: { label: 'Anderer Provider', supportsIp: true },
 }
 
 export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
@@ -210,6 +224,16 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
   const providerLabel = (key: string, server?: string) => {
     if (key === 'custom') return server || 'Benutzerdefiniert'
     return PROVIDERS[key]?.label || key
+  }
+
+  const getProviderServer = (provider: string, authMode: string, customServer?: string) => {
+    if (provider === 'custom') return customServer || ''
+    const p = PROVIDERS[provider]
+    if (!p) return ''
+    if (p.requiresServerInput) return customServer || ''
+    if (p.server) return p.server
+    if (authMode === 'registration') return p.serverRegistration || ''
+    return p.serverIp || ''
   }
 
   const loading = activeTab === 'peers' ? loadingPeers : loadingTrunks
@@ -458,7 +482,7 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                         setTrunkForm({
                           ...trunkForm,
                           provider,
-                          sip_server: provider === 'custom' ? trunkForm.sip_server : '',
+                          sip_server: (provider === 'custom' || PROVIDERS[provider]?.requiresServerInput) ? trunkForm.sip_server : '',
                           auth_mode: PROVIDERS[provider]?.supportsIp ? trunkForm.auth_mode : 'registration',
                         })
                       }}
@@ -470,19 +494,44 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                     </select>
                     {trunkForm.provider !== 'custom' && (
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Server: {PROVIDERS[trunkForm.provider]?.server}
+                        Server: {getProviderServer(trunkForm.provider, trunkForm.auth_mode, trunkForm.sip_server)}
                       </p>
+                    )}
+                    {PROVIDERS[trunkForm.provider]?.hint && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {PROVIDERS[trunkForm.provider]?.hint}
+                      </p>
+                    )}
+                    {trunkForm.provider === 'telekom_deutschlandlan' && (
+                      <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                        <div>SIP-Domain: <span className="font-mono">sip-trunk.telekom.de</span></div>
+                        <div>Outbound-Proxy (Reg): <span className="font-mono">reg.sip-trunk.telekom.de</span></div>
+                        <div>Outbound-Proxy (IP): <span className="font-mono">stat.sip-trunk.telekom.de</span></div>
+                        <div>Transport: <span className="font-medium">TCP</span> (SIP), RTP über UDP</div>
+                        <div>Codecs: <span className="font-mono">g722, alaw</span></div>
+                      </div>
+                    )}
+                    {trunkForm.provider === 'telekom_companyflex' && (
+                      <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                        <div>SIP-Domain: <span className="font-mono">tel.t-online.de</span></div>
+                        <div>Outbound-Proxy: <span className="font-mono">&lt;companyflex-id&gt;.primary.companyflex.de</span></div>
+                        <div>Benutzername: <span className="font-mono">Registrierungsrufnummer</span></div>
+                        <div>Auth-User: <span className="font-mono">+49...@tel.t-online.de</span></div>
+                        <div>Transport: <span className="font-medium">TCP</span> empfohlen</div>
+                      </div>
                     )}
                   </div>
 
-                  {trunkForm.provider === 'custom' && (
+                  {(trunkForm.provider === 'custom' || PROVIDERS[trunkForm.provider]?.requiresServerInput) && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SIP-Server *</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {trunkForm.provider === 'telekom_companyflex' ? 'Outbound-Proxy *' : 'SIP-Server *'}
+                      </label>
                       <input
                         type="text"
                         value={trunkForm.sip_server}
                         onChange={(e) => setTrunkForm({...trunkForm, sip_server: e.target.value})}
-                        placeholder="z.B. sip.provider.de"
+                        placeholder={trunkForm.provider === 'telekom_companyflex' ? 'z.B. 55XXXXXXXXXX.primary.companyflex.de' : 'z.B. sip.provider.de'}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         required
                       />

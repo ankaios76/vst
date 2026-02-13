@@ -1,8 +1,11 @@
 import { useState, useEffect, FormEvent } from 'react'
-import { Save, Send, Eye, EyeOff, Mail, Volume2, Shield, Plus, Trash2, AlertTriangle, ServerIcon, RefreshCw, Power, Download, HardDrive, Cpu, Clock, CheckCircle, XCircle, ArrowUpCircle, FileText, ShieldAlert, Ban, Unlock, Users, Phone, Server, Home, Key, Wifi, WifiOff, Info, Copy } from 'lucide-react'
+import { Save, Send, Eye, EyeOff, Mail, Volume2, Shield, Plus, Trash2, AlertTriangle, ServerIcon, RefreshCw, Power, Download, HardDrive, Cpu, Clock, CheckCircle, XCircle, ArrowUpCircle, FileText, ShieldAlert, Ban, Unlock, Users, Phone, Server, Home, Key, Wifi, WifiOff, Info, Copy, Bug } from 'lucide-react'
 import { api } from '../services/api'
 import UsersPage from './UsersPage'
 import ExtensionsPage from './ExtensionsPage'
+import GroupsPage from './GroupsPage'
+import IvrPage from './IvrPage'
+import SIPDebugPage from './SIPDebugPage'
 
 interface AvailableCodec {
   id: string
@@ -27,15 +30,18 @@ interface UpdateInfo {
   release_url: string
 }
 
-type SettingsTab = 'extensions' | 'trunks' | 'users' | 'email' | 'audio' | 'security' | 'audit' | 'homeassistant' | 'server'
+type SettingsTab = 'extensions' | 'groups' | 'ivr' | 'trunks' | 'users' | 'email' | 'audio' | 'security' | 'sip-debug' | 'audit' | 'homeassistant' | 'server'
 
 const tabs: { id: SettingsTab; label: string; icon: typeof Mail }[] = [
   { id: 'extensions', label: 'Nebenstellen', icon: Phone },
+  { id: 'groups', label: 'Gruppen', icon: Users },
+  { id: 'ivr', label: 'IVR', icon: Phone },
   { id: 'trunks', label: 'Leitungen', icon: Server },
   { id: 'users', label: 'Benutzer', icon: Users },
   { id: 'email', label: 'E-Mail', icon: Mail },
-  { id: 'audio', label: 'Audio', icon: Volume2 },
+  { id: 'audio', label: 'Audio-Codecs', icon: Volume2 },
   { id: 'security', label: 'Sicherheit', icon: Shield },
+  { id: 'sip-debug', label: 'SIP Debug', icon: Bug },
   { id: 'audit', label: 'Audit-Log', icon: FileText },
   { id: 'homeassistant', label: 'Home Assistant', icon: Home },
   { id: 'server', label: 'Server', icon: ServerIcon },
@@ -421,7 +427,7 @@ export default function SettingsPage() {
 
       {/* Tab Navigation */}
       <div className="border-b border-gray-200 dark:border-gray-700">
-        <nav className="flex gap-1" aria-label="Tabs">
+        <nav className="flex flex-wrap gap-1" aria-label="Tabs">
           {tabs.map(tab => {
             const Icon = tab.icon
             const isActive = activeTab === tab.id
@@ -445,6 +451,12 @@ export default function SettingsPage() {
 
       {/* Extensions Tab */}
       {activeTab === 'extensions' && <ExtensionsPage mode="peers" />}
+
+      {/* Groups Tab */}
+      {activeTab === 'groups' && <GroupsPage />}
+
+      {/* IVR Tab */}
+      {activeTab === 'ivr' && <IvrPage />}
 
       {/* Trunks Tab */}
       {activeTab === 'trunks' && <ExtensionsPage mode="trunks" />}
@@ -867,6 +879,12 @@ export default function SettingsPage() {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {activeTab === 'sip-debug' && (
+        <div className="space-y-6">
+          <SIPDebugPage />
         </div>
       )}
 

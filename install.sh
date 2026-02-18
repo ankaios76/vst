@@ -59,6 +59,16 @@ if [ -f .env ]; then
         sed "s/%%AMI_PASSWORD%%/${AMI_PASSWORD}/" asterisk/config/manager.conf.template > asterisk/config/manager.conf
         echo "[OK] manager.conf updated"
 
+        # Ensure fail2ban paths exist
+        if [ ! -f /var/lib/fail2ban/fail2ban.sqlite3 ]; then
+            mkdir -p /var/lib/fail2ban
+            touch /var/lib/fail2ban/fail2ban.sqlite3
+        fi
+        if [ ! -S /var/run/fail2ban/fail2ban.sock ] && [ ! -e /var/run/fail2ban/fail2ban.sock ]; then
+            mkdir -p /var/run/fail2ban
+            touch /var/run/fail2ban/fail2ban.sock
+        fi
+
         echo ""
         echo "Starte Container neu..."
         docker pull docker:cli >/dev/null 2>&1 &
@@ -199,6 +209,18 @@ echo "[OK] .env created"
 sed "s/%%AMI_PASSWORD%%/${AMI_PASSWORD}/" asterisk/config/manager.conf.template > asterisk/config/manager.conf
 
 echo "[OK] manager.conf updated"
+
+# Ensure fail2ban paths exist (GonoPBX reads them read-only if available)
+if [ ! -f /var/lib/fail2ban/fail2ban.sqlite3 ]; then
+    mkdir -p /var/lib/fail2ban
+    touch /var/lib/fail2ban/fail2ban.sqlite3
+    echo "[OK] Created empty fail2ban database placeholder"
+fi
+if [ ! -S /var/run/fail2ban/fail2ban.sock ] && [ ! -e /var/run/fail2ban/fail2ban.sock ]; then
+    mkdir -p /var/run/fail2ban
+    touch /var/run/fail2ban/fail2ban.sock
+    echo "[OK] Created fail2ban socket placeholder"
+fi
 
 # Pre-pull helper image for web-based updates
 echo ""

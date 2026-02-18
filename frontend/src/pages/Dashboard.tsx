@@ -30,6 +30,7 @@ const PROVIDER_INFO: Record<string, { label: string; logo?: string }> = {
   dusnet: { label: 'dus.net', logo: '/logos/dusnet.svg' },
   telekom_deutschlandlan: { label: 'Telekom DeutschlandLAN SIP-Trunk', logo: '/logos/telekom.jpg' },
   telekom_companyflex: { label: 'Telekom CompanyFlex SIP-Trunk', logo: '/logos/telekom.jpg' },
+  telekom_allip: { label: 'Telekom All-IP (Privat)', logo: '/logos/telekom.jpg' },
 }
 
 interface InboundRoute {

@@ -226,6 +226,20 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"Migration check for ring_groups inbound columns: {e}")
 
+    # Migrate: add from_user column to sip_trunks if missing
+    try:
+        from sqlalchemy import text, inspect as sa_inspect_trunks
+        trunks_inspector = sa_inspect_trunks(engine)
+        if 'sip_trunks' in trunks_inspector.get_table_names():
+            trunk_columns = [c['name'] for c in trunks_inspector.get_columns('sip_trunks')]
+            if 'from_user' not in trunk_columns:
+                with engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE sip_trunks ADD COLUMN from_user VARCHAR(100)"))
+                    conn.commit()
+                logger.info("Migration: added from_user column to sip_trunks")
+    except Exception as e:
+        logger.warning(f"Migration check for from_user column: {e}")
+
     # Migrate: create audit_logs table if missing
     try:
         from sqlalchemy import text, inspect as sa_inspect2

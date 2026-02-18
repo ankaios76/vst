@@ -30,6 +30,7 @@ interface SIPTrunk {
   number_block: string | null
   context: string
   codecs: string
+  from_user: string | null
   enabled: boolean
   created_at: string
   updated_at: string
@@ -51,6 +52,12 @@ const PROVIDERS: Record<string, { label: string; supportsIp: boolean; requiresSe
     supportsIp: false,
     requiresServerInput: true,
     hint: 'Outbound-Proxy enthält die 12-stellige CompanyFlex-ID, z.B. <id>.primary.companyflex.de',
+  },
+  telekom_allip: {
+    label: 'Telekom All-IP (Privat)',
+    supportsIp: false,
+    server: 'tel.t-online.de',
+    hint: 'Telekom Privatkundenanschluss (MagentaZuhause). Zugangsnummer als Benutzername, Anschlussnummer als From-User im E.164-Format (+49...).',
   },
   custom: { label: 'Anderer Provider', supportsIp: true },
 }
@@ -85,6 +92,7 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
     password: '',
     caller_id: '',
     number_block: '',
+    from_user: '',
     enabled: true,
   })
 
@@ -170,6 +178,7 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
         sip_server: trunkForm.provider === 'custom' ? trunkForm.sip_server : null,
         username: trunkForm.auth_mode === 'registration' ? trunkForm.username : null,
         password: trunkForm.auth_mode === 'registration' ? trunkForm.password : null,
+        from_user: trunkForm.from_user || null,
       }
       if (editingTrunk) {
         await api.updateTrunk(editingTrunk.id, payload)
@@ -196,6 +205,7 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
       password: trunk.password || '',
       caller_id: trunk.caller_id || '',
       number_block: trunk.number_block || '',
+      from_user: trunk.from_user || '',
       enabled: trunk.enabled,
     })
     setShowTrunkForm(true)
@@ -212,7 +222,7 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
   }
 
   const resetTrunkForm = () => {
-    setTrunkForm({ name: '', provider: 'plusnet_basic', auth_mode: 'registration', sip_server: '', username: '', password: '', caller_id: '', number_block: '', enabled: true })
+    setTrunkForm({ name: '', provider: 'plusnet_basic', auth_mode: 'registration', sip_server: '', username: '', password: '', caller_id: '', number_block: '', from_user: '', enabled: true })
   }
 
   const handleTrunkCancel = () => {
@@ -520,6 +530,15 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                         <div>Transport: <span className="font-medium">TCP</span> empfohlen</div>
                       </div>
                     )}
+                    {trunkForm.provider === 'telekom_allip' && (
+                      <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                        <div>Registrar: <span className="font-mono">tel.t-online.de</span></div>
+                        <div>Benutzername: <span className="font-mono">Zugangsnummer (16-stellig)</span></div>
+                        <div>From-User: <span className="font-mono">Anschlussnummer E.164 (+49...)</span></div>
+                        <div>Transport: <span className="font-medium">TCP</span></div>
+                        <div>Codecs: <span className="font-mono">g722, alaw</span></div>
+                      </div>
+                    )}
                   </div>
 
                   {(trunkForm.provider === 'custom' || PROVIDERS[trunkForm.provider]?.requiresServerInput) && (
@@ -612,6 +631,23 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
                   </div>
+
+                  {trunkForm.provider === 'telekom_allip' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From-User / Anschlussnummer *</label>
+                      <input
+                        type="text"
+                        value={trunkForm.from_user}
+                        onChange={(e) => setTrunkForm({...trunkForm, from_user: e.target.value})}
+                        placeholder="z.B. +492211234567"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        required
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Ihre Anschlussnummer im E.164-Format. Wird als From-User und P-Preferred-Identity verwendet.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2">

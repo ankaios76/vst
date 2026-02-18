@@ -275,10 +275,14 @@ clearglobalvars=no
             route = info["route"]
             pai = info["pai"]
             tid = route.trunk_id
+            trunk = trunk_map.get(tid)
             config += f"\n same => n(out-{ext}),NoOp(Outbound via trunk-ep-{tid} with CID {route.did})\n"
             config += f" same => n,Set(CALLERID(num)={route.did})\n"
-            if pai:
-                trunk = trunk_map.get(tid)
+            if trunk and trunk.provider == "telekom_allip":
+                ppi_number = pai or getattr(trunk, "from_user", None)
+                if ppi_number:
+                    config += f" same => n,Set(PJSIP_HEADER(add,P-Preferred-Identity)=<sip:{ppi_number}@tel.t-online.de>)\n"
+            elif pai:
                 pai_domain = trunk.sip_server if trunk else "localhost"
                 config += f" same => n,Set(PJSIP_HEADER(add,P-Asserted-Identity)=<sip:{pai}@{pai_domain}>)\n"
             config += f" same => n,Dial(PJSIP/${{EXTEN}}@trunk-ep-{tid},120,tT)\n"
@@ -296,10 +300,14 @@ clearglobalvars=no
             route = info["route"]
             pai = info["pai"]
             tid = route.trunk_id
+            trunk = trunk_map.get(tid)
             config += f"\n same => n(out-{ext}),NoOp(Outbound via trunk-ep-{tid} with CID {route.did})\n"
             config += f" same => n,Set(CALLERID(num)={route.did})\n"
-            if pai:
-                trunk = trunk_map.get(tid)
+            if trunk and trunk.provider == "telekom_allip":
+                ppi_number = pai or getattr(trunk, "from_user", None)
+                if ppi_number:
+                    config += f" same => n,Set(PJSIP_HEADER(add,P-Preferred-Identity)=<sip:{ppi_number}@tel.t-online.de>)\n"
+            elif pai:
                 pai_domain = trunk.sip_server if trunk else "localhost"
                 config += f" same => n,Set(PJSIP_HEADER(add,P-Asserted-Identity)=<sip:{pai}@{pai_domain}>)\n"
             config += f" same => n,Dial(PJSIP/${{EXTEN}}@trunk-ep-{tid},120,tT)\n"

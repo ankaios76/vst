@@ -151,6 +151,8 @@ def generate_trunk_config(trunk: SIPTrunk, skip_identify: bool = False) -> str:
     transport_line = ""
     from_domain = trunk.sip_server
     client_domain = trunk.sip_server
+    from_user_line = ""
+    contact_user = trunk.username
     if trunk.provider == "telekom_deutschlandlan":
         transport_line = "\ntransport=transport-tcp"
         from_domain = "sip-trunk.telekom.de"
@@ -159,6 +161,13 @@ def generate_trunk_config(trunk: SIPTrunk, skip_identify: bool = False) -> str:
         transport_line = "\ntransport=transport-tcp"
         from_domain = "tel.t-online.de"
         client_domain = "tel.t-online.de"
+    if trunk.provider == "telekom_allip":
+        transport_line = "\ntransport=transport-tcp"
+        from_domain = "tel.t-online.de"
+        client_domain = "tel.t-online.de"
+        if getattr(trunk, "from_user", None):
+            from_user_line = f"\nfrom_user={trunk.from_user}"
+            contact_user = trunk.from_user
 
     if trunk.auth_mode == "registration":
         config += f"""
@@ -166,8 +175,8 @@ def generate_trunk_config(trunk: SIPTrunk, skip_identify: bool = False) -> str:
 type=registration
 outbound_auth=trunk-auth-{tid}
 server_uri=sip:{trunk.sip_server}
-client_uri=sip:{trunk.username}@{client_domain}
-contact_user={trunk.username}
+client_uri=sip:{contact_user}@{client_domain}
+contact_user={contact_user}
 
 [trunk-ep-{tid}]
 type=endpoint
@@ -175,7 +184,7 @@ outbound_auth=trunk-auth-{tid}
 aors=trunk-aor-{tid}
 context={trunk.context}
 language=de
-from_domain={from_domain}
+from_domain={from_domain}{from_user_line}
 disallow=all
 allow={trunk.codecs}
 direct_media=no

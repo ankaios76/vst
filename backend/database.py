@@ -120,6 +120,7 @@ class SIPTrunk(Base):
     number_block = Column(String(100), nullable=True)
     context = Column(String(50), default="from-trunk")
     codecs = Column(String(200), default="ulaw,alaw,g722")
+    from_user = Column(String(100), nullable=True)  # From-User / Anschlussnummer (e.g. +49VORWAHLRUFNUMMER)
     enabled = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

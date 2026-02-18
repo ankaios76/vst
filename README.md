@@ -37,7 +37,7 @@
 
 - **📞 Extension Management** – Create, edit, and manage SIP extensions with caller ID, context, and activation status
 - **📖 Phonebook** – Global and per-extension address books with CSV import/export
-- **🔌 SIP Trunk Configuration** – Connect to any SIP provider via registration or IP authentication, with built-in templates for Plusnet IPfonie and support for custom providers
+- **🔌 SIP Trunk Configuration** – Connect to any SIP provider via registration or IP authentication, with built-in templates for Plusnet IPfonie, Telekom DeutschlandLAN, CompanyFlex, and Telekom All-IP (Privatkundenanschluss)
 - **📠 DID Routing** – Flexibly assign incoming phone numbers to extensions with number block management per trunk
 - **📤 Outbound CID Selection** – Choose which assigned DID to use as outbound caller-ID per extension via dropdown
 - **🆔 P-Asserted-Identity (PAI)** – Optional PAI header per extension (e.g. main number of a number block)
@@ -144,6 +144,11 @@ docker compose up -d --build
 Database migrations run automatically on startup — no manual steps required.
 
 ## 📋 Changelog
+
+### v2.1.0 (2026-02-18)
+
+**New Features:**
+- **Telekom All-IP (Privatkundenanschluss)** – New provider profile for Telekom residential connections (MagentaZuhause). Supports `P-Preferred-Identity` header, TCP transport, and `tel.t-online.de` registrar. Separate fields for Zugangsnummer (auth) and Anschlussnummer (From-User, E.164 format)
 
 ### v2.0.0 (2026-02-13)
 
@@ -255,10 +260,10 @@ Have an idea but no time to code? [Open an issue](https://github.com/ankaios76/g
 ## 🗺️ Roadmap
 
 - [ ] Multi-database support (SQLite for home use, MySQL/MariaDB)
-- [ ] Ring groups & call queues
-- [ ] IVR / auto attendant builder
+- [x] Ring groups & call queues
+- [x] IVR / auto attendant builder
 - [ ] Conference rooms
-- [ ] Phonebook with CallerID lookup
+- [x] Phonebook with CallerID lookup
 - [ ] Multi-language support (EN/DE)
 - [ ] Backup & restore functionality
 

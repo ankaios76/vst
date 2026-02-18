@@ -35,6 +35,8 @@ PROVIDER_SERVERS = {
 def resolve_provider_server(provider: str, auth_mode: str) -> str | None:
     if provider == "telekom_deutschlandlan":
         return "reg.sip-trunk.telekom.de" if auth_mode == "registration" else "stat.sip-trunk.telekom.de"
+    if provider == "telekom_allip":
+        return "tel.t-online.de"
     return PROVIDER_SERVERS.get(provider)
 
 
@@ -49,6 +51,7 @@ class SIPTrunkBase(BaseModel):
     number_block: str | None = None
     context: str = "from-trunk"
     codecs: str = "ulaw,alaw,g722"
+    from_user: str | None = None
     enabled: bool = True
 
 
@@ -116,8 +119,8 @@ def create_trunk(trunk: SIPTrunkCreate, request: Request, current_user: User = D
         raise HTTPException(status_code=400, detail="SIP-Server muss angegeben werden")
 
     trunk_data = trunk.model_dump()
-    # Override codecs for Telekom DeutschlandLAN SIP-Trunk if default is used
-    if trunk.provider == "telekom_deutschlandlan" and trunk_data.get("codecs") in (DEFAULT_CODECS, "", None):
+    # Override codecs for Telekom trunks if default is used
+    if trunk.provider in ("telekom_deutschlandlan", "telekom_allip") and trunk_data.get("codecs") in (DEFAULT_CODECS, "", None):
         trunk_data["codecs"] = "alaw,g722"
     trunk_data["sip_server"] = sip_server
 
@@ -165,8 +168,8 @@ def update_trunk(trunk_id: int, trunk: SIPTrunkUpdate, request: Request, current
     for key, value in trunk.model_dump().items():
         setattr(db_trunk, key, value)
 
-    # Override codecs for Telekom DeutschlandLAN SIP-Trunk if default is used
-    if trunk.provider == "telekom_deutschlandlan" and db_trunk.codecs in (DEFAULT_CODECS, "", None):
+    # Override codecs for Telekom trunks if default is used
+    if trunk.provider in ("telekom_deutschlandlan", "telekom_allip") and db_trunk.codecs in (DEFAULT_CODECS, "", None):
         db_trunk.codecs = "alaw,g722"
     db_trunk.sip_server = sip_server
     db_trunk.updated_at = datetime.utcnow()

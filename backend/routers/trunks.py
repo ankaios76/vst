@@ -29,6 +29,7 @@ def set_ami_client(client):
 PROVIDER_SERVERS = {
     "plusnet_basic": "sip.ipfonie.de",
     "plusnet_connect": "sipconnect.ipfonie.de",
+    "iliad_it": "voip.iliad.it",
 }
 
 

@@ -1,7 +1,7 @@
 # GonoPBX - Technische Dokumentation
 
-**Version:** 1.0.0
-**Stand:** 08.02.2026
+**Version:** 2.1.1
+**Stand:** 18.02.2026
 **Autor:** Norbert Hengsteler
 
 ---
@@ -885,6 +885,10 @@ docker compose build frontend && docker compose up -d frontend
 ---
 
 ## Changelog
+
+### v2.1.1 (18.02.2026)
+- Iliad (Italy) provider template with preset registrar/proxy and From-User login number support
+
 
 ### v1.0.0 (08.02.2026)
 - Vollständige technische Dokumentation erstellt

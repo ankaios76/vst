@@ -40,6 +40,12 @@ const PROVIDERS: Record<string, { label: string; supportsIp: boolean; requiresSe
   plusnet_basic: { label: 'Plusnet IPfonie Basic/Extended', server: 'sip.ipfonie.de', supportsIp: false },
   plusnet_connect: { label: 'Plusnet IPfonie Extended Connect', server: 'sipconnect.ipfonie.de', supportsIp: true },
   dusnet: { label: 'dus.net', server: 'proxy.dus.net', supportsIp: false },
+  iliad_it: {
+    label: 'Iliad (Italien)',
+    supportsIp: false,
+    server: 'voip.iliad.it',
+    hint: 'Iliad: Registrar/Proxy voip.iliad.it. Benutzername/Passwort wie von Iliad vergeben. Rufnummer für Anmeldung im Feld "From-User".',
+  },
   telekom_deutschlandlan: {
     label: 'Telekom DeutschlandLAN SIP-Trunk',
     supportsIp: true,
@@ -173,9 +179,10 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
   const handleTrunkSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
+      const requiresServerInput = trunkForm.provider === 'custom' || PROVIDERS[trunkForm.provider]?.requiresServerInput
       const payload = {
         ...trunkForm,
-        sip_server: trunkForm.provider === 'custom' ? trunkForm.sip_server : null,
+        sip_server: requiresServerInput ? trunkForm.sip_server : null,
         username: trunkForm.auth_mode === 'registration' ? trunkForm.username : null,
         password: trunkForm.auth_mode === 'registration' ? trunkForm.password : null,
         from_user: trunkForm.from_user || null,
@@ -633,19 +640,23 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                     />
                   </div>
 
-                  {trunkForm.provider === 'telekom_allip' && (
+                  {(trunkForm.provider === 'telekom_allip' || trunkForm.provider === 'iliad_it') && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From-User / Anschlussnummer *</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {trunkForm.provider === 'iliad_it' ? 'From-User / Rufnummer für Anmeldung *' : 'From-User / Anschlussnummer *'}
+                      </label>
                       <input
                         type="text"
                         value={trunkForm.from_user}
                         onChange={(e) => setTrunkForm({...trunkForm, from_user: e.target.value})}
-                        placeholder="z.B. +492211234567"
+                        placeholder={trunkForm.provider === 'iliad_it' ? 'z.B. +39XXXXXXXXXX' : 'z.B. +492211234567'}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         required
                       />
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Ihre Anschlussnummer im E.164-Format. Wird als From-User und P-Preferred-Identity verwendet.
+                        {trunkForm.provider === 'iliad_it'
+                          ? 'Ihre Iliad-Telefonnummer inkl. Vorwahl im E.164-Format. Wird als From-User und Contact-User verwendet.'
+                          : 'Ihre Anschlussnummer im E.164-Format. Wird als From-User und P-Preferred-Identity verwendet.'}
                       </p>
                     </div>
                   )}

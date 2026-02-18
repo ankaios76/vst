@@ -152,6 +152,7 @@ def generate_trunk_config(trunk: SIPTrunk, skip_identify: bool = False) -> str:
     from_domain = trunk.sip_server
     client_domain = trunk.sip_server
     from_user_line = ""
+    auth_realm_line = ""
     contact_user = trunk.username
     if trunk.provider == "telekom_deutschlandlan":
         transport_line = "\ntransport=transport-tcp"
@@ -165,6 +166,7 @@ def generate_trunk_config(trunk: SIPTrunk, skip_identify: bool = False) -> str:
         transport_line = "\ntransport=transport-tcp"
         from_domain = "tel.t-online.de"
         client_domain = "tel.t-online.de"
+        auth_realm_line = "\nrealm=tel.t-online.de"
         if getattr(trunk, "from_user", None):
             from_user_line = f"\nfrom_user={trunk.from_user}"
             contact_user = trunk.from_user
@@ -196,7 +198,7 @@ rewrite_contact=yes{transport_line}
 type=auth
 auth_type=userpass
 username={trunk.username}
-password={trunk.password}
+password={trunk.password}{auth_realm_line}
 
 [trunk-aor-{tid}]
 type=aor

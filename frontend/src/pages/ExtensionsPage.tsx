@@ -57,7 +57,7 @@ const PROVIDERS: Record<string, { label: string; supportsIp: boolean; requiresSe
     label: 'Telekom All-IP (Privat)',
     supportsIp: false,
     server: 'tel.t-online.de',
-    hint: 'Telekom Privatkundenanschluss (MagentaZuhause). Zugangsnummer als Benutzername, Anschlussnummer als From-User im E.164-Format (+49...).',
+    hint: 'Telekom Privatkundenanschluss (MagentaZuhause). E-Mail-Adresse als Benutzername, Rufnummer als From-User im E.164-Format (+49...).',
   },
   custom: { label: 'Anderer Provider', supportsIp: true },
 }
@@ -533,8 +533,9 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                     {trunkForm.provider === 'telekom_allip' && (
                       <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1">
                         <div>Registrar: <span className="font-mono">tel.t-online.de</span></div>
-                        <div>Benutzername: <span className="font-mono">Zugangsnummer (16-stellig)</span></div>
-                        <div>From-User: <span className="font-mono">Anschlussnummer E.164 (+49...)</span></div>
+                        <div>Benutzername: <span className="font-mono">E-Mail-Adresse (z.B. name@t-online.de)</span></div>
+                        <div>Passwort: <span className="font-mono">E-Mail-/Kundencenter-Passwort</span></div>
+                        <div>From-User: <span className="font-mono">Rufnummer E.164 (+49VorwahlRufnummer)</span></div>
                         <div>Transport: <span className="font-medium">TCP</span></div>
                         <div>Codecs: <span className="font-mono">g722, alaw</span></div>
                       </div>

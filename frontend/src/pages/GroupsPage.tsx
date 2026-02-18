@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Plus, Edit2, Trash2, Users } from 'lucide-react'
 import { api } from '../services/api'
+import { useI18n } from '../context/I18nContext'
 
 interface RingGroup {
   id: number
@@ -29,13 +30,13 @@ interface AvailableDidGroup {
   dids: string[]
 }
 
-const STRATEGIES = [
-  { value: 'ringall', label: 'Alle gleichzeitig' },
-  { value: 'roundrobin', label: 'Rundruf (Round Robin)' },
-  { value: 'leastrecent', label: 'Am längsten frei' },
-]
-
 export default function GroupsPage() {
+  const { tr } = useI18n()
+  const STRATEGIES = [
+    { value: 'ringall', label: tr('Alle gleichzeitig', 'All at once') },
+    { value: 'roundrobin', label: tr('Rundruf (Round Robin)', 'Round robin') },
+    { value: 'leastrecent', label: tr('Am längsten frei', 'Least recently used') },
+  ]
   const [groups, setGroups] = useState<RingGroup[]>([])
   const [peers, setPeers] = useState<SIPPeer[]>([])
   const [availableDids, setAvailableDids] = useState<AvailableDidGroup[]>([])
@@ -91,7 +92,7 @@ export default function GroupsPage() {
       setPeers(peerData)
       setAvailableDids(didData)
     } catch (e: any) {
-      setError(e.message || 'Daten konnten nicht geladen werden')
+      setError(e.message || tr('Daten konnten nicht geladen werden', 'Data could not be loaded'))
     } finally {
       setLoading(false)
     }
@@ -150,7 +151,7 @@ export default function GroupsPage() {
       if (!exists) {
         options.unshift({
           trunk_id: editing.inbound_trunk_id,
-          trunk_name: `Leitung ${editing.inbound_trunk_id}`,
+          trunk_name: tr(`Leitung ${editing.inbound_trunk_id}`, `Trunk ${editing.inbound_trunk_id}`),
           dids: editing.inbound_did ? [editing.inbound_did] : [],
         })
       }
@@ -186,24 +187,24 @@ export default function GroupsPage() {
       setShowForm(false)
       await fetchAll()
     } catch (err: any) {
-      setError(err.message || 'Fehler beim Speichern')
+      setError(err.message || tr('Fehler beim Speichern', 'Error while saving'))
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async (group: RingGroup) => {
-    if (!confirm(`Gruppe ${group.name} wirklich löschen?`)) return
+    if (!confirm(tr(`Gruppe ${group.name} wirklich löschen?`, `Really delete group ${group.name}?`))) return
     try {
       await api.deleteRingGroup(group.id)
       await fetchAll()
     } catch (err: any) {
-      alert(err.message || 'Fehler beim Löschen')
+      alert(err.message || tr('Fehler beim Löschen', 'Error while deleting'))
     }
   }
 
   if (loading) {
-    return <div className="p-6 text-gray-500">Lade Gruppen…</div>
+    return <div className="p-6 text-gray-500">{tr('Lade Gruppen…', 'Loading groups...')}</div>
   }
 
   return (
@@ -211,9 +212,9 @@ export default function GroupsPage() {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Gruppen (Sammelruf)</h2>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('Gruppen (Sammelruf)', 'Ring groups')}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Richten Sie Sammelrufe mit verschiedenen Klingelstrategien ein. Mitglieder werden aus bestehenden Nebenstellen gewählt.
+              {tr('Richten Sie Sammelrufe mit verschiedenen Klingelstrategien ein. Mitglieder werden aus bestehenden Nebenstellen gewählt.', 'Configure ring groups with different ringing strategies. Members are chosen from existing extensions.')}
             </p>
           </div>
           <button
@@ -221,23 +222,23 @@ export default function GroupsPage() {
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
           >
             <Plus className="w-4 h-4" />
-            Neue Gruppe
+            {tr('Neue Gruppe', 'New group')}
           </button>
         </div>
 
         {groups.length === 0 ? (
-          <div className="mt-6 text-sm text-gray-500">Noch keine Gruppen angelegt.</div>
+          <div className="mt-6 text-sm text-gray-500">{tr('Noch keine Gruppen angelegt.', 'No groups created yet.')}</div>
         ) : (
           <div className="mt-6 overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                  <th className="py-2 pr-4">Name</th>
-                  <th className="py-2 pr-4">Nummer</th>
-                  <th className="py-2 pr-4">Strategie</th>
-                  <th className="py-2 pr-4">Mitglieder</th>
-                  <th className="py-2 pr-4">Klingelzeit</th>
-                  <th className="py-2 pr-4">Status</th>
+                  <th className="py-2 pr-4">{tr('Name', 'Name')}</th>
+                  <th className="py-2 pr-4">{tr('Nummer', 'Number')}</th>
+                  <th className="py-2 pr-4">{tr('Strategie', 'Strategy')}</th>
+                  <th className="py-2 pr-4">{tr('Mitglieder', 'Members')}</th>
+                  <th className="py-2 pr-4">{tr('Klingelzeit', 'Ring time')}</th>
+                  <th className="py-2 pr-4">{tr('Status', 'Status')}</th>
                   <th className="py-2 pr-4"></th>
                 </tr>
               </thead>
@@ -255,7 +256,7 @@ export default function GroupsPage() {
                     <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{g.ring_time || 20}s</td>
                     <td className="py-3 pr-4">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs ${g.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                        {g.enabled ? 'Aktiv' : 'Inaktiv'}
+                        {g.enabled ? tr('Aktiv', 'Active') : tr('Inaktiv', 'Inactive')}
                       </span>
                     </td>
                     <td className="py-3 pr-4 text-right">
@@ -263,14 +264,14 @@ export default function GroupsPage() {
                         <button
                           onClick={() => openEdit(g)}
                           className="p-2 text-gray-500 hover:text-blue-600"
-                          title="Bearbeiten"
+                          title={tr('Bearbeiten', 'Edit')}
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(g)}
                           className="p-2 text-gray-500 hover:text-red-600"
-                          title="Löschen"
+                          title={tr('Löschen', 'Delete')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -291,7 +292,7 @@ export default function GroupsPage() {
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-blue-600" />
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                  {editing ? 'Gruppe bearbeiten' : 'Gruppe anlegen'}
+                  {editing ? tr('Gruppe bearbeiten', 'Edit group') : tr('Gruppe anlegen', 'Create group')}
                 </h3>
               </div>
               <button
@@ -310,35 +311,35 @@ export default function GroupsPage() {
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Name', 'Name')}</label>
                   <input
                     type="text"
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    placeholder="z.B. Support"
+                    placeholder={tr('z.B. Support', 'e.g. Support')}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gruppen-Nummer</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Gruppen-Nummer', 'Group number')}</label>
                   <select
                     value={form.extension}
                     onChange={e => setForm({ ...form, extension: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     required
                   >
-                    <option value="">Bitte wählen</option>
+                    <option value="">{tr('Bitte wählen', 'Please select')}</option>
                     {availableExtensions.map(ext => (
                       <option key={ext} value={ext}>{ext}</option>
                     ))}
                   </select>
                   {availableExtensions.length === 0 && (
-                    <div className="text-xs text-gray-500 mt-1">Keine freien Nummern im Bereich 1000–1999.</div>
+                    <div className="text-xs text-gray-500 mt-1">{tr('Keine freien Nummern im Bereich 1000–1999.', 'No free numbers in the 1000–1999 range.')}</div>
                   )}
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Eingehende Rufnummer (optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Eingehende Rufnummer (optional)', 'Inbound number (optional)')}</label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <select
                       value={form.inbound_trunk_id ?? ''}
@@ -348,7 +349,7 @@ export default function GroupsPage() {
                       }}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     >
-                      <option value="">Leitung wählen</option>
+                      <option value="">{tr('Leitung wählen', 'Select trunk')}</option>
                       {trunkOptions.map(t => (
                         <option key={t.trunk_id} value={t.trunk_id}>{t.trunk_name}</option>
                       ))}
@@ -359,16 +360,16 @@ export default function GroupsPage() {
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       disabled={!form.inbound_trunk_id}
                     >
-                      <option value="">Rufnummer wählen</option>
+                      <option value="">{tr('Rufnummer wählen', 'Select number')}</option>
                       {didOptions.map(d => (
                         <option key={d} value={d}>{d}</option>
                       ))}
                     </select>
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">Wählt eine freie Nummer aus dem Nummernblock der Leitung und legt automatisch eine Inbound-Route an.</div>
+                  <div className="text-xs text-gray-500 mt-1">{tr('Wählt eine freie Nummer aus dem Nummernblock der Leitung und legt automatisch eine Inbound-Route an.', 'Selects a free number from the trunk block and creates an inbound route automatically.')}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Strategie</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Strategie', 'Strategy')}</label>
                   <select
                     value={form.strategy}
                     onChange={e => setForm({ ...form, strategy: e.target.value })}
@@ -380,7 +381,7 @@ export default function GroupsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Klingelzeit (Sek.)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Klingelzeit (Sek.)', 'Ring time (sec)')}</label>
                   <input
                     type="number"
                     min={5}
@@ -393,10 +394,10 @@ export default function GroupsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mitglieder (bestehende Nebenstellen)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{tr('Mitglieder (bestehende Nebenstellen)', 'Members (existing extensions)')}</label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-auto border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                   {memberOptions.length === 0 && (
-                    <div className="text-sm text-gray-500">Keine Nebenstellen verfügbar</div>
+                    <div className="text-sm text-gray-500">{tr('Keine Nebenstellen verfügbar', 'No extensions available')}</div>
                   )}
                   {memberOptions.map(p => (
                     <label key={p.extension} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
@@ -420,7 +421,7 @@ export default function GroupsPage() {
                     onChange={e => setForm({ ...form, enabled: e.target.checked })}
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  Aktiv
+                  {tr('Aktiv', 'Active')}
                 </label>
 
                 <div className="flex items-center gap-2">
@@ -429,14 +430,14 @@ export default function GroupsPage() {
                     onClick={() => setShowForm(false)}
                     className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300"
                   >
-                    Abbrechen
+                    {tr('Abbrechen', 'Cancel')}
                   </button>
                   <button
                     type="submit"
                     disabled={saving}
                     className="px-4 py-2 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-60"
                   >
-                    {saving ? 'Speichern…' : 'Speichern'}
+                    {saving ? tr('Speichern…', 'Saving...') : tr('Speichern', 'Save')}
                   </button>
                 </div>
               </div>

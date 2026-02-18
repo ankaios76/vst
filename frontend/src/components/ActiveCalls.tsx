@@ -1,5 +1,6 @@
 import { Phone, PhoneOff, Clock } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useI18n } from '../context/I18nContext'
 
 interface Call {
   channel: string
@@ -14,14 +15,15 @@ interface ActiveCallsProps {
 }
 
 export default function ActiveCalls({ calls }: ActiveCallsProps) {
+  const { tr } = useI18n()
   if (calls.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex items-center gap-2 mb-4">
           <Phone className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Active Calls</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{tr('Aktive Anrufe', 'Active Calls')}</h2>
         </div>
-        <p className="text-gray-500 dark:text-gray-400 text-center py-8">No active calls</p>
+        <p className="text-gray-500 dark:text-gray-400 text-center py-8">{tr('Keine aktiven Anrufe', 'No active calls')}</p>
       </div>
     )
   }
@@ -31,10 +33,10 @@ export default function ActiveCalls({ calls }: ActiveCallsProps) {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Phone className="w-5 h-5 text-green-600 dark:text-green-400" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Active Calls</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{tr('Aktive Anrufe', 'Active Calls')}</h2>
         </div>
         <span className="bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 px-3 py-1 rounded-full text-sm font-medium">
-          {calls.length} active
+          {calls.length} {tr('aktiv', 'active')}
         </span>
       </div>
 
@@ -48,6 +50,7 @@ export default function ActiveCalls({ calls }: ActiveCallsProps) {
 }
 
 function CallItem({ call }: { call: Call }) {
+  const { tr } = useI18n()
   const [duration, setDuration] = useState(0)
 
   useEffect(() => {
@@ -86,6 +89,17 @@ function CallItem({ call }: { call: Call }) {
     }
   }
 
+  const getStateLabel = (state: string) => {
+    switch (state) {
+      case 'connected':
+        return tr('Verbunden', 'Connected')
+      case 'ringing':
+        return tr('Klingelt', 'Ringing')
+      default:
+        return state
+    }
+  }
+
   return (
     <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
       <div className="flex items-center gap-3">
@@ -95,13 +109,13 @@ function CallItem({ call }: { call: Call }) {
 
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-900 dark:text-gray-100">{call.caller || 'Unknown'}</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">{call.caller || tr('Unbekannt', 'Unknown')}</span>
             <span className="text-gray-400 dark:text-gray-500">&rarr;</span>
-            <span className="font-medium text-gray-900 dark:text-gray-100">{call.destination || 'Unknown'}</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">{call.destination || tr('Unbekannt', 'Unknown')}</span>
           </div>
           <div className="flex items-center gap-2 mt-1">
             <span className={`text-xs px-2 py-0.5 rounded ${getStateColor(call.state)}`}>
-              {call.state}
+              {getStateLabel(call.state)}
             </span>
             {call.state === 'connected' && (
               <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">

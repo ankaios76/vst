@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Download, Upload, Save, Plus, X, Trash2 } from 'lucide-react'
 import { api } from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import { useI18n } from '../context/I18nContext'
 
 interface Contact {
   id: number
@@ -32,6 +33,7 @@ const emptyForm = {
 
 export default function ContactsPage() {
   const { user } = useAuth()
+  const { tr } = useI18n()
   const isAdmin = user?.role === 'admin'
 
   const [scope, setScope] = useState<'global' | 'extension'>(isAdmin ? 'global' : 'extension')
@@ -83,7 +85,7 @@ export default function ContactsPage() {
         setContacts(data)
       }
     } catch (e: any) {
-      setError(e.message || 'Kontakte konnten nicht geladen werden')
+      setError(e.message || tr('Kontakte konnten nicht geladen werden', 'Contacts could not be loaded'))
     } finally {
       setLoading(false)
     }
@@ -116,11 +118,11 @@ export default function ContactsPage() {
 
   const handleSave = async () => {
     if (!form.name.trim()) {
-      setError('Name ist erforderlich')
+      setError(tr('Name ist erforderlich', 'Name is required'))
       return
     }
     if (scope === 'extension' && !selectedExtension) {
-      setError('Bitte eine Nebenstelle auswählen')
+      setError(tr('Bitte eine Nebenstelle auswählen', 'Please select an extension'))
       return
     }
     setSaving(true)
@@ -129,31 +131,31 @@ export default function ContactsPage() {
     try {
       if (editingId) {
         await api.updateContact(editingId, form)
-        setSuccess('Kontakt aktualisiert')
+        setSuccess(tr('Kontakt aktualisiert', 'Contact updated'))
       } else {
         await api.createContact({
           scope,
           owner_extension: scope === 'extension' ? selectedExtension : undefined,
           ...form,
         })
-        setSuccess('Kontakt erstellt')
+        setSuccess(tr('Kontakt erstellt', 'Contact created'))
       }
       resetForm()
       await loadContacts()
     } catch (e: any) {
-      setError(e.message || 'Speichern fehlgeschlagen')
+      setError(e.message || tr('Speichern fehlgeschlagen', 'Save failed'))
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Kontakt wirklich löschen?')) return
+    if (!confirm(tr('Kontakt wirklich löschen?', 'Really delete contact?'))) return
     try {
       await api.deleteContact(id)
       await loadContacts()
     } catch (e: any) {
-      setError(e.message || 'Löschen fehlgeschlagen')
+      setError(e.message || tr('Löschen fehlgeschlagen', 'Delete failed'))
     }
   }
 
@@ -169,7 +171,7 @@ export default function ContactsPage() {
       a.remove()
       URL.revokeObjectURL(url)
     } catch (e: any) {
-      setError(e.message || 'Export fehlgeschlagen')
+      setError(e.message || tr('Export fehlgeschlagen', 'Export failed'))
     }
   }
 
@@ -178,10 +180,10 @@ export default function ContactsPage() {
     setSuccess('')
     try {
       await api.importContacts(scope, file, scope === 'extension' ? selectedExtension || undefined : undefined)
-      setSuccess('Import erfolgreich')
+      setSuccess(tr('Import erfolgreich', 'Import successful'))
       await loadContacts()
     } catch (e: any) {
-      setError(e.message || 'Import fehlgeschlagen')
+      setError(e.message || tr('Import fehlgeschlagen', 'Import failed'))
     }
   }
 
@@ -193,8 +195,8 @@ export default function ContactsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Telefonbuch</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Global und pro Nebenstelle verwaltete Kontakte</p>
+          <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{tr('Telefonbuch', 'Contacts')}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{tr('Global und pro Nebenstelle verwaltete Kontakte', 'Contacts managed globally and per extension')}</p>
         </div>
         <div className="flex items-center gap-2">
           <input
@@ -213,14 +215,14 @@ export default function ContactsPage() {
             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200"
           >
             <Upload className="w-4 h-4" />
-            Import
+            {tr('Import', 'Import')}
           </button>
           <button
             onClick={handleExport}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Download className="w-4 h-4" />
-            Export
+            {tr('Export', 'Export')}
           </button>
         </div>
       </div>
@@ -244,13 +246,13 @@ export default function ContactsPage() {
                 onClick={() => setScope('global')}
                 className={`px-3 py-2 rounded-lg text-sm ${scope === 'global' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
               >
-                Globales Telefonbuch
+                {tr('Globales Telefonbuch', 'Global contacts')}
               </button>
               <button
                 onClick={() => setScope('extension')}
                 className={`px-3 py-2 rounded-lg text-sm ${scope === 'extension' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
               >
-                Nebenstellen-Telefonbuch
+                {tr('Nebenstellen-Telefonbuch', 'Extension contacts')}
               </button>
               {scope === 'extension' && (
                 <select
@@ -268,7 +270,8 @@ export default function ContactsPage() {
             </>
           ) : (
             <div className="text-sm text-gray-600 dark:text-gray-300">
-              Nebenstellen-Telefonbuch {user?.extension ? `(Nebenstelle ${user.extension})` : ''}
+              {tr('Nebenstellen-Telefonbuch', 'Extension contacts')}{' '}
+              {user?.extension ? `(${tr('Nebenstelle', 'Extension')} ${user.extension})` : ''}
             </div>
           )}
         </div>
@@ -276,19 +279,21 @@ export default function ContactsPage() {
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Kontakt {editingId ? 'bearbeiten' : 'anlegen'}</h2>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            {editingId ? tr('Kontakt bearbeiten', 'Edit contact') : tr('Kontakt anlegen', 'Create contact')}
+          </h2>
           {editingId && (
             <button
               onClick={resetForm}
               className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
-              <X className="w-4 h-4" /> Abbrechen
+              <X className="w-4 h-4" /> {tr('Abbrechen', 'Cancel')}
             </button>
           )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Name', 'Name')} *</label>
             <input
               type="text"
               value={form.name}
@@ -297,7 +302,7 @@ export default function ContactsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Durchwahl</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Durchwahl', 'Extension')}</label>
             <input
               type="text"
               value={form.internal_extension}
@@ -306,7 +311,7 @@ export default function ContactsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Externe Nummer</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Externe Nummer', 'External number')}</label>
             <input
               type="text"
               value={form.external_number}
@@ -315,7 +320,7 @@ export default function ContactsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Firma</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Firma', 'Company')}</label>
             <input
               type="text"
               value={form.company}
@@ -324,7 +329,7 @@ export default function ContactsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tag/Gruppe</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Tag/Gruppe', 'Tag/Group')}</label>
             <input
               type="text"
               value={form.tag}
@@ -333,7 +338,7 @@ export default function ContactsPage() {
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notiz</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Notiz', 'Note')}</label>
             <textarea
               value={form.note}
               onChange={(e) => setForm({ ...form, note: e.target.value })}
@@ -349,31 +354,31 @@ export default function ContactsPage() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-300"
           >
             {editingId ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            {editingId ? 'Speichern' : 'Anlegen'}
+            {editingId ? tr('Speichern', 'Save') : tr('Anlegen', 'Create')}
           </button>
         </div>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Kontakte</h2>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('Kontakte', 'Contacts')}</h2>
         </div>
         {loading ? (
-          <div className="p-6 text-gray-500 dark:text-gray-400">Lade...</div>
+          <div className="p-6 text-gray-500 dark:text-gray-400">{tr('Lade...', 'Loading...')}</div>
         ) : contacts.length === 0 ? (
-          <div className="p-6 text-gray-500 dark:text-gray-400">Noch keine Kontakte vorhanden.</div>
+          <div className="p-6 text-gray-500 dark:text-gray-400">{tr('Noch keine Kontakte vorhanden.', 'No contacts yet.')}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-700/50 text-left">
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Name</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Durchwahl</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Extern</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Firma</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Tag</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Notiz</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300 w-28">Aktionen</th>
+                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Name', 'Name')}</th>
+                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Durchwahl', 'Extension')}</th>
+                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Extern', 'External')}</th>
+                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Firma', 'Company')}</th>
+                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Tag', 'Tag')}</th>
+                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Notiz', 'Note')}</th>
+                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300 w-28">{tr('Aktionen', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -391,12 +396,12 @@ export default function ContactsPage() {
                           onClick={() => startEdit(c)}
                           className="text-blue-600 hover:text-blue-700 text-sm"
                         >
-                          Bearbeiten
+                          {tr('Bearbeiten', 'Edit')}
                         </button>
                         <button
                           onClick={() => handleDelete(c.id)}
                           className="text-red-600 hover:text-red-700"
-                          title="Löschen"
+                          title={tr('Löschen', 'Delete')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

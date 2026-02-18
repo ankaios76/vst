@@ -131,6 +131,18 @@ else
     echo "-> Bind: 0.0.0.0 (Zugriff aus dem Netzwerk)"
 fi
 
+# Language selection
+echo ""
+echo "Sprache der Weboberflaeche / UI language"
+echo "  [1] Deutsch"
+echo "  [2] English"
+read -rp "Auswahl [1]: " UI_LANG_CHOICE
+if [ "$UI_LANG_CHOICE" = "2" ]; then
+    UI_LANG="en"
+else
+    UI_LANG="de"
+fi
+
 # SIP port
 echo ""
 echo "SIP-Port fuer Asterisk (Standard: 5060)"
@@ -196,6 +208,7 @@ ENVEOF
     printf 'BIND_ADDRESS=%s\n' "$BIND_ADDRESS"
     printf 'SIP_PORT=%s\n' "$SIP_PORT"
     printf 'PROJECT_DIR=%s\n' "$(pwd)"
+    printf 'UI_LANG=%s\n' "${UI_LANG}"
     printf 'HA_API_KEY=%s\n' "${HA_API_KEY:-}"
     printf 'MQTT_BROKER=%s\n' "${MQTT_BROKER:-}"
     printf 'MQTT_PORT=%s\n' "${MQTT_PORT:-1883}"
@@ -236,11 +249,15 @@ docker compose up -d --build
 INSTALL_OS=$(. /etc/os-release 2>/dev/null && echo "$ID $VERSION_ID" || echo "unknown")
 INSTALL_ARCH=$(uname -m)
 INSTALL_VERSION=$(grep '^VERSION' backend/version.py 2>/dev/null | cut -d'"' -f2 || echo "unknown")
+INSTALL_LOCALE="de-DE"
+if [ "$UI_LANG" = "en" ]; then
+    INSTALL_LOCALE="en-US"
+fi
 curl -s -o /dev/null --max-time 5 \
   -X POST "https://analytics.gonopbx.de/api/send" \
   -H "Content-Type: application/json" \
   -H "User-Agent: GonoPBX-Installer/${INSTALL_VERSION}" \
-  -d "{\"type\":\"event\",\"payload\":{\"hostname\":\"gonopbx.de\",\"language\":\"de-DE\",\"referrer\":\"\",\"screen\":\"1920x1080\",\"title\":\"install\",\"url\":\"/install\",\"website\":\"cc8fa162-1aef-4c89-8e13-4fdbfa9bc6f7\",\"name\":\"install\",\"data\":{\"os\":\"${INSTALL_OS}\",\"arch\":\"${INSTALL_ARCH}\",\"version\":\"${INSTALL_VERSION}\"}}}" \
+  -d "{\"type\":\"event\",\"payload\":{\"hostname\":\"gonopbx.de\",\"language\":\"${INSTALL_LOCALE}\",\"referrer\":\"\",\"screen\":\"1920x1080\",\"title\":\"install\",\"url\":\"/install\",\"website\":\"cc8fa162-1aef-4c89-8e13-4fdbfa9bc6f7\",\"name\":\"install\",\"data\":{\"os\":\"${INSTALL_OS}\",\"arch\":\"${INSTALL_ARCH}\",\"version\":\"${INSTALL_VERSION}\"}}}" \
   2>/dev/null || true
 
 echo ""

@@ -1,6 +1,7 @@
 import { useState, useEffect, FormEvent } from 'react'
 import { Save, Send, Eye, EyeOff, Mail, Volume2, Shield, Plus, Trash2, AlertTriangle, ServerIcon, RefreshCw, Power, Download, HardDrive, Cpu, Clock, CheckCircle, XCircle, ArrowUpCircle, FileText, ShieldAlert, Ban, Unlock, Users, Phone, Server, Home, Key, Wifi, WifiOff, Info, Copy, Bug } from 'lucide-react'
 import { api } from '../services/api'
+import { useI18n } from '../context/I18nContext'
 import UsersPage from './UsersPage'
 import ExtensionsPage from './ExtensionsPage'
 import GroupsPage from './GroupsPage'
@@ -32,22 +33,22 @@ interface UpdateInfo {
 
 type SettingsTab = 'extensions' | 'groups' | 'ivr' | 'trunks' | 'users' | 'email' | 'audio' | 'security' | 'sip-debug' | 'audit' | 'homeassistant' | 'server'
 
-const tabs: { id: SettingsTab; label: string; icon: typeof Mail }[] = [
-  { id: 'extensions', label: 'Nebenstellen', icon: Phone },
-  { id: 'groups', label: 'Gruppen', icon: Users },
-  { id: 'ivr', label: 'IVR', icon: Phone },
-  { id: 'trunks', label: 'Leitungen', icon: Server },
-  { id: 'users', label: 'Benutzer', icon: Users },
-  { id: 'email', label: 'E-Mail', icon: Mail },
-  { id: 'audio', label: 'Audio-Codecs', icon: Volume2 },
-  { id: 'security', label: 'Sicherheit', icon: Shield },
-  { id: 'sip-debug', label: 'SIP Debug', icon: Bug },
-  { id: 'audit', label: 'Audit-Log', icon: FileText },
-  { id: 'homeassistant', label: 'Home Assistant', icon: Home },
-  { id: 'server', label: 'Server', icon: ServerIcon },
-]
-
 export default function SettingsPage() {
+  const { tr, lang } = useI18n()
+  const tabs: { id: SettingsTab; label: string; icon: typeof Mail }[] = [
+    { id: 'extensions', label: tr('Nebenstellen', 'Extensions'), icon: Phone },
+    { id: 'groups', label: tr('Gruppen', 'Groups'), icon: Users },
+    { id: 'ivr', label: tr('IVR', 'IVR'), icon: Phone },
+    { id: 'trunks', label: tr('Leitungen', 'Trunks'), icon: Server },
+    { id: 'users', label: tr('Benutzer', 'Users'), icon: Users },
+    { id: 'email', label: tr('E-Mail', 'Email'), icon: Mail },
+    { id: 'audio', label: tr('Audio-Codecs', 'Audio codecs'), icon: Volume2 },
+    { id: 'security', label: tr('Sicherheit', 'Security'), icon: Shield },
+    { id: 'sip-debug', label: tr('SIP Debug', 'SIP Debug'), icon: Bug },
+    { id: 'audit', label: tr('Audit-Log', 'Audit log'), icon: FileText },
+    { id: 'homeassistant', label: tr('Home Assistant', 'Home Assistant'), icon: Home },
+    { id: 'server', label: tr('Server', 'Server'), icon: ServerIcon },
+  ]
   const [activeTab, setActiveTab] = useState<SettingsTab>('extensions')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -136,7 +137,7 @@ export default function SettingsPage() {
         setWhitelistEnabled(wlData.enabled || false)
         setWhitelistIps(wlData.ips || [])
       } catch {
-        setError('Einstellungen konnten nicht geladen werden')
+      setError(tr('Einstellungen konnten nicht geladen werden', 'Settings could not be loaded'))
       } finally {
         setLoading(false)
       }
@@ -151,9 +152,9 @@ export default function SettingsPage() {
     setSaving(true)
     try {
       await api.updateSettings(formData)
-      setSuccess('Einstellungen gespeichert')
+      setSuccess(tr('Einstellungen gespeichert', 'Settings saved'))
     } catch (err: any) {
-      setError(err.message || 'Fehler beim Speichern')
+      setError(err.message || tr('Fehler beim Speichern', 'Error while saving'))
     } finally {
       setSaving(false)
     }
@@ -161,7 +162,7 @@ export default function SettingsPage() {
 
   const handleTestEmail = async () => {
     if (!testEmail) {
-      setError('Bitte Empfänger-Adresse eingeben')
+      setError(tr('Bitte Empfänger-Adresse eingeben', 'Please enter a recipient address'))
       return
     }
     setError('')
@@ -169,9 +170,9 @@ export default function SettingsPage() {
     setTesting(true)
     try {
       await api.sendTestEmail(testEmail)
-      setSuccess(`Test-E-Mail an ${testEmail} gesendet`)
+      setSuccess(tr(`Test-E-Mail an ${testEmail} gesendet`, `Test email sent to ${testEmail}`))
     } catch (err: any) {
-      setError(err.message || 'Test-E-Mail konnte nicht gesendet werden')
+      setError(err.message || tr('Test-E-Mail konnte nicht gesendet werden', 'Test email could not be sent'))
     } finally {
       setTesting(false)
     }
@@ -185,7 +186,7 @@ export default function SettingsPage() {
 
   const handleSaveCodecs = async () => {
     if (selectedCodecs.length === 0) {
-      setError('Mindestens ein Codec muss ausgewählt sein')
+      setError(tr('Mindestens ein Codec muss ausgewählt sein', 'Select at least one codec'))
       return
     }
     setError('')
@@ -193,9 +194,9 @@ export default function SettingsPage() {
     setSavingCodecs(true)
     try {
       await api.updateCodecSettings({ global_codecs: selectedCodecs.join(',') })
-      setSuccess('Codec-Einstellungen gespeichert')
+      setSuccess(tr('Codec-Einstellungen gespeichert', 'Codec settings saved'))
     } catch (err: any) {
-      setError(err.message || 'Fehler beim Speichern der Codec-Einstellungen')
+      setError(err.message || tr('Fehler beim Speichern der Codec-Einstellungen', 'Error saving codec settings'))
     } finally {
       setSavingCodecs(false)
     }
@@ -222,9 +223,9 @@ export default function SettingsPage() {
     setSavingWhitelist(true)
     try {
       await api.updateIpWhitelist({ enabled: whitelistEnabled, ips: whitelistIps })
-      setSuccess('IP-Whitelist gespeichert')
+      setSuccess(tr('IP-Whitelist gespeichert', 'IP whitelist saved'))
     } catch (err: any) {
-      setError(err.message || 'Fehler beim Speichern der IP-Whitelist')
+      setError(err.message || tr('Fehler beim Speichern der IP-Whitelist', 'Error saving IP whitelist'))
     } finally {
       setSavingWhitelist(false)
     }
@@ -236,7 +237,7 @@ export default function SettingsPage() {
       const info = await api.getServerInfo()
       setServerInfo(info)
     } catch {
-      setError('Server-Informationen konnten nicht geladen werden')
+      setError(tr('Server-Informationen konnten nicht geladen werden', 'Server information could not be loaded'))
     }
   }
 
@@ -251,7 +252,7 @@ export default function SettingsPage() {
         setSuccess('GonoPBX ist auf dem neuesten Stand')
       }
     } catch (err: any) {
-      setError(err.message || 'Update-Prüfung fehlgeschlagen')
+      setError(err.message || tr('Update-Prüfung fehlgeschlagen', 'Update check failed'))
     } finally {
       setCheckingUpdate(false)
     }
@@ -267,20 +268,20 @@ export default function SettingsPage() {
       setSuccess(`Service "${service}" wird neu gestartet`)
       setTimeout(fetchServerInfo, 5000)
     } catch (err: any) {
-      setError(err.message || 'Neustart fehlgeschlagen')
+      setError(err.message || tr('Neustart fehlgeschlagen', 'Restart failed'))
     } finally {
       setRestartingService(null)
     }
   }
 
   const handleReboot = async () => {
-    if (!confirm('Server wirklich neu starten? Alle Verbindungen werden getrennt.')) return
-    if (!confirm('Sind Sie sicher? Der Server wird komplett neu gestartet!')) return
+    if (!confirm(tr('Server wirklich neu starten? Alle Verbindungen werden getrennt.', 'Really restart server? All connections will be dropped.'))) return
+    if (!confirm(tr('Sind Sie sicher? Der Server wird komplett neu gestartet!', 'Are you sure? The server will reboot completely!'))) return
     setRebooting(true)
     setError('')
     try {
       await api.rebootServer()
-      setSuccess('Server wird neu gestartet...')
+      setSuccess(tr('Server wird neu gestartet...', 'Server is rebooting...'))
     } catch (err: any) {
       setError(err.message || 'Reboot fehlgeschlagen')
       setRebooting(false)
@@ -354,7 +355,7 @@ export default function SettingsPage() {
           })
           setHaLoaded(true)
         } catch {
-          setError('Home Assistant-Einstellungen konnten nicht geladen werden')
+          setError(tr('Home Assistant-Einstellungen konnten nicht geladen werden', 'Home Assistant settings could not be loaded'))
         }
       }
       fetchHA()
@@ -367,9 +368,9 @@ export default function SettingsPage() {
     setSavingHA(true)
     try {
       await api.updateHASettings(haData)
-      setSuccess('Home Assistant-Einstellungen gespeichert')
+      setSuccess(tr('Home Assistant-Einstellungen gespeichert', 'Home Assistant settings saved'))
     } catch (err: any) {
-      setError(err.message || 'Fehler beim Speichern')
+      setError(err.message || tr('Fehler beim Speichern', 'Error while saving'))
     } finally {
       setSavingHA(false)
     }
@@ -398,21 +399,21 @@ export default function SettingsPage() {
         user: haData.mqtt_user,
         password: haData.mqtt_password,
       })
-      setMqttTestResult({ ok: true, message: 'Verbindung erfolgreich' })
+      setMqttTestResult({ ok: true, message: tr('Verbindung erfolgreich', 'Connection successful') })
     } catch (err: any) {
-      setMqttTestResult({ ok: false, message: err.message || 'Verbindung fehlgeschlagen' })
+      setMqttTestResult({ ok: false, message: err.message || tr('Verbindung fehlgeschlagen', 'Connection failed') })
     } finally {
       setTestingMqtt(false)
     }
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500 dark:text-gray-400">Lade Einstellungen...</div>
+    return <div className="text-center py-12 text-gray-500 dark:text-gray-400">{tr('Lade Einstellungen...', 'Loading settings...')}</div>
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Einstellungen</h1>
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{tr('Einstellungen', 'Settings')}</h1>
 
       {error && (
         <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
@@ -468,15 +469,15 @@ export default function SettingsPage() {
       {activeTab === 'email' && (
         <div className="space-y-6">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">SMTP-Konfiguration</h2>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">{tr('SMTP-Konfiguration', 'SMTP configuration')}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Konfigurieren Sie den SMTP-Server für den Versand von Voicemail-Benachrichtigungen per E-Mail.
+              {tr('Konfigurieren Sie den SMTP-Server für den Versand von Voicemail-Benachrichtigungen per E-Mail.', 'Configure the SMTP server for voicemail email notifications.')}
             </p>
 
             <form onSubmit={handleSave} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SMTP-Server</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('SMTP-Server', 'SMTP server')}</label>
                   <input
                     type="text"
                     value={formData.smtp_host}
@@ -486,7 +487,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Port</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Port', 'Port')}</label>
                   <input
                     type="text"
                     value={formData.smtp_port}
@@ -496,7 +497,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Benutzername</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Benutzername', 'Username')}</label>
                   <input
                     type="text"
                     value={formData.smtp_user}
@@ -506,14 +507,14 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Passwort</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Passwort', 'Password')}</label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={formData.smtp_password}
                       onChange={(e) => setFormData({ ...formData, smtp_password: e.target.value })}
                       className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                      placeholder="Passwort"
+                      placeholder={tr('Passwort', 'Password')}
                     />
                     <button
                       type="button"
@@ -525,7 +526,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Absender-Adresse</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Absender-Adresse', 'From address')}</label>
                   <input
                     type="email"
                     value={formData.smtp_from}
@@ -542,7 +543,7 @@ export default function SettingsPage() {
                       onChange={(e) => setFormData({ ...formData, smtp_tls: e.target.checked ? 'true' : 'false' })}
                       className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500"
                     />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">TLS verwenden</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{tr('TLS verwenden', 'Use TLS')}</span>
                   </label>
                 </div>
               </div>
@@ -554,16 +555,16 @@ export default function SettingsPage() {
                   className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg transition-colors"
                 >
                   <Save className="w-4 h-4" />
-                  {saving ? 'Speichern...' : 'Speichern'}
+                  {saving ? tr('Speichern...', 'Saving...') : tr('Speichern', 'Save')}
                 </button>
               </div>
             </form>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Test-E-Mail senden</h2>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">{tr('Test-E-Mail senden', 'Send test email')}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              Senden Sie eine Test-E-Mail, um die SMTP-Konfiguration zu überprüfen.
+              {tr('Senden Sie eine Test-E-Mail, um die SMTP-Konfiguration zu überprüfen.', 'Send a test email to verify the SMTP configuration.')}
             </p>
             <div className="flex gap-3">
               <input
@@ -571,7 +572,7 @@ export default function SettingsPage() {
                 value={testEmail}
                 onChange={(e) => setTestEmail(e.target.value)}
                 className="flex-1 max-w-md px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                placeholder="empfaenger@example.com"
+                placeholder={tr('empfaenger@example.com', 'recipient@example.com')}
               />
               <button
                 onClick={handleTestEmail}
@@ -579,7 +580,7 @@ export default function SettingsPage() {
                 className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-6 py-2 rounded-lg transition-colors"
               >
                 <Send className="w-4 h-4" />
-                {testing ? 'Sende...' : 'Senden'}
+                {testing ? tr('Sende...', 'Sending...') : tr('Senden', 'Send')}
               </button>
             </div>
           </div>
@@ -589,10 +590,11 @@ export default function SettingsPage() {
       {/* Audio Tab */}
       {activeTab === 'audio' && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Audio-Codecs (Global)</h2>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">{tr('Audio-Codecs (Global)', 'Audio codecs (global)')}</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-            Wählen Sie die Codecs aus, die standardmäßig für alle Nebenstellen verwendet werden.
-            Einzelne Nebenstellen können diese Einstellung überschreiben.
+            {tr('Wählen Sie die Codecs aus, die standardmäßig für alle Nebenstellen verwendet werden.', 'Select the codecs used by default for all extensions.')}
+            {' '}
+            {tr('Einzelne Nebenstellen können diese Einstellung überschreiben.', 'Individual extensions can override this setting.')}
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-6">
@@ -625,7 +627,7 @@ export default function SettingsPage() {
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg transition-colors"
           >
             <Save className="w-4 h-4" />
-            {savingCodecs ? 'Speichern...' : 'Codecs speichern'}
+            {savingCodecs ? tr('Speichern...', 'Saving...') : tr('Codecs speichern', 'Save codecs')}
           </button>
         </div>
       )}
@@ -635,18 +637,20 @@ export default function SettingsPage() {
         <div className="space-y-6">
           {/* IP Whitelist */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">IP-Whitelist für Registrierung</h2>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">{tr('IP-Whitelist für Registrierung', 'IP whitelist for registration')}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Beschränken Sie die SIP-Registrierung auf bestimmte IP-Adressen oder Netzwerke (CIDR).
-              Wenn aktiviert, werden alle anderen IPs blockiert.
+              {tr('Beschränken Sie die SIP-Registrierung auf bestimmte IP-Adressen oder Netzwerke (CIDR).', 'Restrict SIP registration to specific IPs or networks (CIDR).')}
+              {' '}
+              {tr('Wenn aktiviert, werden alle anderen IPs blockiert.', 'When enabled, all other IPs are blocked.')}
             </p>
 
             {whitelistEnabled && (
               <div className="flex items-start gap-2 mb-4 p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg">
                 <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                 <span className="text-sm text-amber-800 dark:text-amber-300">
-                  Achtung: Stellen Sie sicher, dass Ihre eigene IP-Adresse in der Liste enthalten ist,
-                  bevor Sie die Whitelist aktivieren.
+                  {tr('Achtung: Stellen Sie sicher, dass Ihre eigene IP-Adresse in der Liste enthalten ist,', 'Warning: Make sure your own IP address is included,')}
+                  {' '}
+                  {tr('bevor Sie die Whitelist aktivieren.', 'before enabling the whitelist.')}
                 </span>
               </div>
             )}
@@ -666,7 +670,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Whitelist {whitelistEnabled ? 'aktiviert' : 'deaktiviert'}
+                  {tr('Whitelist', 'Whitelist')} {whitelistEnabled ? tr('aktiviert', 'enabled') : tr('deaktiviert', 'disabled')}
                 </span>
               </label>
             </div>
@@ -679,14 +683,14 @@ export default function SettingsPage() {
                   onChange={(e) => setNewIp(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addIp())}
                   className="flex-1 max-w-sm px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  placeholder="z.B. 203.0.113.5 oder 10.0.0.0/24"
+                  placeholder={tr('z.B. 203.0.113.5 oder 10.0.0.0/24', 'e.g. 203.0.113.5 or 10.0.0.0/24')}
                 />
                 <button
                   onClick={addIp}
                   className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg transition-colors"
                 >
                   <Plus className="w-4 h-4" />
-                  Hinzufügen
+                  {tr('Hinzufügen', 'Add')}
                 </button>
               </div>
 
@@ -708,7 +712,7 @@ export default function SettingsPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-400 dark:text-gray-500">Keine IPs konfiguriert</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">{tr('Keine IPs konfiguriert', 'No IPs configured')}</p>
               )}
             </div>
 
@@ -718,7 +722,7 @@ export default function SettingsPage() {
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg transition-colors"
             >
               <Save className="w-4 h-4" />
-              {savingWhitelist ? 'Speichern...' : 'Whitelist speichern'}
+              {savingWhitelist ? tr('Speichern...', 'Saving...') : tr('Whitelist speichern', 'Save whitelist')}
             </button>
           </div>
 
@@ -727,17 +731,17 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <ShieldAlert className="w-5 h-5 text-orange-500 dark:text-orange-400" />
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Schwache SIP-Passwörter</h2>
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('Schwache SIP-Passwörter', 'Weak SIP passwords')}</h2>
               </div>
               <button onClick={fetchWeakPasswords} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1">
                 <RefreshCw className={`w-4 h-4 ${loadingWeak ? 'animate-spin' : ''}`} />
-                Aktualisieren
+                {tr('Aktualisieren', 'Refresh')}
               </button>
             </div>
             {weakPasswords.length === 0 ? (
               <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
                 <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                <span className="text-sm text-green-800 dark:text-green-300">Alle SIP-Passwörter sind ausreichend stark</span>
+                <span className="text-sm text-green-800 dark:text-green-300">{tr('Alle SIP-Passwörter sind ausreichend stark', 'All SIP passwords are sufficiently strong')}</span>
               </div>
             ) : (
               <div className="space-y-2">
@@ -755,7 +759,7 @@ export default function SettingsPage() {
                         />
                       </div>
                       <span className={`text-xs font-medium ${pw.strength.level === 'medium' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {pw.strength.level === 'medium' ? 'Mittel' : 'Schwach'}
+                        {pw.strength.level === 'medium' ? tr('Mittel', 'Medium') : tr('Schwach', 'Weak')}
                       </span>
                     </div>
                   </div>
@@ -769,21 +773,22 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Ban className="w-5 h-5 text-red-500 dark:text-red-400" />
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Fail2Ban-Status</h2>
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('Fail2Ban-Status', 'Fail2Ban status')}</h2>
               </div>
               <button onClick={fetchFail2ban} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1">
                 <RefreshCw className={`w-4 h-4 ${loadingF2b ? 'animate-spin' : ''}`} />
-                Aktualisieren
+                {tr('Aktualisieren', 'Refresh')}
               </button>
             </div>
 
             {!fail2ban ? (
-              <div className="text-center py-4 text-gray-500 dark:text-gray-400">Lade Fail2Ban-Status...</div>
+              <div className="text-center py-4 text-gray-500 dark:text-gray-400">{tr('Lade Fail2Ban-Status...', 'Loading Fail2Ban status...')}</div>
             ) : !fail2ban.available ? (
               <div className="flex items-start gap-2 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <AlertTriangle className="w-4 h-4 text-gray-500 dark:text-gray-400 mt-0.5" />
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Fail2Ban ist nicht verfügbar. {fail2ban.error || 'Stellen Sie sicher, dass Fail2Ban installiert ist.'}
+                  {tr('Fail2Ban ist nicht verfügbar.', 'Fail2Ban is not available.')}{' '}
+                  {fail2ban.error || tr('Stellen Sie sicher, dass Fail2Ban installiert ist.', 'Make sure Fail2Ban is installed.')}
                 </span>
               </div>
             ) : (
@@ -792,22 +797,22 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-center">
                     <div className="text-2xl font-bold text-red-700 dark:text-red-400">{fail2ban.active_bans}</div>
-                    <div className="text-xs text-red-600 dark:text-red-400">Aktive Bans</div>
+                    <div className="text-xs text-red-600 dark:text-red-400">{tr('Aktive Bans', 'Active bans')}</div>
                   </div>
                   <div className="p-3 bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-lg text-center">
                     <div className="text-2xl font-bold text-orange-700 dark:text-orange-400">{fail2ban.bans_24h}</div>
-                    <div className="text-xs text-orange-600 dark:text-orange-400">Bans (24h)</div>
+                    <div className="text-xs text-orange-600 dark:text-orange-400">{tr('Bans (24h)', 'Bans (24h)')}</div>
                   </div>
                   <div className="p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg text-center">
                     <div className="text-2xl font-bold text-gray-700 dark:text-gray-300">{fail2ban.total_bans}</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">Bans gesamt</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">{tr('Bans gesamt', 'Total bans')}</div>
                   </div>
                 </div>
 
                 {/* Jails */}
                 {fail2ban.jails && fail2ban.jails.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Jails</h3>
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{tr('Jails', 'Jails')}</h3>
                     <div className="space-y-2">
                       {fail2ban.jails.map((jail: any) => (
                         <div key={jail.name} className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg">
@@ -816,7 +821,7 @@ export default function SettingsPage() {
                             <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{jail.name}</span>
                           </div>
                           <span className={`text-sm font-medium ${jail.active_bans > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
-                            {jail.active_bans} aktiv
+                            {jail.active_bans} {tr('aktiv', 'active')}
                           </span>
                         </div>
                       ))}
@@ -827,16 +832,16 @@ export default function SettingsPage() {
                 {/* Recent bans */}
                 {fail2ban.recent_bans && fail2ban.recent_bans.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Letzte Bans</h3>
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{tr('Letzte Bans', 'Recent bans')}</h3>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead className="bg-gray-50 dark:bg-gray-700">
                           <tr>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">IP</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jail</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Zeitpunkt</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aktion</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('IP', 'IP')}</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Jail', 'Jail')}</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Zeitpunkt', 'Time')}</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Status', 'Status')}</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Aktion', 'Action')}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -844,28 +849,28 @@ export default function SettingsPage() {
                             <tr key={i}>
                               <td className="px-3 py-2 font-mono text-gray-800 dark:text-gray-200">{ban.ip}</td>
                               <td className="px-3 py-2 text-gray-600 dark:text-gray-400">{ban.jail}</td>
-                              <td className="px-3 py-2 text-gray-600 dark:text-gray-400">{new Date(ban.timestamp).toLocaleString('de-DE')}</td>
+                              <td className="px-3 py-2 text-gray-600 dark:text-gray-400">{new Date(ban.timestamp).toLocaleString(lang === 'en' ? 'en-US' : 'de-DE')}</td>
                               <td className="px-3 py-2">
                                 <span className={`px-2 py-0.5 rounded text-xs font-medium ${ban.active ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>
-                                  {ban.active ? 'Aktiv' : 'Abgelaufen'}
+                                  {ban.active ? tr('Aktiv', 'Active') : tr('Abgelaufen', 'Expired')}
                                 </span>
                               </td>
                               <td className="px-3 py-2">
                                 {ban.active && (
                                   <button
                                     onClick={async () => {
-                                      if (!confirm(`IP ${ban.ip} aus Jail "${ban.jail}" entbannen?`)) return
+                                      if (!confirm(tr(`IP ${ban.ip} aus Jail "${ban.jail}" entbannen?`, `Unban IP ${ban.ip} from jail "${ban.jail}"?`))) return
                                       try {
                                         await api.unbanIp(ban.jail, ban.ip)
                                         fetchFail2ban()
                                       } catch (e: any) {
-                                        alert(e.message || 'Entbannung fehlgeschlagen')
+                                        alert(e.message || tr('Entbannung fehlgeschlagen', 'Unban failed'))
                                       }
                                     }}
                                     className="text-xs text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 flex items-center gap-1"
                                   >
                                     <Unlock className="w-3.5 h-3.5" />
-                                    Entbannen
+                                    {tr('Entbannen', 'Unban')}
                                   </button>
                                 )}
                               </td>
@@ -894,31 +899,31 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Audit-Log</h2>
-              <span className="text-sm text-gray-500 dark:text-gray-400">({auditTotal} Einträge)</span>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('Audit-Log', 'Audit log')}</h2>
+              <span className="text-sm text-gray-500 dark:text-gray-400">({auditTotal} {tr('Einträge', 'entries')})</span>
             </div>
             <button
               onClick={() => fetchAuditLogs(0)}
               className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1"
             >
               <RefreshCw className={`w-4 h-4 ${loadingAudit ? 'animate-spin' : ''}`} />
-              Aktualisieren
+              {tr('Aktualisieren', 'Refresh')}
             </button>
           </div>
 
           {auditLogs.length === 0 && !loadingAudit ? (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">Keine Audit-Log-Einträge vorhanden</div>
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">{tr('Keine Audit-Log-Einträge vorhanden', 'No audit log entries')}</div>
           ) : (
             <>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Zeitpunkt</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Benutzer</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aktion</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Ressource</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Details</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Zeitpunkt', 'Time')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Benutzer', 'User')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Aktion', 'Action')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Ressource', 'Resource')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Details', 'Details')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -927,30 +932,30 @@ export default function SettingsPage() {
                       const isCreate = log.action?.includes('created')
                       const actionColor = isDelete ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30' : isCreate ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30' : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
                       const actionLabel: Record<string, string> = {
-                        peer_created: 'Extension erstellt',
-                        peer_updated: 'Extension bearbeitet',
-                        peer_deleted: 'Extension gelöscht',
-                        trunk_created: 'Trunk erstellt',
-                        trunk_updated: 'Trunk bearbeitet',
-                        trunk_deleted: 'Trunk gelöscht',
-                        route_created: 'Route erstellt',
-                        route_updated: 'Route bearbeitet',
-                        route_deleted: 'Route gelöscht',
-                        user_created: 'Benutzer erstellt',
-                        user_deleted: 'Benutzer gelöscht',
-                        callforward_created: 'Weiterleitung erstellt',
-                        callforward_updated: 'Weiterleitung bearbeitet',
-                        callforward_deleted: 'Weiterleitung gelöscht',
-                        settings_updated: 'Einstellungen geändert',
-                        whitelist_updated: 'IP-Whitelist geändert',
-                        service_restarted: 'Service neu gestartet',
-                        server_reboot: 'Server-Neustart',
-                        ha_settings_updated: 'Home Assistant geändert',
+                        peer_created: tr('Extension erstellt', 'Extension created'),
+                        peer_updated: tr('Extension bearbeitet', 'Extension updated'),
+                        peer_deleted: tr('Extension gelöscht', 'Extension deleted'),
+                        trunk_created: tr('Trunk erstellt', 'Trunk created'),
+                        trunk_updated: tr('Trunk bearbeitet', 'Trunk updated'),
+                        trunk_deleted: tr('Trunk gelöscht', 'Trunk deleted'),
+                        route_created: tr('Route erstellt', 'Route created'),
+                        route_updated: tr('Route bearbeitet', 'Route updated'),
+                        route_deleted: tr('Route gelöscht', 'Route deleted'),
+                        user_created: tr('Benutzer erstellt', 'User created'),
+                        user_deleted: tr('Benutzer gelöscht', 'User deleted'),
+                        callforward_created: tr('Weiterleitung erstellt', 'Forwarding created'),
+                        callforward_updated: tr('Weiterleitung bearbeitet', 'Forwarding updated'),
+                        callforward_deleted: tr('Weiterleitung gelöscht', 'Forwarding deleted'),
+                        settings_updated: tr('Einstellungen geändert', 'Settings changed'),
+                        whitelist_updated: tr('IP-Whitelist geändert', 'IP whitelist changed'),
+                        service_restarted: tr('Service neu gestartet', 'Service restarted'),
+                        server_reboot: tr('Server-Neustart', 'Server reboot'),
+                        ha_settings_updated: tr('Home Assistant geändert', 'Home Assistant updated'),
                       }
                       return (
                         <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                           <td className="px-4 py-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                            {log.timestamp ? new Date(log.timestamp).toLocaleString('de-DE') : '-'}
+                            {log.timestamp ? new Date(log.timestamp).toLocaleString(lang === 'en' ? 'en-US' : 'de-DE') : '-'}
                           </td>
                           <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-200">{log.username}</td>
                           <td className="px-4 py-3">
@@ -979,7 +984,7 @@ export default function SettingsPage() {
                     disabled={loadingAudit}
                     className="px-6 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm transition-colors"
                   >
-                    {loadingAudit ? 'Lade...' : 'Mehr laden'}
+                  {loadingAudit ? tr('Lade...', 'Loading...') : tr('Mehr laden', 'Load more')}
                   </button>
                 </div>
               )}
@@ -993,9 +998,9 @@ export default function SettingsPage() {
         <div className="space-y-6">
           {/* Card 1: API-Zugang */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">API-Zugang</h2>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">{tr('API-Zugang', 'API access')}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Konfigurieren Sie den API-Zugang für die Home Assistant-Integration.
+              {tr('Konfigurieren Sie den API-Zugang für die Home Assistant-Integration.', 'Configure API access for the Home Assistant integration.')}
             </p>
 
             <div className="space-y-4">
@@ -1015,7 +1020,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Integration {haData.ha_enabled === 'true' ? 'aktiviert' : 'deaktiviert'}
+                    {tr('Integration', 'Integration')} {haData.ha_enabled === 'true' ? tr('aktiviert', 'enabled') : tr('deaktiviert', 'disabled')}
                   </span>
                 </label>
               </div>
@@ -1046,13 +1051,13 @@ export default function SettingsPage() {
                     className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap"
                   >
                     <Key className="w-4 h-4" />
-                    {generatingKey ? 'Generiere...' : 'Neuen Key generieren'}
+                    {generatingKey ? tr('Generiere...', 'Generating...') : tr('Neuen Key generieren', 'Generate new key')}
                   </button>
                   {haData.ha_api_key && haData.ha_api_key !== '****' && (
                     <button
-                      onClick={() => { navigator.clipboard.writeText(haData.ha_api_key); setSuccess('API Key kopiert') }}
+                      onClick={() => { navigator.clipboard.writeText(haData.ha_api_key); setSuccess(tr('API Key kopiert', 'API key copied')) }}
                       className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg transition-colors"
-                      title="In Zwischenablage kopieren"
+                      title={tr('In Zwischenablage kopieren', 'Copy to clipboard')}
                     >
                       <Copy className="w-4 h-4" />
                     </button>
@@ -1064,7 +1069,7 @@ export default function SettingsPage() {
               <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-blue-800 dark:text-blue-300">
-                  <p>Verwenden Sie diesen API Key in Ihrer Home Assistant <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded">configuration.yaml</code>:</p>
+                  <p>{tr('Verwenden Sie diesen API Key in Ihrer Home Assistant', 'Use this API key in your Home Assistant')} <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded">configuration.yaml</code>:</p>
                   <pre className="mt-2 text-xs bg-blue-100 dark:bg-blue-900/50 p-2 rounded font-mono overflow-x-auto">
 {`rest_command:
   gonopbx_call:
@@ -1081,15 +1086,16 @@ export default function SettingsPage() {
 
           {/* Card 2: MQTT Echtzeit-Events */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">MQTT Echtzeit-Events</h2>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">{tr('MQTT Echtzeit-Events', 'MQTT real-time events')}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              GonoPBX publiziert Anruf-Events, Extension- und Trunk-Status per MQTT.
-              Verbinden Sie es mit Ihrem MQTT-Broker (z.B. Mosquitto in Home Assistant).
+              {tr('GonoPBX publiziert Anruf-Events, Extension- und Trunk-Status per MQTT.', 'GonoPBX publishes call events, extension and trunk status via MQTT.')}
+              {' '}
+              {tr('Verbinden Sie es mit Ihrem MQTT-Broker (z.B. Mosquitto in Home Assistant).', 'Connect it to your MQTT broker (e.g. Mosquitto in Home Assistant).')}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Broker (IP/Hostname)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Broker (IP/Hostname)', 'Broker (IP/hostname)')}</label>
                 <input
                   type="text"
                   value={haData.mqtt_broker}
@@ -1099,7 +1105,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Port</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Port', 'Port')}</label>
                 <input
                   type="text"
                   value={haData.mqtt_port}
@@ -1109,7 +1115,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Benutzername <span className="text-gray-400 font-normal">(optional)</span></label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Benutzername', 'Username')} <span className="text-gray-400 font-normal">({tr('optional', 'optional')})</span></label>
                 <input
                   type="text"
                   value={haData.mqtt_user}
@@ -1119,14 +1125,14 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Passwort <span className="text-gray-400 font-normal">(optional)</span></label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Passwort', 'Password')} <span className="text-gray-400 font-normal">({tr('optional', 'optional')})</span></label>
                 <div className="relative">
                   <input
                     type={showMqttPassword ? 'text' : 'password'}
                     value={haData.mqtt_password}
                     onChange={(e) => setHaData(prev => ({ ...prev, mqtt_password: e.target.value }))}
                     className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    placeholder="Passwort"
+                    placeholder={tr('Passwort', 'Password')}
                   />
                   <button
                     type="button"
@@ -1163,7 +1169,7 @@ export default function SettingsPage() {
                 className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 text-gray-700 dark:text-gray-300 px-5 py-2 rounded-lg transition-colors"
               >
                 <Wifi className={`w-4 h-4 ${testingMqtt ? 'animate-pulse' : ''}`} />
-                {testingMqtt ? 'Teste...' : 'Verbindung testen'}
+                {testingMqtt ? tr('Teste...', 'Testing...') : tr('Verbindung testen', 'Test connection')}
               </button>
               <button
                 onClick={handleSaveHA}
@@ -1171,7 +1177,7 @@ export default function SettingsPage() {
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg transition-colors"
               >
                 <Save className="w-4 h-4" />
-                {savingHA ? 'Speichern...' : 'Speichern'}
+                {savingHA ? tr('Speichern...', 'Saving...') : tr('Speichern', 'Save')}
               </button>
             </div>
           </div>
@@ -1184,13 +1190,13 @@ export default function SettingsPage() {
           {/* System Info */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">System-Information</h2>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('System-Information', 'System information')}</h2>
               <button
                 onClick={fetchServerInfo}
                 className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                Aktualisieren
+                {tr('Aktualisieren', 'Refresh')}
               </button>
             </div>
 
@@ -1203,7 +1209,7 @@ export default function SettingsPage() {
                       <ServerIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">Version</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{tr('Version', 'Version')}</div>
                       <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">v{serverInfo.version}</div>
                     </div>
                   </div>
@@ -1212,7 +1218,7 @@ export default function SettingsPage() {
                       <Clock className="w-5 h-5 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">Uptime</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{tr('Uptime', 'Uptime')}</div>
                       <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">{serverInfo.uptime}</div>
                     </div>
                   </div>
@@ -1223,7 +1229,7 @@ export default function SettingsPage() {
                   <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <HardDrive className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Festplatte</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{tr('Festplatte', 'Disk')}</span>
                     </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5 mb-1">
                       <div
@@ -1232,13 +1238,13 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {serverInfo.disk.used_gb} GB / {serverInfo.disk.total_gb} GB belegt ({serverInfo.disk.percent}%)
+                      {serverInfo.disk.used_gb} GB / {serverInfo.disk.total_gb} GB {tr('belegt', 'used')} ({serverInfo.disk.percent}%)
                     </div>
                   </div>
                   <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <Cpu className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Arbeitsspeicher</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{tr('Arbeitsspeicher', 'Memory')}</span>
                     </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5 mb-1">
                       <div
@@ -1247,7 +1253,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {serverInfo.memory.used_mb} MB / {serverInfo.memory.total_mb} MB belegt ({serverInfo.memory.percent}%)
+                      {serverInfo.memory.used_mb} MB / {serverInfo.memory.total_mb} MB {tr('belegt', 'used')} ({serverInfo.memory.percent}%)
                     </div>
                   </div>
                 </div>
@@ -1255,7 +1261,7 @@ export default function SettingsPage() {
                 {/* Container Status */}
                 {serverInfo.containers.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Container-Status</h3>
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{tr('Container-Status', 'Container status')}</h3>
                     <div className="space-y-2">
                       {serverInfo.containers.map(c => (
                         <div key={c.name} className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -1277,7 +1283,7 @@ export default function SettingsPage() {
                               className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 disabled:text-gray-400 dark:disabled:text-gray-500 transition-colors"
                             >
                               <RefreshCw className={`w-3.5 h-3.5 ${restartingService === c.service ? 'animate-spin' : ''}`} />
-                              {restartingService === c.service ? 'Startet...' : 'Neustart'}
+                              {restartingService === c.service ? tr('Startet...', 'Starting...') : tr('Neustart', 'Restart')}
                             </button>
                           )}
                         </div>
@@ -1287,7 +1293,7 @@ export default function SettingsPage() {
                 )}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">Lade System-Informationen...</div>
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">{tr('Lade System-Informationen...', 'Loading system information...')}</div>
             )}
           </div>
 
@@ -1295,7 +1301,7 @@ export default function SettingsPage() {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center gap-2 mb-4">
               <Download className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Updates</h2>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('Updates', 'Updates')}</h2>
             </div>
 
             {updateInfo?.update_available && (
@@ -1303,10 +1309,10 @@ export default function SettingsPage() {
                 <ArrowUpCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-blue-800 dark:text-blue-300">
-                    Neue Version verfügbar: v{updateInfo.latest_version}
+                    {tr('Neue Version verfügbar', 'New version available')}: v{updateInfo.latest_version}
                   </div>
                   <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                    Aktuelle Version: v{updateInfo.current_version}
+                    {tr('Aktuelle Version', 'Current version')}: v{updateInfo.current_version}
                   </div>
                   {updateInfo.release_notes && (
                     <pre className="text-xs text-blue-700 dark:text-blue-300 mt-2 whitespace-pre-wrap font-sans max-h-40 overflow-y-auto">
@@ -1320,21 +1326,21 @@ export default function SettingsPage() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-xs text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mt-2 underline"
                     >
-                      Release auf GitHub ansehen
+                      {tr('Release auf GitHub ansehen', 'View release on GitHub')}
                     </a>
                   )}
                   <button
                     onClick={async () => {
-                      if (!confirm(`Update auf v${updateInfo.latest_version} installieren? Alle Container werden neu gebaut. Aktive Gespräche werden nicht unterbrochen, aber die Weboberfläche ist kurzzeitig nicht erreichbar.`)) return
+                      if (!confirm(tr(`Update auf v${updateInfo.latest_version} installieren? Alle Container werden neu gebaut. Aktive Gespräche werden nicht unterbrochen, aber die Weboberfläche ist kurzzeitig nicht erreichbar.`, `Install update v${updateInfo.latest_version}? All containers will be rebuilt. Active calls are not interrupted, but the UI will be briefly unavailable.`))) return
                       setInstallingUpdate(true)
                       setError('')
                       setSuccess('')
                       try {
                         const result = await api.installUpdate()
-                        setSuccess(result.message || 'Update wird installiert...')
+                        setSuccess(result.message || tr('Update wird installiert...', 'Update is being installed...'))
                         setTimeout(() => window.location.reload(), 90000)
                       } catch (err: any) {
-                        setError(err.message || 'Update fehlgeschlagen')
+                        setError(err.message || tr('Update fehlgeschlagen', 'Update failed'))
                         setInstallingUpdate(false)
                       }
                     }}
@@ -1342,7 +1348,7 @@ export default function SettingsPage() {
                     className="mt-3 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-5 py-2 rounded-lg transition-colors text-sm"
                   >
                     <Download className={`w-4 h-4 ${installingUpdate ? 'animate-bounce' : ''}`} />
-                    {installingUpdate ? 'Update wird installiert...' : `Update auf v${updateInfo.latest_version} installieren`}
+                    {installingUpdate ? tr('Update wird installiert...', 'Update is being installed...') : tr(`Update auf v${updateInfo.latest_version} installieren`, `Install update v${updateInfo.latest_version}`)}
                   </button>
                 </div>
               </div>
@@ -1352,9 +1358,9 @@ export default function SettingsPage() {
               <div className="flex items-center gap-3 p-4 mb-4 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg">
                 <RefreshCw className="w-5 h-5 text-amber-600 dark:text-amber-400 animate-spin flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-medium text-amber-800 dark:text-amber-300">Update wird installiert...</div>
+                  <div className="text-sm font-medium text-amber-800 dark:text-amber-300">{tr('Update wird installiert...', 'Update is being installed...')}</div>
                   <div className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                    Die Container werden neu gebaut. Die Seite wird automatisch neu geladen.
+                    {tr('Die Container werden neu gebaut. Die Seite wird automatisch neu geladen.', 'Containers are rebuilding. The page will reload automatically.')}
                   </div>
                 </div>
               </div>
@@ -1363,7 +1369,7 @@ export default function SettingsPage() {
             {updateInfo && !updateInfo.update_available && (
               <div className="flex items-center gap-2 p-3 mb-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
                 <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                <span className="text-sm text-green-800 dark:text-green-300">GonoPBX v{updateInfo.current_version} ist aktuell</span>
+                <span className="text-sm text-green-800 dark:text-green-300">{tr('GonoPBX', 'GonoPBX')} v{updateInfo.current_version} {tr('ist aktuell', 'is up to date')}</span>
               </div>
             )}
 
@@ -1373,7 +1379,7 @@ export default function SettingsPage() {
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg transition-colors"
             >
               <RefreshCw className={`w-4 h-4 ${checkingUpdate ? 'animate-spin' : ''}`} />
-              {checkingUpdate ? 'Prüfe...' : 'Auf Updates prüfen'}
+              {checkingUpdate ? tr('Prüfe...', 'Checking...') : tr('Auf Updates prüfen', 'Check for updates')}
             </button>
           </div>
 
@@ -1381,10 +1387,10 @@ export default function SettingsPage() {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-red-100 dark:border-red-900 p-6">
             <div className="flex items-center gap-2 mb-4">
               <Power className="w-5 h-5 text-red-500 dark:text-red-400" />
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Server neu starten</h2>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('Server neu starten', 'Restart server')}</h2>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              Startet den gesamten Server neu. Alle aktiven Verbindungen und Gespräche werden getrennt.
+              {tr('Startet den gesamten Server neu. Alle aktiven Verbindungen und Gespräche werden getrennt.', 'Restarts the entire server. All active connections and calls will be dropped.')}
             </p>
             <button
               onClick={handleReboot}
@@ -1392,7 +1398,7 @@ export default function SettingsPage() {
               className="flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-6 py-2 rounded-lg transition-colors"
             >
               <Power className="w-4 h-4" />
-              {rebooting ? 'Server startet neu...' : 'Server neu starten'}
+              {rebooting ? tr('Server startet neu...', 'Server is rebooting...') : tr('Server neu starten', 'Restart server')}
             </button>
           </div>
         </div>

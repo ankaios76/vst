@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import './VoicemailPlayer.css';
+import { useI18n } from '../context/I18nContext';
 
 interface Voicemail {
   id: number;
@@ -17,6 +18,7 @@ interface VoicemailPlayerProps {
 }
 
 const VoicemailPlayer: React.FC<VoicemailPlayerProps> = ({ voicemail, onDelete }) => {
+  const { tr } = useI18n();
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -95,7 +97,7 @@ const VoicemailPlayer: React.FC<VoicemailPlayerProps> = ({ voicemail, onDelete }
         <button
           className="control-btn skip-btn"
           onClick={() => skip(-10)}
-          title="10 Sekunden zurück"
+          title={tr('10 Sekunden zurück', '10 seconds back')}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
@@ -106,7 +108,7 @@ const VoicemailPlayer: React.FC<VoicemailPlayerProps> = ({ voicemail, onDelete }
         <button
           className="control-btn play-btn"
           onClick={togglePlay}
-          title={isPlaying ? 'Pause' : 'Abspielen'}
+          title={isPlaying ? tr('Pause', 'Pause') : tr('Abspielen', 'Play')}
         >
           {isPlaying ? (
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -123,7 +125,7 @@ const VoicemailPlayer: React.FC<VoicemailPlayerProps> = ({ voicemail, onDelete }
         <button
           className="control-btn skip-btn"
           onClick={() => skip(10)}
-          title="10 Sekunden vor"
+          title={tr('10 Sekunden vor', '10 seconds forward')}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M13 5l7 7-7 7M5 5l7 7-7 7" />
@@ -148,7 +150,7 @@ const VoicemailPlayer: React.FC<VoicemailPlayerProps> = ({ voicemail, onDelete }
 
       <div className="player-actions">
         <div className="speed-control">
-          <span className="speed-label">Geschwindigkeit:</span>
+          <span className="speed-label">{tr('Geschwindigkeit:', 'Speed:')}</span>
           <div className="speed-buttons">
             {[0.75, 1, 1.25, 1.5, 2].map(speed => (
               <button
@@ -165,7 +167,7 @@ const VoicemailPlayer: React.FC<VoicemailPlayerProps> = ({ voicemail, onDelete }
         <button
           className="delete-btn"
           onClick={onDelete}
-          title="Voicemail löschen"
+          title={tr('Voicemail löschen', 'Delete voicemail')}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="3 6 5 6 21 6" />
@@ -173,7 +175,7 @@ const VoicemailPlayer: React.FC<VoicemailPlayerProps> = ({ voicemail, onDelete }
             <line x1="10" y1="11" x2="10" y2="17" />
             <line x1="14" y1="11" x2="14" y2="17" />
           </svg>
-          Löschen
+          {tr('Löschen', 'Delete')}
         </button>
       </div>
     </div>

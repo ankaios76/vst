@@ -60,7 +60,10 @@ services:
       - pbx_network
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        - VITE_UI_LANG=${UI_LANG:-de}
     container_name: pbx_frontend
     restart: unless-stopped
     ports:

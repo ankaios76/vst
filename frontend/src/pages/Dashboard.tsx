@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Phone, PhoneIncoming, PhoneOutgoing, CheckCircle, XCircle, Server, History, ArrowRight, ArrowDownLeft, ArrowUpRight, Repeat2, Clock } from 'lucide-react'
 import { api } from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import { useI18n } from '../context/I18nContext'
 
 interface SystemStatus {
   asterisk: string
@@ -22,16 +23,6 @@ interface SystemStatus {
     database: string
     api: string
   }
-}
-
-const PROVIDER_INFO: Record<string, { label: string; logo?: string }> = {
-  plusnet_basic: { label: 'Plusnet IPfonie Basic/Extended', logo: '/logos/plusnet.svg' },
-  plusnet_connect: { label: 'Plusnet IPfonie Extended Connect', logo: '/logos/plusnet.svg' },
-  dusnet: { label: 'dus.net', logo: '/logos/dusnet.svg' },
-  telekom_deutschlandlan: { label: 'Telekom DeutschlandLAN SIP-Trunk', logo: '/logos/telekom.jpg' },
-  telekom_companyflex: { label: 'Telekom CompanyFlex SIP-Trunk', logo: '/logos/telekom.jpg' },
-  telekom_allip: { label: 'Telekom All-IP (Privat)', logo: '/logos/telekom.jpg' },
-  iliad_it: { label: 'Iliad (Italien)' },
 }
 
 interface InboundRoute {
@@ -66,6 +57,16 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
   const [routes, setRoutes] = useState<InboundRoute[]>([])
   const [recentCalls, setRecentCalls] = useState<CDRRecord[]>([])
   const [loading, setLoading] = useState(true)
+  const { tr, lang } = useI18n()
+  const PROVIDER_INFO: Record<string, { label: string; logo?: string }> = {
+    plusnet_basic: { label: 'Plusnet IPfonie Basic/Extended', logo: '/logos/plusnet.svg' },
+    plusnet_connect: { label: 'Plusnet IPfonie Extended Connect', logo: '/logos/plusnet.svg' },
+    dusnet: { label: 'dus.net', logo: '/logos/dusnet.svg' },
+    telekom_deutschlandlan: { label: tr('Telekom DeutschlandLAN SIP-Trunk', 'Telekom DeutschlandLAN SIP Trunk'), logo: '/logos/telekom.jpg' },
+    telekom_companyflex: { label: tr('Telekom CompanyFlex SIP-Trunk', 'Telekom CompanyFlex SIP Trunk'), logo: '/logos/telekom.jpg' },
+    telekom_allip: { label: tr('Telekom All-IP (Privat)', 'Telekom All-IP (Residential)'), logo: '/logos/telekom.jpg' },
+    iliad_it: { label: tr('Iliad (Italien)', 'Iliad (Italy)') },
+  }
 
   const fetchStatus = async () => {
     try {
@@ -79,7 +80,7 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
       setRoutes(routesData || [])
       setRecentCalls(cdrData || [])
     } catch (error) {
-      console.error('Failed to fetch status:', error)
+      console.error(tr('Status konnte nicht geladen werden:', 'Failed to fetch status:'), error)
     } finally {
       setLoading(false)
     }
@@ -98,13 +99,13 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
 
   const getGreeting = () => {
     const hour = new Date().getHours()
-    if (hour < 10) return 'Moin'
-    if (hour < 17) return 'Hallo'
-    return 'Guten Abend'
+    if (hour < 10) return tr('Moin', 'Good morning')
+    if (hour < 17) return tr('Hallo', 'Hello')
+    return tr('Guten Abend', 'Good evening')
   }
 
   const getFormattedDate = () => {
-    return new Date().toLocaleDateString('de-DE', {
+    return new Date().toLocaleDateString(lang === 'en' ? 'en-US' : 'de-DE', {
       weekday: 'long',
       day: '2-digit',
       month: '2-digit',
@@ -124,9 +125,9 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
     const now = new Date()
     const isToday = d.toDateString() === now.toDateString()
     if (isToday) {
-      return d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+      return d.toLocaleTimeString(lang === 'en' ? 'en-US' : 'de-DE', { hour: '2-digit', minute: '2-digit' })
     }
-    return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+    return d.toLocaleDateString(lang === 'en' ? 'en-US' : 'de-DE', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString(lang === 'en' ? 'en-US' : 'de-DE', { hour: '2-digit', minute: '2-digit' })
   }
 
   // Find extension display name
@@ -199,11 +200,11 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
   const getDirectionLabel = (direction: 'inbound' | 'outbound' | 'internal') => {
     switch (direction) {
       case 'inbound':
-        return 'Eingehend'
+        return tr('Eingehend', 'Inbound')
       case 'outbound':
-        return 'Ausgehend'
+        return tr('Ausgehend', 'Outbound')
       case 'internal':
-        return 'Intern'
+        return tr('Intern', 'Internal')
     }
   }
 
@@ -228,7 +229,7 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow px-6 h-full flex items-center">
           <div>
             <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {getGreeting()}, {user?.full_name || user?.username || 'User'}
+              {getGreeting()}, {user?.full_name || user?.username || tr('User', 'User')}
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{getFormattedDate()}</p>
           </div>
@@ -239,7 +240,7 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
           <div>
             <p className="text-sm text-gray-600 dark:text-gray-400">GonoPBX</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {status?.asterisk === 'connected' ? 'Online' : 'Offline'}
+              {status?.asterisk === 'connected' ? tr('Online', 'Online') : tr('Offline', 'Offline')}
             </p>
             {status?.version && (
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">v{status.version}</p>
@@ -255,7 +256,7 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
         {/* Endpoints */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow px-6 h-full flex items-center">
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-gray-600 dark:text-gray-400">Endpoints Online</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{tr('Endpoints Online', 'Endpoints Online')}</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {onlineEndpoints} / {totalEndpoints}
             </p>
@@ -279,7 +280,7 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
                   const providerKey = (ep as any).provider || ''
                   const provider = PROVIDER_INFO[providerKey]
                   return (
-                    <div key={ep.endpoint} className="relative" title={`${ep.user_name || ep.display_name || ep.endpoint} (${isOnline ? 'online' : 'offline'})`}>
+                    <div key={ep.endpoint} className="relative" title={`${ep.user_name || ep.display_name || ep.endpoint} (${isOnline ? tr('online', 'online') : tr('offline', 'offline')})`}>
                       {isTrunk && provider?.logo ? (
                         <img
                           src={provider.logo}
@@ -305,7 +306,7 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
                   <button
                     onClick={() => onNavigate?.('settings')}
                     className={`${avatarSize} rounded-full bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-400 flex items-center justify-center font-semibold ring-2 ring-white hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer`}
-                    title="Alle Endpoints anzeigen"
+                    title={tr('Alle Endpoints anzeigen', 'Show all endpoints')}
                   >
                     +{overflow}
                   </button>
@@ -321,11 +322,11 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex items-center gap-2 mb-4">
           <Server className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Leitungen</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{tr('Leitungen', 'Trunks')}</h2>
         </div>
 
         {loading ? (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-4">Laden...</p>
+          <p className="text-gray-500 dark:text-gray-400 text-center py-4">{tr('Laden...', 'Loading...')}</p>
         ) : status?.endpoints?.filter(e => e.type === 'trunk').length ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {status.endpoints.filter(e => e.type === 'trunk').map(endpoint => {
@@ -366,7 +367,7 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
             })}
           </div>
         ) : (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-4">Keine Leitungen konfiguriert</p>
+          <p className="text-gray-500 dark:text-gray-400 text-center py-4">{tr('Keine Leitungen konfiguriert', 'No trunks configured')}</p>
         )}
       </div>
 
@@ -374,11 +375,11 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex items-center gap-2 mb-4">
           <Phone className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Nebenstellen</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{tr('Nebenstellen', 'Extensions')}</h2>
         </div>
 
         {loading ? (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-4">Laden...</p>
+          <p className="text-gray-500 dark:text-gray-400 text-center py-4">{tr('Laden...', 'Loading...')}</p>
         ) : status?.endpoints?.filter(e => e.type !== 'trunk').length ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {status.endpoints.filter(e => e.type !== 'trunk').map(endpoint => (
@@ -429,7 +430,7 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-4">Keine Nebenstellen registriert</p>
+          <p className="text-gray-500 dark:text-gray-400 text-center py-4">{tr('Keine Nebenstellen registriert', 'No extensions registered')}</p>
         )}
       </div>
 
@@ -438,19 +439,19 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
         <div className="px-6 py-4 border-b dark:border-gray-700 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <History className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Letzte Anrufe</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{tr('Letzte Anrufe', 'Recent Calls')}</h2>
           </div>
           <button
             onClick={() => onNavigate?.('cdr')}
             className="flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 font-medium transition"
           >
-            Alle Anrufe
+            {tr('Alle Anrufe', 'All calls')}
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
 
         {loading ? (
-          <div className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">Laden...</div>
+          <div className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">{tr('Laden...', 'Loading...')}</div>
         ) : recentCalls.length > 0 ? (
           <div className="divide-y dark:divide-gray-700">
             {recentCalls.map(call => {
@@ -489,7 +490,7 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
             })}
           </div>
         ) : (
-          <div className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">Keine Anrufe vorhanden</div>
+          <div className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">{tr('Keine Anrufe vorhanden', 'No calls found')}</div>
         )}
       </div>
     </div>

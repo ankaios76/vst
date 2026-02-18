@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { ToggleLeft, ToggleRight, RefreshCw, ChevronDown, ChevronRight, ArrowRight, ArrowLeft } from 'lucide-react'
 import { api } from '../services/api'
+import { useI18n } from '../context/I18nContext'
 
 interface SIPCall {
   call_id: string
@@ -23,6 +24,7 @@ interface SIPMessageData {
 }
 
 export default function SIPDebugPage() {
+  const { tr, lang } = useI18n()
   const [enabled, setEnabled] = useState(false)
   const [messageCount, setMessageCount] = useState(0)
   const [callCount, setCallCount] = useState(0)
@@ -41,7 +43,7 @@ export default function SIPDebugPage() {
       setMessageCount(data.message_count)
       setCallCount(data.call_count)
     } catch (e) {
-      console.error('Failed to fetch SIP debug status', e)
+      console.error(tr('SIP-Debug-Status konnte nicht geladen werden', 'Failed to fetch SIP debug status'), e)
     }
   }
 
@@ -50,7 +52,7 @@ export default function SIPDebugPage() {
       const data = await api.getSipDebugCalls()
       setCalls(data)
     } catch (e) {
-      console.error('Failed to fetch SIP debug calls', e)
+      console.error(tr('SIP-Debug-Anrufe konnten nicht geladen werden', 'Failed to fetch SIP debug calls'), e)
     }
   }
 
@@ -59,7 +61,7 @@ export default function SIPDebugPage() {
       const data = await api.getSipDebugMessages(callId)
       setMessages(data)
     } catch (e) {
-      console.error('Failed to fetch SIP debug messages', e)
+      console.error(tr('SIP-Debug-Nachrichten konnten nicht geladen werden', 'Failed to fetch SIP debug messages'), e)
     }
   }
 
@@ -73,7 +75,7 @@ export default function SIPDebugPage() {
       }
       await fetchStatus()
     } catch (e) {
-      console.error('Failed to toggle SIP debug', e)
+      console.error(tr('SIP-Debug konnte nicht umgeschaltet werden', 'Failed to toggle SIP debug'), e)
     } finally {
       setToggling(false)
     }
@@ -134,12 +136,12 @@ export default function SIPDebugPage() {
 
   const formatTime = (iso: string) => {
     const d = new Date(iso + 'Z')
-    return d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    return d.toLocaleTimeString(lang === 'en' ? 'en-US' : 'de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   }
 
   const formatDateTime = (iso: string) => {
     const d = new Date(iso + 'Z')
-    return d.toLocaleString('de-DE', {
+    return d.toLocaleString(lang === 'en' ? 'en-US' : 'de-DE', {
       day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
     })
   }
@@ -167,7 +169,7 @@ export default function SIPDebugPage() {
               onClick={toggleCapture}
               disabled={toggling}
               className="flex items-center gap-2 transition-colors"
-              title={enabled ? 'Capture deaktivieren' : 'Capture aktivieren'}
+              title={enabled ? tr('Capture deaktivieren', 'Disable capture') : tr('Capture aktivieren', 'Enable capture')}
             >
               {enabled ? (
                 <ToggleRight className="w-8 h-8 text-green-500" />
@@ -175,22 +177,22 @@ export default function SIPDebugPage() {
                 <ToggleLeft className="w-8 h-8 text-gray-400" />
               )}
               <span className={`text-sm font-medium ${enabled ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
-                {toggling ? '...' : enabled ? 'Aktiv' : 'Inaktiv'}
+                {toggling ? '...' : enabled ? tr('Aktiv', 'Active') : tr('Inaktiv', 'Inactive')}
               </span>
             </button>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              <span className="font-medium text-gray-700 dark:text-gray-300">{messageCount}</span> Nachrichten
+              <span className="font-medium text-gray-700 dark:text-gray-300">{messageCount}</span> {tr('Nachrichten', 'messages')}
               {' / '}
-              <span className="font-medium text-gray-700 dark:text-gray-300">{callCount}</span> Calls
+              <span className="font-medium text-gray-700 dark:text-gray-300">{callCount}</span> {tr('Calls', 'calls')}
             </div>
             <button
               onClick={refresh}
               disabled={loading}
               className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              title="Aktualisieren"
+              title={tr('Aktualisieren', 'Refresh')}
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
@@ -198,7 +200,7 @@ export default function SIPDebugPage() {
         </div>
         {enabled && (
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-            Auto-Refresh alle 10 Sekunden. Nachrichten werden max. 2 Stunden gespeichert.
+            {tr('Auto-Refresh alle 10 Sekunden. Nachrichten werden max. 2 Stunden gespeichert.', 'Auto-refresh every 10 seconds. Messages are kept for up to 2 hours.')}
           </p>
         )}
       </div>
@@ -207,8 +209,8 @@ export default function SIPDebugPage() {
       {calls.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 text-center text-gray-500 dark:text-gray-400">
           {enabled
-            ? 'Noch keine SIP-Nachrichten erfasst. Starten Sie einen Anruf.'
-            : 'Capture ist deaktiviert. Aktivieren Sie den Toggle oben.'}
+            ? tr('Noch keine SIP-Nachrichten erfasst. Starten Sie einen Anruf.', 'No SIP messages captured yet. Start a call.')
+            : tr('Capture ist deaktiviert. Aktivieren Sie den Toggle oben.', 'Capture is disabled. Enable the toggle above.')}
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
@@ -217,11 +219,11 @@ export default function SIPDebugPage() {
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-700/50 text-left">
                   <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300 w-8"></th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Zeit</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Call-ID</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Von</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Nach</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Methode</th>
+                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Zeit', 'Time')}</th>
+                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Call-ID', 'Call ID')}</th>
+                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Von', 'From')}</th>
+                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Nach', 'To')}</th>
+                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Methode', 'Method')}</th>
                   <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300 text-right">Msgs</th>
                 </tr>
               </thead>

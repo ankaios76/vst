@@ -11,12 +11,14 @@ import ContactsPage from './pages/ContactsPage'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
 import { api } from './services/api'
+import { useI18n } from './context/I18nContext'
 
 type Page = 'dashboard' | 'extension-detail' | 'trunk-detail' | 'cdr' | 'settings' | 'faq' | 'contacts'
 
 function AppContent() {
   const { user, isAuthenticated, isLoading, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
+  const { tr } = useI18n()
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
   const [selectedExtension, setSelectedExtension] = useState<string>('')
   const [selectedTrunkId, setSelectedTrunkId] = useState<number>(0)
@@ -45,23 +47,23 @@ function AppContent() {
     setPwError('')
     setPwSuccess('')
     if (newPw.length < 6) {
-      setPwError('Das neue Passwort muss mindestens 6 Zeichen lang sein')
+      setPwError(tr('Das neue Passwort muss mindestens 6 Zeichen lang sein', 'The new password must be at least 6 characters long'))
       return
     }
     if (newPw !== newPwRepeat) {
-      setPwError('Die Passwörter stimmen nicht überein')
+      setPwError(tr('Die Passwörter stimmen nicht überein', 'The passwords do not match'))
       return
     }
     setPwSaving(true)
     try {
       await api.changeMyPassword(currentPw, newPw)
-      setPwSuccess('Passwort erfolgreich geändert')
+      setPwSuccess(tr('Passwort erfolgreich geändert', 'Password successfully changed'))
       setCurrentPw('')
       setNewPw('')
       setNewPwRepeat('')
       setTimeout(() => setShowPwModal(false), 1500)
     } catch (err: any) {
-      setPwError(err.message || 'Passwort konnte nicht geändert werden')
+      setPwError(err.message || tr('Passwort konnte nicht geändert werden', 'Password could not be changed'))
     } finally {
       setPwSaving(false)
     }
@@ -79,7 +81,7 @@ function AppContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-gray-500 dark:text-gray-400">Lade...</div>
+        <div className="text-gray-500 dark:text-gray-400">{tr('Lade...', 'Loading...')}</div>
       </div>
     )
   }
@@ -89,13 +91,13 @@ function AppContent() {
   }
 
   const navigation = [
-    { id: 'dashboard' as Page, name: 'Dashboard', icon: Phone },
-    { id: 'cdr' as Page, name: 'Anrufverlauf', icon: History },
-    { id: 'contacts' as Page, name: 'Telefonbuch', icon: BookUser },
+    { id: 'dashboard' as Page, name: tr('Dashboard', 'Dashboard'), icon: Phone },
+    { id: 'cdr' as Page, name: tr('Anrufverlauf', 'Call History'), icon: History },
+    { id: 'contacts' as Page, name: tr('Telefonbuch', 'Contacts'), icon: BookUser },
     { id: 'faq' as Page, name: 'FAQ', icon: HelpCircle },
     ...(user?.role === 'admin'
       ? [
-          { id: 'settings' as Page, name: 'Einstellungen', icon: Settings },
+          { id: 'settings' as Page, name: tr('Einstellungen', 'Settings'), icon: Settings },
         ]
       : []),
   ]
@@ -156,7 +158,7 @@ function AppContent() {
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors ml-2"
-                title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                title={theme === 'dark' ? tr('Light Mode', 'Light Mode') : tr('Dark Mode', 'Dark Mode')}
               >
                 {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
@@ -166,7 +168,7 @@ function AppContent() {
                 <button
                   onClick={openPwModal}
                   className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 px-1 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  title={`${user?.full_name || user?.username} – Passwort ändern`}
+                  title={`${user?.full_name || user?.username} – ${tr('Passwort ändern', 'Change password')}`}
                 >
                   {user?.avatar_url ? (
                     <img
@@ -181,14 +183,14 @@ function AppContent() {
                   )}
                   {user?.role === 'admin' && (
                     <span className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400 px-1.5 py-0.5 rounded-full">
-                      Admin
+                      {tr('Admin', 'Admin')}
                     </span>
                   )}
                 </button>
                 <button
                   onClick={logout}
                   className="flex items-center gap-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
-                  title="Abmelden"
+                  title={tr('Abmelden', 'Sign out')}
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -245,14 +247,14 @@ function AppContent() {
               className="flex items-center gap-3 w-full px-4 py-3 text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700"
             >
               <KeyRound className="w-5 h-5" />
-              Passwort ändern
+              {tr('Passwort ändern', 'Change password')}
             </button>
             <button
               onClick={logout}
               className="flex items-center gap-3 w-full px-4 py-3 text-red-600 dark:text-red-400 border-t border-gray-200 dark:border-gray-700"
             >
               <LogOut className="w-5 h-5" />
-              Abmelden ({user?.username})
+              {tr('Abmelden', 'Sign out')} ({user?.username})
             </button>
           </nav>
         )}
@@ -265,7 +267,7 @@ function AppContent() {
 
       {/* Footer */}
       <footer className="text-center py-4 text-xs text-gray-400 dark:text-gray-600">
-        &copy; {new Date().getFullYear()} Norbert Hengsteler. Alle Rechte vorbehalten. · Made with <span className="text-red-500">❤</span> in Bremen
+        &copy; {new Date().getFullYear()} Norbert Hengsteler. {tr('Alle Rechte vorbehalten.', 'All rights reserved.')} · Made with <span className="text-red-500">❤</span> in Bremen
       </footer>
 
       {/* Password Change Modal */}
@@ -273,7 +275,7 @@ function AppContent() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Passwort ändern</h2>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('Passwort ändern', 'Change password')}</h2>
               <button onClick={() => setShowPwModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                 <X className="w-5 h-5" />
               </button>
@@ -292,7 +294,7 @@ function AppContent() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Aktuelles Passwort</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Aktuelles Passwort', 'Current password')}</label>
                 <input
                   type="password"
                   value={currentPw}
@@ -302,17 +304,17 @@ function AppContent() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Neues Passwort</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Neues Passwort', 'New password')}</label>
                 <input
                   type="password"
                   value={newPw}
                   onChange={(e) => setNewPw(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  placeholder="Mindestens 6 Zeichen"
+                  placeholder={tr('Mindestens 6 Zeichen', 'At least 6 characters')}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Neues Passwort wiederholen</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Neues Passwort wiederholen', 'Repeat new password')}</label>
                 <input
                   type="password"
                   value={newPwRepeat}
@@ -328,14 +330,14 @@ function AppContent() {
                 onClick={() => setShowPwModal(false)}
                 className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg transition-colors"
               >
-                Abbrechen
+                {tr('Abbrechen', 'Cancel')}
               </button>
               <button
                 onClick={handleChangePassword}
                 disabled={pwSaving || !currentPw || !newPw || !newPwRepeat}
                 className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 dark:disabled:bg-blue-800 text-white px-4 py-2 rounded-lg transition-colors"
               >
-                {pwSaving ? 'Speichern...' : 'Passwort ändern'}
+                {pwSaving ? tr('Speichern...', 'Saving...') : tr('Passwort ändern', 'Change password')}
               </button>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Plus, Edit2, Trash2, Phone, PhoneOff, Server, RefreshCw } from 'lucide-react'
+import { useI18n } from '../context/I18nContext'
 
 interface ExtensionsPageProps {
   mode: 'peers' | 'trunks'
@@ -36,40 +37,52 @@ interface SIPTrunk {
   updated_at: string
 }
 
-const PROVIDERS: Record<string, { label: string; supportsIp: boolean; requiresServerInput?: boolean; server?: string; serverRegistration?: string; serverIp?: string; hint?: string }> = {
-  plusnet_basic: { label: 'Plusnet IPfonie Basic/Extended', server: 'sip.ipfonie.de', supportsIp: false },
-  plusnet_connect: { label: 'Plusnet IPfonie Extended Connect', server: 'sipconnect.ipfonie.de', supportsIp: true },
-  dusnet: { label: 'dus.net', server: 'proxy.dus.net', supportsIp: false },
-  iliad_it: {
-    label: 'Iliad (Italien)',
-    supportsIp: false,
-    server: 'voip.iliad.it',
-    hint: 'Iliad: Registrar/Proxy voip.iliad.it. Benutzername/Passwort wie von Iliad vergeben. Rufnummer für Anmeldung im Feld "From-User".',
-  },
-  telekom_deutschlandlan: {
-    label: 'Telekom DeutschlandLAN SIP-Trunk',
-    supportsIp: true,
-    serverRegistration: 'reg.sip-trunk.telekom.de',
-    serverIp: 'stat.sip-trunk.telekom.de',
-    hint: 'Telekom: SIP-Signalisierung nur TCP. Outbound-Proxy per DNS; keine IP fest hinterlegen.',
-  },
-  telekom_companyflex: {
-    label: 'Telekom CompanyFlex SIP-Trunk',
-    supportsIp: false,
-    requiresServerInput: true,
-    hint: 'Outbound-Proxy enthält die 12-stellige CompanyFlex-ID, z.B. <id>.primary.companyflex.de',
-  },
-  telekom_allip: {
-    label: 'Telekom All-IP (Privat)',
-    supportsIp: false,
-    server: 'tel.t-online.de',
-    hint: 'Telekom Privatkundenanschluss (MagentaZuhause). E-Mail-Adresse als Benutzername, Rufnummer als From-User im E.164-Format (+49...).',
-  },
-  custom: { label: 'Anderer Provider', supportsIp: true },
-}
-
 export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
   const activeTab = mode
+  const { tr } = useI18n()
+  const PROVIDERS: Record<string, { label: string; supportsIp: boolean; requiresServerInput?: boolean; server?: string; serverRegistration?: string; serverIp?: string; hint?: string }> = {
+    plusnet_basic: { label: 'Plusnet IPfonie Basic/Extended', server: 'sip.ipfonie.de', supportsIp: false },
+    plusnet_connect: { label: 'Plusnet IPfonie Extended Connect', server: 'sipconnect.ipfonie.de', supportsIp: true },
+    dusnet: { label: 'dus.net', server: 'proxy.dus.net', supportsIp: false },
+    iliad_it: {
+      label: tr('Iliad (Italien)', 'Iliad (Italy)'),
+      supportsIp: false,
+      server: 'voip.iliad.it',
+      hint: tr(
+        'Iliad: Registrar/Proxy voip.iliad.it. Benutzername/Passwort wie von Iliad vergeben. Rufnummer für Anmeldung im Feld "From-User".',
+        'Iliad: registrar/proxy voip.iliad.it. Use the Iliad username/password. Put the login phone number in "From-User".'
+      ),
+    },
+    telekom_deutschlandlan: {
+      label: tr('Telekom DeutschlandLAN SIP-Trunk', 'Telekom DeutschlandLAN SIP Trunk'),
+      supportsIp: true,
+      serverRegistration: 'reg.sip-trunk.telekom.de',
+      serverIp: 'stat.sip-trunk.telekom.de',
+      hint: tr(
+        'Telekom: SIP-Signalisierung nur TCP. Outbound-Proxy per DNS; keine IP fest hinterlegen.',
+        'Telekom: SIP signaling via TCP only. Use DNS for outbound proxy; do not pin a fixed IP.'
+      ),
+    },
+    telekom_companyflex: {
+      label: tr('Telekom CompanyFlex SIP-Trunk', 'Telekom CompanyFlex SIP Trunk'),
+      supportsIp: false,
+      requiresServerInput: true,
+      hint: tr(
+        'Outbound-Proxy enthält die 12-stellige CompanyFlex-ID, z.B. <id>.primary.companyflex.de',
+        'Outbound proxy contains the 12-digit CompanyFlex ID, e.g. <id>.primary.companyflex.de'
+      ),
+    },
+    telekom_allip: {
+      label: tr('Telekom All-IP (Privat)', 'Telekom All-IP (Residential)'),
+      supportsIp: false,
+      server: 'tel.t-online.de',
+      hint: tr(
+        'Telekom Privatkundenanschluss (MagentaZuhause). E-Mail-Adresse als Benutzername, Rufnummer als From-User im E.164-Format (+49...).',
+        'Telekom residential (MagentaZuhause). Use email as username and the phone number as From-User in E.164 format (+49...).'
+      ),
+    },
+    custom: { label: tr('Anderer Provider', 'Other provider'), supportsIp: true },
+  }
 
   // --- Peers state ---
   const [peers, setPeers] = useState<SIPPeer[]>([])
@@ -113,7 +126,7 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
       const data = await api.getSipPeers()
       setPeers(data)
     } catch (error) {
-      console.error('Error fetching peers:', error)
+      console.error(tr('Fehler beim Laden der Nebenstellen:', 'Error fetching extensions:'), error)
     } finally {
       setLoadingPeers(false)
     }
@@ -132,7 +145,7 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
       setEditingPeer(null)
       fetchPeers()
     } catch (error: any) {
-      alert(error.message || 'Fehler beim Speichern')
+      alert(error.message || tr('Fehler beim Speichern', 'Error while saving'))
     }
   }
 
@@ -149,12 +162,12 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
   }
 
   const handlePeerDelete = async (peer: SIPPeer) => {
-    if (!confirm(`Wirklich Nebenstelle ${peer.extension} löschen?`)) return
+    if (!confirm(tr(`Wirklich Nebenstelle ${peer.extension} löschen?`, `Really delete extension ${peer.extension}?`))) return
     try {
       await api.deleteSipPeer(peer.id)
       fetchPeers()
     } catch (error: any) {
-      alert(error.message || 'Fehler beim Löschen')
+      alert(error.message || tr('Fehler beim Löschen', 'Error while deleting'))
     }
   }
 
@@ -170,7 +183,7 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
       const data = await api.getTrunks()
       setTrunks(data)
     } catch (error) {
-      console.error('Error fetching trunks:', error)
+      console.error(tr('Fehler beim Laden der Leitungen:', 'Error fetching trunks:'), error)
     } finally {
       setLoadingTrunks(false)
     }
@@ -197,7 +210,7 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
       setEditingTrunk(null)
       fetchTrunks()
     } catch (error: any) {
-      alert(error.message || 'Fehler beim Speichern')
+      alert(error.message || tr('Fehler beim Speichern', 'Error while saving'))
     }
   }
 
@@ -219,12 +232,12 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
   }
 
   const handleTrunkDelete = async (trunk: SIPTrunk) => {
-    if (!confirm(`Wirklich Trunk "${trunk.name}" löschen?`)) return
+    if (!confirm(tr(`Wirklich Trunk "${trunk.name}" löschen?`, `Really delete trunk "${trunk.name}"?`))) return
     try {
       await api.deleteTrunk(trunk.id)
       fetchTrunks()
     } catch (error: any) {
-      alert(error.message || 'Fehler beim Löschen')
+      alert(error.message || tr('Fehler beim Löschen', 'Error while deleting'))
     }
   }
 
@@ -239,7 +252,7 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
   }
 
   const providerLabel = (key: string, server?: string) => {
-    if (key === 'custom') return server || 'Benutzerdefiniert'
+    if (key === 'custom') return server || tr('Benutzerdefiniert', 'Custom')
     return PROVIDERS[key]?.label || key
   }
 
@@ -268,10 +281,12 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            {activeTab === 'peers' ? 'Nebenstellen' : 'Leitungen'}
+            {activeTab === 'peers' ? tr('Nebenstellen', 'Extensions') : tr('Leitungen', 'Trunks')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {activeTab === 'peers' ? 'SIP-Nebenstellen anlegen und bearbeiten' : 'SIP-Trunks anlegen und bearbeiten'}
+            {activeTab === 'peers'
+              ? tr('SIP-Nebenstellen anlegen und bearbeiten', 'Create and manage SIP extensions')
+              : tr('SIP-Trunks anlegen und bearbeiten', 'Create and manage SIP trunks')}
           </p>
         </div>
 
@@ -281,7 +296,7 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
             className="flex items-center gap-2 bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition"
           >
             <Plus className="w-5 h-5" />
-            Neue Nebenstelle
+            {tr('Neue Nebenstelle', 'New extension')}
           </button>
         )}
         {activeTab === 'trunks' && !showTrunkForm && (
@@ -290,7 +305,7 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
             className="flex items-center gap-2 bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition"
           >
             <Plus className="w-5 h-5" />
-            Neue Leitung
+            {tr('Neue Leitung', 'New trunk')}
           </button>
         )}
       </div>
@@ -301,30 +316,30 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
           {showPeerForm && (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                {editingPeer ? 'Nebenstelle bearbeiten' : 'Neue Nebenstelle anlegen'}
+                {editingPeer ? tr('Nebenstelle bearbeiten', 'Edit extension') : tr('Neue Nebenstelle anlegen', 'Create new extension')}
               </h2>
               <form onSubmit={handlePeerSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nebenstelle (Rufnummer) *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Nebenstelle (Rufnummer) *', 'Extension (number) *')}</label>
                     <input
                       type="text"
                       value={peerForm.extension}
                       onChange={(e) => setPeerForm({...peerForm, extension: e.target.value})}
-                      placeholder="z.B. 1002"
+                      placeholder={tr('z.B. 1002', 'e.g. 1002')}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       required
                       disabled={!!editingPeer}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Passwort *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Passwort *', 'Password *')}</label>
                     <div className="flex gap-2">
                       <input
                         type="text"
                         value={peerForm.secret}
                         onChange={(e) => setPeerForm({...peerForm, secret: e.target.value})}
-                        placeholder="Sicheres Passwort"
+                        placeholder={tr('Sicheres Passwort', 'Strong password')}
                         className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         required
                       />
@@ -337,10 +352,10 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                           } catch {}
                         }}
                         className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm whitespace-nowrap"
-                        title="Passwort generieren"
+                        title={tr('Passwort generieren', 'Generate password')}
                       >
                         <RefreshCw className="w-4 h-4" />
-                        Generieren
+                        {tr('Generieren', 'Generate')}
                       </button>
                     </div>
                     {peerForm.secret && (() => {
@@ -350,17 +365,17 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                       const warnings: string[] = []
                       if (pw.length >= 16) score += 30
                       else if (pw.length >= 12) score += 20
-                      else if (pw.length >= 8) { score += 10; warnings.push('Mindestens 12 Zeichen empfohlen') }
-                      else warnings.push('Zu kurz')
-                      if (/[a-z]/.test(pw)) score += 15; else warnings.push('Kleinbuchstaben fehlen')
-                      if (/[A-Z]/.test(pw)) score += 15; else warnings.push('Großbuchstaben fehlen')
-                      if (/\d/.test(pw)) score += 15; else warnings.push('Ziffern fehlen')
-                      if (/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?/~`]/.test(pw)) score += 15; else warnings.push('Sonderzeichen fehlen')
-                      if (ext && pw.includes(ext)) { score = Math.max(0, score - 20); warnings.push('Enthält Nebenstelle') }
+                      else if (pw.length >= 8) { score += 10; warnings.push(tr('Mindestens 12 Zeichen empfohlen', 'At least 12 characters recommended')) }
+                      else warnings.push(tr('Zu kurz', 'Too short'))
+                      if (/[a-z]/.test(pw)) score += 15; else warnings.push(tr('Kleinbuchstaben fehlen', 'Missing lowercase letters'))
+                      if (/[A-Z]/.test(pw)) score += 15; else warnings.push(tr('Großbuchstaben fehlen', 'Missing uppercase letters'))
+                      if (/\d/.test(pw)) score += 15; else warnings.push(tr('Ziffern fehlen', 'Missing digits'))
+                      if (/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?/~`]/.test(pw)) score += 15; else warnings.push(tr('Sonderzeichen fehlen', 'Missing special characters'))
+                      if (ext && pw.includes(ext)) { score = Math.max(0, score - 20); warnings.push(tr('Enthält Nebenstelle', 'Contains extension')) }
                       if (pw.length >= 20) score = Math.min(100, score + 10)
                       const level = score >= 70 ? 'strong' : score >= 40 ? 'medium' : 'weak'
                       const color = level === 'strong' ? 'bg-green-500' : level === 'medium' ? 'bg-yellow-500' : 'bg-red-500'
-                      const label = level === 'strong' ? 'Stark' : level === 'medium' ? 'Mittel' : 'Schwach'
+                      const label = level === 'strong' ? tr('Stark', 'Strong') : level === 'medium' ? tr('Mittel', 'Medium') : tr('Schwach', 'Weak')
                       return (
                         <div className="mt-2">
                           <div className="flex items-center gap-2">
@@ -379,12 +394,12 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                     })()}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Caller ID</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Caller ID', 'Caller ID')}</label>
                     <input
                       type="text"
                       value={peerForm.caller_id}
                       onChange={(e) => setPeerForm({...peerForm, caller_id: e.target.value})}
-                      placeholder="Max Mustermann"
+                      placeholder={tr('Max Mustermann', 'John Doe')}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
                   </div>
@@ -408,14 +423,14 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                     onChange={(e) => setPeerForm({...peerForm, enabled: e.target.checked})}
                     className="w-4 h-4 text-primary-500 rounded"
                   />
-                  <label htmlFor="peer-enabled" className="text-sm text-gray-700 dark:text-gray-300">Nebenstelle aktiviert</label>
+                  <label htmlFor="peer-enabled" className="text-sm text-gray-700 dark:text-gray-300">{tr('Nebenstelle aktiviert', 'Extension enabled')}</label>
                 </div>
                 <div className="flex gap-3 pt-4">
                   <button type="submit" className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600">
-                    {editingPeer ? 'Speichern' : 'Anlegen'}
+                    {editingPeer ? tr('Speichern', 'Save') : tr('Anlegen', 'Create')}
                   </button>
                   <button type="button" onClick={handlePeerCancel} className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600">
-                    Abbrechen
+                    {tr('Abbrechen', 'Cancel')}
                   </button>
                 </div>
               </form>
@@ -424,17 +439,17 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Aktive Nebenstellen ({peers.length})</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{tr('Aktive Nebenstellen', 'Active extensions')} ({peers.length})</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nebenstelle</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Caller ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Context</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aktionen</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Nebenstelle', 'Extension')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Caller ID', 'Caller ID')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Context', 'Context')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Status', 'Status')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Aktionen', 'Actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -453,11 +468,11 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                       <td className="px-6 py-4">
                         {peer.enabled ? (
                           <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
-                            <Phone className="w-4 h-4" /> Aktiv
+                            <Phone className="w-4 h-4" /> {tr('Aktiv', 'Active')}
                           </span>
                         ) : (
                           <span className="flex items-center gap-1 text-gray-400 dark:text-gray-500">
-                            <PhoneOff className="w-4 h-4" /> Deaktiviert
+                            <PhoneOff className="w-4 h-4" /> {tr('Deaktiviert', 'Disabled')}
                           </span>
                         )}
                       </td>
@@ -486,12 +501,12 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
           {showTrunkForm && (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                {editingTrunk ? 'Leitung bearbeiten' : 'Neue Leitung anlegen'}
+                {editingTrunk ? tr('Leitung bearbeiten', 'Edit trunk') : tr('Neue Leitung anlegen', 'Create new trunk')}
               </h2>
               <form onSubmit={handleTrunkSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Provider *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Provider *', 'Provider *')}</label>
                     <select
                       value={trunkForm.provider}
                       onChange={(e) => {
@@ -511,7 +526,7 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                     </select>
                     {trunkForm.provider !== 'custom' && (
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Server: {getProviderServer(trunkForm.provider, trunkForm.auth_mode, trunkForm.sip_server)}
+                        {tr('Server', 'Server')}: {getProviderServer(trunkForm.provider, trunkForm.auth_mode, trunkForm.sip_server)}
                       </p>
                     )}
                     {PROVIDERS[trunkForm.provider]?.hint && (
@@ -521,30 +536,30 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                     )}
                     {trunkForm.provider === 'telekom_deutschlandlan' && (
                       <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                        <div>SIP-Domain: <span className="font-mono">sip-trunk.telekom.de</span></div>
-                        <div>Outbound-Proxy (Reg): <span className="font-mono">reg.sip-trunk.telekom.de</span></div>
-                        <div>Outbound-Proxy (IP): <span className="font-mono">stat.sip-trunk.telekom.de</span></div>
-                        <div>Transport: <span className="font-medium">TCP</span> (SIP), RTP über UDP</div>
-                        <div>Codecs: <span className="font-mono">g722, alaw</span></div>
+                        <div>{tr('SIP-Domain', 'SIP domain')}: <span className="font-mono">sip-trunk.telekom.de</span></div>
+                        <div>{tr('Outbound-Proxy (Reg)', 'Outbound proxy (Reg)')}: <span className="font-mono">reg.sip-trunk.telekom.de</span></div>
+                        <div>{tr('Outbound-Proxy (IP)', 'Outbound proxy (IP)')}: <span className="font-mono">stat.sip-trunk.telekom.de</span></div>
+                        <div>{tr('Transport', 'Transport')}: <span className="font-medium">TCP</span> (SIP), {tr('RTP über UDP', 'RTP over UDP')}</div>
+                        <div>{tr('Codecs', 'Codecs')}: <span className="font-mono">g722, alaw</span></div>
                       </div>
                     )}
                     {trunkForm.provider === 'telekom_companyflex' && (
                       <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                        <div>SIP-Domain: <span className="font-mono">tel.t-online.de</span></div>
-                        <div>Outbound-Proxy: <span className="font-mono">&lt;companyflex-id&gt;.primary.companyflex.de</span></div>
-                        <div>Benutzername: <span className="font-mono">Registrierungsrufnummer</span></div>
-                        <div>Auth-User: <span className="font-mono">+49...@tel.t-online.de</span></div>
-                        <div>Transport: <span className="font-medium">TCP</span> empfohlen</div>
+                        <div>{tr('SIP-Domain', 'SIP domain')}: <span className="font-mono">tel.t-online.de</span></div>
+                        <div>{tr('Outbound-Proxy', 'Outbound proxy')}: <span className="font-mono">&lt;companyflex-id&gt;.primary.companyflex.de</span></div>
+                        <div>{tr('Benutzername', 'Username')}: <span className="font-mono">{tr('Registrierungsrufnummer', 'Registration number')}</span></div>
+                        <div>{tr('Auth-User', 'Auth user')}: <span className="font-mono">+49...@tel.t-online.de</span></div>
+                        <div>{tr('Transport', 'Transport')}: <span className="font-medium">TCP</span> {tr('empfohlen', 'recommended')}</div>
                       </div>
                     )}
                     {trunkForm.provider === 'telekom_allip' && (
                       <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                        <div>Registrar: <span className="font-mono">tel.t-online.de</span></div>
-                        <div>Benutzername: <span className="font-mono">E-Mail-Adresse (z.B. name@t-online.de)</span></div>
-                        <div>Passwort: <span className="font-mono">E-Mail-/Kundencenter-Passwort</span></div>
-                        <div>From-User: <span className="font-mono">Rufnummer E.164 (+49VorwahlRufnummer)</span></div>
-                        <div>Transport: <span className="font-medium">TCP</span></div>
-                        <div>Codecs: <span className="font-mono">g722, alaw</span></div>
+                        <div>{tr('Registrar', 'Registrar')}: <span className="font-mono">tel.t-online.de</span></div>
+                        <div>{tr('Benutzername', 'Username')}: <span className="font-mono">{tr('E-Mail-Adresse (z.B. name@t-online.de)', 'Email address (e.g. name@t-online.de)')}</span></div>
+                        <div>{tr('Passwort', 'Password')}: <span className="font-mono">{tr('E-Mail-/Kundencenter-Passwort', 'Email/customer center password')}</span></div>
+                        <div>{tr('From-User', 'From-User')}: <span className="font-mono">{tr('Rufnummer E.164 (+49VorwahlRufnummer)', 'E.164 number (+49...number)')}</span></div>
+                        <div>{tr('Transport', 'Transport')}: <span className="font-medium">TCP</span></div>
+                        <div>{tr('Codecs', 'Codecs')}: <span className="font-mono">g722, alaw</span></div>
                       </div>
                     )}
                   </div>
@@ -552,13 +567,13 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                   {(trunkForm.provider === 'custom' || PROVIDERS[trunkForm.provider]?.requiresServerInput) && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        {trunkForm.provider === 'telekom_companyflex' ? 'Outbound-Proxy *' : 'SIP-Server *'}
+                        {trunkForm.provider === 'telekom_companyflex' ? tr('Outbound-Proxy *', 'Outbound proxy *') : tr('SIP-Server *', 'SIP server *')}
                       </label>
                       <input
                         type="text"
                         value={trunkForm.sip_server}
                         onChange={(e) => setTrunkForm({...trunkForm, sip_server: e.target.value})}
-                        placeholder={trunkForm.provider === 'telekom_companyflex' ? 'z.B. 55XXXXXXXXXX.primary.companyflex.de' : 'z.B. sip.provider.de'}
+                        placeholder={trunkForm.provider === 'telekom_companyflex' ? tr('z.B. 55XXXXXXXXXX.primary.companyflex.de', 'e.g. 55XXXXXXXXXX.primary.companyflex.de') : tr('z.B. sip.provider.de', 'e.g. sip.provider.com')}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         required
                       />
@@ -567,25 +582,25 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
 
                   {PROVIDERS[trunkForm.provider]?.supportsIp && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Auth-Modus *</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Auth-Modus *', 'Auth mode *')}</label>
                       <select
                         value={trunkForm.auth_mode}
                         onChange={(e) => setTrunkForm({...trunkForm, auth_mode: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       >
-                        <option value="registration">Registrierung (Username/Passwort)</option>
-                        <option value="ip">Fix-IP Authentifizierung</option>
+                        <option value="registration">{tr('Registrierung (Username/Passwort)', 'Registration (username/password)')}</option>
+                        <option value="ip">{tr('Fix-IP Authentifizierung', 'Fixed IP authentication')}</option>
                       </select>
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Name *', 'Name *')}</label>
                     <input
                       type="text"
                       value={trunkForm.name}
                       onChange={(e) => setTrunkForm({...trunkForm, name: e.target.value})}
-                      placeholder="z.B. Plusnet Hauptanschluss"
+                      placeholder={tr('z.B. Plusnet Hauptanschluss', 'e.g. Plusnet main line')}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       required
                     />
@@ -594,23 +609,23 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                   {trunkForm.auth_mode === 'registration' && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username *</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Username *', 'Username *')}</label>
                         <input
                           type="text"
                           value={trunkForm.username}
                           onChange={(e) => setTrunkForm({...trunkForm, username: e.target.value})}
-                          placeholder="SIP-Username"
+                          placeholder={tr('SIP-Username', 'SIP username')}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Passwort *</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Passwort *', 'Password *')}</label>
                         <input
                           type="password"
                           value={trunkForm.password}
                           onChange={(e) => setTrunkForm({...trunkForm, password: e.target.value})}
-                          placeholder="SIP-Passwort"
+                          placeholder={tr('SIP-Passwort', 'SIP password')}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                           required
                         />
@@ -619,23 +634,23 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rufnummernblock</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Rufnummernblock', 'Number block')}</label>
                     <input
                       type="text"
                       value={trunkForm.number_block}
                       onChange={(e) => setTrunkForm({...trunkForm, number_block: e.target.value})}
-                      placeholder="z.B. +4922112345"
+                      placeholder={tr('z.B. +4922112345', 'e.g. +4922112345')}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Caller-ID</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Caller-ID', 'Caller ID')}</label>
                     <input
                       type="text"
                       value={trunkForm.caller_id}
                       onChange={(e) => setTrunkForm({...trunkForm, caller_id: e.target.value})}
-                      placeholder="Ausgehende Rufnummer"
+                      placeholder={tr('Ausgehende Rufnummer', 'Outbound caller ID')}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
                   </div>
@@ -643,7 +658,9 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                   {(trunkForm.provider === 'telekom_allip' || trunkForm.provider === 'iliad_it') && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        {trunkForm.provider === 'iliad_it' ? 'From-User / Rufnummer für Anmeldung *' : 'From-User / Anschlussnummer *'}
+                        {trunkForm.provider === 'iliad_it'
+                          ? tr('From-User / Rufnummer für Anmeldung *', 'From-User / login number *')
+                          : tr('From-User / Anschlussnummer *', 'From-User / access number *')}
                       </label>
                       <input
                         type="text"
@@ -655,8 +672,8 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                       />
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         {trunkForm.provider === 'iliad_it'
-                          ? 'Ihre Iliad-Telefonnummer inkl. Vorwahl im E.164-Format. Wird als From-User und Contact-User verwendet.'
-                          : 'Ihre Anschlussnummer im E.164-Format. Wird als From-User und P-Preferred-Identity verwendet.'}
+                          ? tr('Ihre Iliad-Telefonnummer inkl. Vorwahl im E.164-Format. Wird als From-User und Contact-User verwendet.', 'Your Iliad phone number incl. area code in E.164 format. Used as From-User and Contact-User.')
+                          : tr('Ihre Anschlussnummer im E.164-Format. Wird als From-User und P-Preferred-Identity verwendet.', 'Your access number in E.164 format. Used as From-User and P-Preferred-Identity.')}
                       </p>
                     </div>
                   )}
@@ -670,15 +687,15 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                     onChange={(e) => setTrunkForm({...trunkForm, enabled: e.target.checked})}
                     className="w-4 h-4 text-primary-500 rounded"
                   />
-                  <label htmlFor="trunk-enabled" className="text-sm text-gray-700 dark:text-gray-300">Leitung aktiviert</label>
+                  <label htmlFor="trunk-enabled" className="text-sm text-gray-700 dark:text-gray-300">{tr('Leitung aktiviert', 'Trunk enabled')}</label>
                 </div>
 
                 <div className="flex gap-3 pt-4">
                   <button type="submit" className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600">
-                    {editingTrunk ? 'Speichern' : 'Anlegen'}
+                    {editingTrunk ? tr('Speichern', 'Save') : tr('Anlegen', 'Create')}
                   </button>
                   <button type="button" onClick={handleTrunkCancel} className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600">
-                    Abbrechen
+                    {tr('Abbrechen', 'Cancel')}
                   </button>
                 </div>
               </form>
@@ -687,18 +704,18 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Leitungen ({trunks.length})</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{tr('Leitungen', 'Trunks')} ({trunks.length})</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Provider</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Server</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Auth-Modus</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aktionen</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Name', 'Name')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Provider', 'Provider')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Server', 'Server')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Auth-Modus', 'Auth mode')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Status', 'Status')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Aktionen', 'Actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -716,17 +733,17 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded text-sm ${trunk.auth_mode === 'registration' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400' : 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-400'}`}>
-                          {trunk.auth_mode === 'registration' ? 'Registrierung' : 'Fix-IP'}
+                          {trunk.auth_mode === 'registration' ? tr('Registrierung', 'Registration') : tr('Fix-IP', 'Fixed IP')}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         {trunk.enabled ? (
                           <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
-                            <Phone className="w-4 h-4" /> Aktiv
+                            <Phone className="w-4 h-4" /> {tr('Aktiv', 'Active')}
                           </span>
                         ) : (
                           <span className="flex items-center gap-1 text-gray-400 dark:text-gray-500">
-                            <PhoneOff className="w-4 h-4" /> Deaktiviert
+                            <PhoneOff className="w-4 h-4" /> {tr('Deaktiviert', 'Disabled')}
                           </span>
                         )}
                       </td>
@@ -745,7 +762,7 @@ export default function ExtensionsPage({ mode }: ExtensionsPageProps) {
                   {trunks.length === 0 && (
                     <tr>
                       <td colSpan={6} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                        Keine Leitungen konfiguriert. Klicken Sie auf "Neue Leitung" um eine anzulegen.
+                        {tr('Keine Leitungen konfiguriert. Klicken Sie auf "Neue Leitung" um eine anzulegen.', 'No trunks configured. Click "New trunk" to create one.')}
                       </td>
                     </tr>
                   )}

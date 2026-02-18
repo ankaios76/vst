@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.2] - 2026-02-18
+
+### Neue Features
+
+- **Mehrsprachige UI (DE/EN)**: UI-Framework fuer Deutsch/Englisch inkl. Sprachauswahl im Installer.
+
 ## [2.0.0] - 2026-02-13
 
 ### Neue Features

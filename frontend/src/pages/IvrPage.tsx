@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Plus, Edit2, Trash2, Phone, Save } from 'lucide-react'
 import { api } from '../services/api'
+import { useI18n } from '../context/I18nContext'
 
 interface IVROption {
   digit: string
@@ -46,6 +47,7 @@ interface AvailableDidGroup {
 const DIGITS = ['0','1','2','3','4','5','6','7','8','9','*','#']
 
 export default function IvrPage() {
+  const { tr } = useI18n()
   const [menus, setMenus] = useState<IVRMenu[]>([])
   const [peers, setPeers] = useState<SIPPeer[]>([])
   const [groups, setGroups] = useState<RingGroup[]>([])
@@ -92,7 +94,7 @@ export default function IvrPage() {
         if (first) setTestExtension(first.extension)
       }
     } catch (e: any) {
-      setError(e.message || 'Daten konnten nicht geladen werden')
+      setError(e.message || tr('Daten konnten nicht geladen werden', 'Data could not be loaded'))
     } finally {
       setLoading(false)
     }
@@ -144,11 +146,11 @@ export default function IvrPage() {
       opts.push({ value: p.extension, label: `${p.extension}${p.caller_id ? ` – ${p.caller_id}` : ''}` })
     })
     groups.filter(g => g.enabled).forEach(g => {
-      opts.push({ value: g.extension, label: `${g.extension} – Gruppe ${g.name}` })
+      opts.push({ value: g.extension, label: `${g.extension} – ${tr('Gruppe', 'Group')} ${g.name}` })
     })
     menus.forEach(m => {
       if (!editing || editing.id !== m.id) {
-        opts.push({ value: m.extension, label: `${m.extension} – IVR ${m.name}` })
+        opts.push({ value: m.extension, label: `${m.extension} – ${tr('IVR', 'IVR')} ${m.name}` })
       }
     })
     return opts.sort((a, b) => a.value.localeCompare(b.value))
@@ -161,7 +163,7 @@ export default function IvrPage() {
       if (!exists) {
         options.unshift({
           trunk_id: editing.inbound_trunk_id,
-          trunk_name: `Leitung ${editing.inbound_trunk_id}`,
+          trunk_name: tr(`Leitung ${editing.inbound_trunk_id}`, `Trunk ${editing.inbound_trunk_id}`),
           dids: editing.inbound_did ? [editing.inbound_did] : [],
         })
       }
@@ -221,19 +223,19 @@ export default function IvrPage() {
       setShowForm(false)
       await fetchAll()
     } catch (err: any) {
-      setError(err.message || 'Fehler beim Speichern')
+      setError(err.message || tr('Fehler beim Speichern', 'Error while saving'))
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async (menu: IVRMenu) => {
-    if (!confirm(`IVR ${menu.name} wirklich löschen?`)) return
+    if (!confirm(tr(`IVR ${menu.name} wirklich löschen?`, `Really delete IVR ${menu.name}?`))) return
     try {
       await api.deleteIvrMenu(menu.id)
       await fetchAll()
     } catch (err: any) {
-      alert(err.message || 'Fehler beim Löschen')
+      alert(err.message || tr('Fehler beim Löschen', 'Error while deleting'))
     }
   }
 
@@ -247,7 +249,7 @@ export default function IvrPage() {
       }
       await fetchAll()
     } catch (err: any) {
-      setError(err.message || 'Upload fehlgeschlagen')
+      setError(err.message || tr('Upload fehlgeschlagen', 'Upload failed'))
     } finally {
       setUploading(false)
     }
@@ -259,14 +261,14 @@ export default function IvrPage() {
     try {
       await api.originateCall(testExtension, form.extension)
     } catch (err: any) {
-      setError(err.message || 'Testanruf fehlgeschlagen')
+      setError(err.message || tr('Testanruf fehlgeschlagen', 'Test call failed'))
     } finally {
       setTestingCall(false)
     }
   }
 
   if (loading) {
-    return <div className="p-6 text-gray-500">Lade IVR…</div>
+    return <div className="p-6 text-gray-500">{tr('Lade IVR…', 'Loading IVR...')}</div>
   }
 
   return (
@@ -274,9 +276,9 @@ export default function IvrPage() {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">IVR (Sprachmenü)</h2>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('IVR (Sprachmenü)', 'IVR (voice menu)')}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Erstellen Sie Menüs mit Tastendruck‑Optionen. Das Audio muss als Datei im Asterisk‑Sounds‑Pfad vorhanden sein.
+              {tr('Erstellen Sie Menüs mit Tastendruck‑Optionen. Das Audio muss als Datei im Asterisk‑Sounds‑Pfad vorhanden sein.', 'Create menus with DTMF options. Audio must be available in the Asterisk sounds path.')}
             </p>
           </div>
           <button
@@ -284,22 +286,22 @@ export default function IvrPage() {
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
           >
             <Plus className="w-4 h-4" />
-            Neues IVR
+            {tr('Neues IVR', 'New IVR')}
           </button>
         </div>
 
         {menus.length === 0 ? (
-          <div className="mt-6 text-sm text-gray-500">Noch keine IVR-Menüs angelegt.</div>
+          <div className="mt-6 text-sm text-gray-500">{tr('Noch keine IVR-Menüs angelegt.', 'No IVR menus created yet.')}</div>
         ) : (
           <div className="mt-6 overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                  <th className="py-2 pr-4">Name</th>
-                  <th className="py-2 pr-4">Nummer</th>
-                  <th className="py-2 pr-4">Prompt</th>
-                  <th className="py-2 pr-4">Optionen</th>
-                  <th className="py-2 pr-4">Status</th>
+                  <th className="py-2 pr-4">{tr('Name', 'Name')}</th>
+                  <th className="py-2 pr-4">{tr('Nummer', 'Number')}</th>
+                  <th className="py-2 pr-4">{tr('Prompt', 'Prompt')}</th>
+                  <th className="py-2 pr-4">{tr('Optionen', 'Options')}</th>
+                  <th className="py-2 pr-4">{tr('Status', 'Status')}</th>
                   <th className="py-2 pr-4"></th>
                 </tr>
               </thead>
@@ -312,7 +314,7 @@ export default function IvrPage() {
                     <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{m.options?.length || 0}</td>
                     <td className="py-3 pr-4">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs ${m.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                        {m.enabled ? 'Aktiv' : 'Inaktiv'}
+                      {m.enabled ? tr('Aktiv', 'Active') : tr('Inaktiv', 'Inactive')}
                       </span>
                     </td>
                     <td className="py-3 pr-4 text-right">
@@ -320,14 +322,14 @@ export default function IvrPage() {
                         <button
                           onClick={() => openEdit(m)}
                           className="p-2 text-gray-500 hover:text-blue-600"
-                          title="Bearbeiten"
+                          title={tr('Bearbeiten', 'Edit')}
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(m)}
                           className="p-2 text-gray-500 hover:text-red-600"
-                          title="Löschen"
+                          title={tr('Löschen', 'Delete')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -348,7 +350,7 @@ export default function IvrPage() {
               <div className="flex items-center gap-2">
                 <Phone className="w-5 h-5 text-blue-600" />
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                  {editing ? 'IVR bearbeiten' : 'IVR anlegen'}
+                  {editing ? tr('IVR bearbeiten', 'Edit IVR') : tr('IVR anlegen', 'Create IVR')}
                 </h3>
               </div>
               <button
@@ -367,36 +369,36 @@ export default function IvrPage() {
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Name', 'Name')}</label>
                   <input
                     type="text"
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    placeholder="z.B. Hauptmenü"
+                    placeholder={tr('z.B. Hauptmenü', 'e.g. main menu')}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">IVR‑Nummer</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('IVR‑Nummer', 'IVR number')}</label>
                   <input
                     type="text"
                     value={form.extension}
                     onChange={e => setForm({ ...form, extension: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    placeholder="z.B. 600"
+                    placeholder={tr('z.B. 600', 'e.g. 600')}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Prompt (Audio-Datei)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Prompt (Audio-Datei)', 'Prompt (audio file)')}</label>
                   <div className="flex items-center gap-2">
                     <select
                       value={form.prompt}
                       onChange={e => setForm({ ...form, prompt: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     >
-                      <option value="">— kein Prompt —</option>
+                      <option value="">{tr('— kein Prompt —', '— no prompt —')}</option>
                       {prompts.map(p => (
                         <option key={p} value={p}>{p}</option>
                       ))}
@@ -411,13 +413,13 @@ export default function IvrPage() {
                           if (f) handlePromptUpload(f)
                         }}
                       />
-                      {uploading ? 'Upload…' : 'Upload'}
+                      {uploading ? tr('Upload…', 'Uploading...') : tr('Upload', 'Upload')}
                     </label>
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">Dateien werden in WAV (8kHz, mono) konvertiert und als `custom/…` verfügbar.</div>
+                  <div className="text-xs text-gray-500 mt-1">{tr('Dateien werden in WAV (8kHz, mono) konvertiert und als `custom/…` verfügbar.', 'Files are converted to WAV (8kHz, mono) and available under `custom/…`.')}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Timeout (Sek.)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Timeout (Sek.)', 'Timeout (sec)')}</label>
                   <input
                     type="number"
                     min={2}
@@ -428,20 +430,20 @@ export default function IvrPage() {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Timeout‑Ziel (optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Timeout‑Ziel (optional)', 'Timeout target (optional)')}</label>
                   <select
                     value={form.timeout_destination}
                     onChange={e => setForm({ ...form, timeout_destination: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   >
-                    <option value="">— kein Ziel —</option>
+                    <option value="">{tr('— kein Ziel —', '— no target —')}</option>
                     {destinationOptions.map(d => (
                       <option key={d.value} value={d.value}>{d.label}</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Wiederholungen</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Wiederholungen', 'Retries')}</label>
                   <input
                     type="number"
                     min={0}
@@ -452,7 +454,7 @@ export default function IvrPage() {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Eingehende Rufnummer (optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Eingehende Rufnummer (optional)', 'Inbound number (optional)')}</label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <select
                       value={form.inbound_trunk_id ?? ''}
@@ -462,7 +464,7 @@ export default function IvrPage() {
                       }}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     >
-                      <option value="">Leitung wählen</option>
+                      <option value="">{tr('Leitung wählen', 'Select trunk')}</option>
                       {trunkOptions.map(t => (
                         <option key={t.trunk_id} value={t.trunk_id}>{t.trunk_name}</option>
                       ))}
@@ -473,16 +475,16 @@ export default function IvrPage() {
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       disabled={!form.inbound_trunk_id}
                     >
-                      <option value="">Rufnummer wählen</option>
+                      <option value="">{tr('Rufnummer wählen', 'Select number')}</option>
                       {didOptions.map(d => (
                         <option key={d} value={d}>{d}</option>
                       ))}
                     </select>
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">Legt automatisch eine Inbound‑Route auf dieses IVR an.</div>
+                  <div className="text-xs text-gray-500 mt-1">{tr('Legt automatisch eine Inbound‑Route auf dieses IVR an.', 'Automatically creates an inbound route to this IVR.')}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Wiederholungen</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Wiederholungen', 'Retries')}</label>
                   <input
                     type="number"
                     min={0}
@@ -493,7 +495,7 @@ export default function IvrPage() {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Eingehende Rufnummer (optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Eingehende Rufnummer (optional)', 'Inbound number (optional)')}</label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <select
                       value={form.inbound_trunk_id ?? ''}
@@ -503,7 +505,7 @@ export default function IvrPage() {
                       }}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     >
-                      <option value="">Leitung wählen</option>
+                      <option value="">{tr('Leitung wählen', 'Select trunk')}</option>
                       {trunkOptions.map(t => (
                         <option key={t.trunk_id} value={t.trunk_id}>{t.trunk_name}</option>
                       ))}
@@ -514,31 +516,31 @@ export default function IvrPage() {
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       disabled={!form.inbound_trunk_id}
                     >
-                      <option value="">Rufnummer wählen</option>
+                      <option value="">{tr('Rufnummer wählen', 'Select number')}</option>
                       {didOptions.map(d => (
                         <option key={d} value={d}>{d}</option>
                       ))}
                     </select>
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">Legt automatisch eine Inbound‑Route auf dieses IVR an.</div>
+                  <div className="text-xs text-gray-500 mt-1">{tr('Legt automatisch eine Inbound‑Route auf dieses IVR an.', 'Automatically creates an inbound route to this IVR.')}</div>
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tasten‑Optionen</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{tr('Tasten‑Optionen', 'DTMF options')}</label>
                   <button
                     type="button"
                     onClick={addOption}
                     className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg"
                   >
                     <Plus className="w-4 h-4" />
-                    Option hinzufügen
+                    {tr('Option hinzufügen', 'Add option')}
                   </button>
                 </div>
                 <div className="space-y-2">
                   {form.options.length === 0 && (
-                    <div className="text-sm text-gray-500">Noch keine Optionen.</div>
+                    <div className="text-sm text-gray-500">{tr('Noch keine Optionen.', 'No options yet.')}</div>
                   )}
                   {form.options.map((opt, idx) => (
                     <div key={idx} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-center">
@@ -556,7 +558,7 @@ export default function IvrPage() {
                         onChange={e => updateOption(idx, { destination: e.target.value })}
                         className="md:col-span-3 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       >
-                        <option value="">Ziel wählen</option>
+                        <option value="">{tr('Ziel wählen', 'Select target')}</option>
                         {destinationOptions.map(d => (
                           <option key={d.value} value={d.value}>{d.label}</option>
                         ))}
@@ -566,7 +568,7 @@ export default function IvrPage() {
                         onClick={() => removeOption(idx)}
                         className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300"
                       >
-                        Entfernen
+                        {tr('Entfernen', 'Remove')}
                       </button>
                     </div>
                   ))}
@@ -576,8 +578,8 @@ export default function IvrPage() {
               <div className="bg-gray-50 dark:bg-gray-700/40 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                   <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">Testanruf</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">Ruft das IVR von einer Nebenstelle an.</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{tr('Testanruf', 'Test call')}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{tr('Ruft das IVR von einer Nebenstelle an.', 'Calls the IVR from an extension.')}</div>
                   </div>
                   <div className="flex items-center gap-2">
                     <select
@@ -595,7 +597,7 @@ export default function IvrPage() {
                       disabled={testingCall || !form.extension}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm disabled:opacity-60"
                     >
-                      {testingCall ? 'Rufe…' : 'Testanruf'}
+                      {testingCall ? tr('Rufe…', 'Calling...') : tr('Testanruf', 'Test call')}
                     </button>
                   </div>
                 </div>
@@ -609,7 +611,7 @@ export default function IvrPage() {
                     onChange={e => setForm({ ...form, enabled: e.target.checked })}
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  Aktiv
+                  {tr('Aktiv', 'Active')}
                 </label>
 
                 <div className="flex items-center gap-2">
@@ -618,7 +620,7 @@ export default function IvrPage() {
                     onClick={() => setShowForm(false)}
                     className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300"
                   >
-                    Abbrechen
+                    {tr('Abbrechen', 'Cancel')}
                   </button>
                   <button
                     type="submit"
@@ -626,7 +628,7 @@ export default function IvrPage() {
                     className="px-4 py-2 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-60 inline-flex items-center gap-2"
                   >
                     <Save className="w-4 h-4" />
-                    {saving ? 'Speichern…' : 'Speichern'}
+                    {saving ? tr('Speichern…', 'Saving...') : tr('Speichern', 'Save')}
                   </button>
                 </div>
               </div>

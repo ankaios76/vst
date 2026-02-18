@@ -1,6 +1,7 @@
 import { useState, useEffect, FormEvent, useRef } from 'react'
 import { Trash2, UserPlus, KeyRound, Pencil, Upload, X, Plus, RefreshCw, PhoneOutgoing, PhoneIncoming } from 'lucide-react'
 import { api } from '../services/api'
+import { useI18n } from '../context/I18nContext'
 
 interface UserEntry {
   id: number
@@ -39,6 +40,7 @@ interface TrunkInfo {
 }
 
 export default function UsersPage() {
+  const { tr } = useI18n()
   const [users, setUsers] = useState<UserEntry[]>([])
   const [peers, setPeers] = useState<PeerEntry[]>([])
   const [routes, setRoutes] = useState<RouteEntry[]>([])
@@ -99,7 +101,7 @@ export default function UsersPage() {
       trunksData.forEach((t: TrunkInfo) => nameMap.set(t.id, t.name))
       setTrunkNames(nameMap)
     } catch {
-      setError('Daten konnten nicht geladen werden')
+      setError(tr('Daten konnten nicht geladen werden', 'Data could not be loaded'))
     } finally {
       setLoading(false)
     }
@@ -133,7 +135,7 @@ export default function UsersPage() {
       for (const route of extRoutes) {
         if (!combined.has(route.trunk_id)) {
           combined.set(route.trunk_id, {
-            trunk_name: trunkNames.get(route.trunk_id) || `Leitung ${route.trunk_id}`,
+            trunk_name: trunkNames.get(route.trunk_id) || tr(`Leitung ${route.trunk_id}`, `Trunk ${route.trunk_id}`),
             dids: new Set()
           })
         }
@@ -176,7 +178,7 @@ export default function UsersPage() {
       const result = await api.generatePassword()
       setNewExtData({ ...newExtData, secret: result.password })
     } catch {
-      setError('Passwort konnte nicht generiert werden')
+      setError(tr('Passwort konnte nicht generiert werden', 'Password could not be generated'))
     } finally {
       setGeneratingPw(false)
     }
@@ -273,10 +275,10 @@ export default function UsersPage() {
       fetchData()
 
       if (warnings.length > 0) {
-        setError(`Benutzer erstellt, aber: ${warnings.join('; ')}`)
+        setError(tr(`Benutzer erstellt, aber: ${warnings.join('; ')}`, `User created, but: ${warnings.join('; ')}`))
       }
     } catch (err: any) {
-      setError(err.message || 'Benutzer konnte nicht erstellt werden')
+      setError(err.message || tr('Benutzer konnte nicht erstellt werden', 'User could not be created'))
     }
   }
 
@@ -288,17 +290,17 @@ export default function UsersPage() {
       setPasswordUserId(null)
       setNewPassword('')
     } catch (err: any) {
-      setError(err.message || 'Passwort konnte nicht geändert werden')
+      setError(err.message || tr('Passwort konnte nicht geändert werden', 'Password could not be changed'))
     }
   }
 
   const handleDelete = async (id: number, username: string) => {
-    if (!confirm(`Benutzer "${username}" wirklich löschen?`)) return
+    if (!confirm(tr(`Benutzer "${username}" wirklich löschen?`, `Really delete user "${username}"?`))) return
     try {
       await api.deleteUser(id)
       fetchData()
     } catch (err: any) {
-      setError(err.message || 'Benutzer konnte nicht gelöscht werden')
+      setError(err.message || tr('Benutzer konnte nicht gelöscht werden', 'User could not be deleted'))
     }
   }
 
@@ -416,7 +418,7 @@ export default function UsersPage() {
       setEditUser(null)
       fetchData()
     } catch (err: any) {
-      setError(err.message || 'Änderungen konnten nicht gespeichert werden')
+      setError(err.message || tr('Änderungen konnten nicht gespeichert werden', 'Changes could not be saved'))
     }
   }
 
@@ -436,7 +438,7 @@ export default function UsersPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500 dark:text-gray-400">Lade Benutzer...</div>
+    return <div className="text-center py-12 text-gray-500 dark:text-gray-400">{tr('Lade Benutzer...', 'Loading users...')}</div>
   }
 
   // DID pools for create form
@@ -455,7 +457,7 @@ export default function UsersPage() {
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
         >
           <UserPlus className="w-5 h-5" />
-          Neuer Benutzer
+          {tr('Neuer Benutzer', 'New user')}
         </button>
       </div>
 
@@ -467,7 +469,7 @@ export default function UsersPage() {
 
       {showForm && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Neuen Benutzer anlegen</h2>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{tr('Neuen Benutzer anlegen', 'Create new user')}</h2>
           <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
             {/* Avatar upload for create form */}
@@ -493,7 +495,7 @@ export default function UsersPage() {
                   </div>
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {createAvatarFile ? createAvatarFile.name : 'Foto hochladen (optional)'}
+                  {createAvatarFile ? createAvatarFile.name : tr('Foto hochladen (optional)', 'Upload photo (optional)')}
                 </div>
                 <input
                   ref={createFileInputRef}
@@ -506,39 +508,39 @@ export default function UsersPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Benutzername</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Benutzername', 'Username')}</label>
               <input
                 type="text"
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 required
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                placeholder="benutzername"
+                placeholder={tr('benutzername', 'username')}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Passwort</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Passwort', 'Password')}</label>
               <input
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                placeholder="Passwort"
+                placeholder={tr('Passwort', 'Password')}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Name', 'Name')}</label>
               <input
                 type="text"
                 value={formData.full_name}
                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                placeholder="Vor- und Nachname"
+                placeholder={tr('Vor- und Nachname', 'Full name')}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">E-Mail</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('E-Mail', 'Email')}</label>
               <input
                 type="email"
                 value={formData.email}
@@ -547,25 +549,25 @@ export default function UsersPage() {
                 placeholder="email@example.com"
               />
               <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-                An diese Adresse werden die Zugangsdaten gesendet.
+                {tr('An diese Adresse werden die Zugangsdaten gesendet.', 'Login credentials will be sent to this address.')}
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rolle</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Rolle', 'Role')}</label>
               <select
                 value={formData.role}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               >
                 <option value="user">User</option>
-                <option value="admin">Admin</option>
+                <option value="admin">{tr('Admin', 'Admin')}</option>
               </select>
             </div>
 
             {/* Extension: toggle between existing and new */}
             <div className="md:col-span-3">
               <div className="flex items-center gap-3 mb-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nebenstelle</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{tr('Nebenstelle', 'Extension')}</label>
                 <button
                   type="button"
                   onClick={() => { setCreateNewExt(!createNewExt); setFormData({ ...formData, extension: '' }); setNewExtData({ extension: '', secret: '', caller_id: '' }) }}
@@ -576,7 +578,7 @@ export default function UsersPage() {
                   }`}
                 >
                   <Plus className="w-3 h-3" />
-                  {createNewExt ? 'Neue Nebenstelle' : 'Neu anlegen'}
+                  {createNewExt ? tr('Neue Nebenstelle', 'New extension') : tr('Neu anlegen', 'Create new')}
                 </button>
               </div>
 
@@ -586,7 +588,7 @@ export default function UsersPage() {
                   onChange={(e) => setFormData({ ...formData, extension: e.target.value })}
                   className="w-full md:w-1/3 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 >
-                  <option value="">-- keine --</option>
+                  <option value="">{tr('-- keine --', '-- none --')}</option>
                   {getAvailableExtensions().map(p => (
                     <option key={p.id} value={p.extension}>
                       {p.extension} {p.caller_id ? `(${p.caller_id})` : ''}
@@ -596,25 +598,25 @@ export default function UsersPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Extension-Nr.</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Extension-Nr.', 'Extension number')}</label>
                     <input
                       type="text"
                       value={newExtData.extension}
                       onChange={(e) => setNewExtData({ ...newExtData, extension: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                      placeholder="z.B. 1001"
+                      placeholder={tr('z.B. 1001', 'e.g. 1001')}
                       required={createNewExt}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SIP-Passwort</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('SIP-Passwort', 'SIP password')}</label>
                     <div className="flex gap-2">
                       <input
                         type="text"
                         value={newExtData.secret}
                         onChange={(e) => setNewExtData({ ...newExtData, secret: e.target.value })}
                         className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none font-mono text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                        placeholder="SIP-Passwort"
+                        placeholder={tr('SIP-Passwort', 'SIP password')}
                         required={createNewExt}
                       />
                       <button
@@ -622,20 +624,20 @@ export default function UsersPage() {
                         onClick={handleGeneratePassword}
                         disabled={generatingPw}
                         className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg transition-colors"
-                        title="Sicheres Passwort generieren"
+                        title={tr('Sicheres Passwort generieren', 'Generate strong password')}
                       >
                         <RefreshCw className={`w-4 h-4 text-gray-600 dark:text-gray-400 ${generatingPw ? 'animate-spin' : ''}`} />
                       </button>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Caller-ID (optional)</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Caller-ID (optional)', 'Caller ID (optional)')}</label>
                     <input
                       type="text"
                       value={newExtData.caller_id}
                       onChange={(e) => setNewExtData({ ...newExtData, caller_id: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                      placeholder="Wird aus Name übernommen"
+                      placeholder={tr('Wird aus Name übernommen', 'Derived from name')}
                     />
                   </div>
                 </div>
@@ -650,7 +652,7 @@ export default function UsersPage() {
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <PhoneOutgoing className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Ausgehende Rufnummer</label>
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{tr('Ausgehende Rufnummer', 'Outbound number')}</label>
                     </div>
                     <select
                       value={formDid ? `${formTrunkId}:${formDid}` : ''}
@@ -667,7 +669,7 @@ export default function UsersPage() {
                       }}
                       className="w-full md:w-2/3 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     >
-                      <option value="">-- keine Rufnummer --</option>
+                      <option value="">{tr('-- keine Rufnummer --', '-- no number --')}</option>
                       {createDidsPool.map(group => (
                         <optgroup key={group.trunk_id} label={group.trunk_name}>
                           {group.dids.map(did => (
@@ -683,8 +685,8 @@ export default function UsersPage() {
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <PhoneIncoming className="w-4 h-4 text-green-600 dark:text-green-400" />
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Eingehende Rufnummern</label>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">(weitere Rufnummern, die bei dieser Nebenstelle klingeln)</span>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{tr('Eingehende Rufnummern', 'Inbound numbers')}</label>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{tr('(weitere Rufnummern, die bei dieser Nebenstelle klingeln)', '(additional numbers that ring on this extension)')}</span>
                       </div>
                       <div className="space-y-2">
                         {createInboundPool.map(group => (
@@ -725,14 +727,14 @@ export default function UsersPage() {
                 type="submit"
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
               >
-                Anlegen
+                {tr('Anlegen', 'Create')}
               </button>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
                 className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-6 py-2 rounded-lg transition-colors"
               >
-                Abbrechen
+                {tr('Abbrechen', 'Cancel')}
               </button>
             </div>
           </form>
@@ -743,12 +745,12 @@ export default function UsersPage() {
         <table className="w-full">
           <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
             <tr>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Benutzer</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">E-Mail</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nebenstelle</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Rufnummern</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Rolle</th>
-              <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aktionen</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Benutzer', 'User')}</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('E-Mail', 'Email')}</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Nebenstelle', 'Extension')}</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Rufnummern', 'Numbers')}</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Rolle', 'Role')}</th>
+              <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Aktionen', 'Actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -827,14 +829,14 @@ export default function UsersPage() {
                       <button
                         onClick={() => openEditModal(u)}
                         className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-                        title="Bearbeiten"
+                        title={tr('Bearbeiten', 'Edit')}
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => { setPasswordUserId(u.id); setPasswordUsername(u.username); setNewPassword('') }}
                         className="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-                        title="Passwort ändern"
+                        title={tr('Passwort ändern', 'Change password')}
                       >
                         <KeyRound className="w-4 h-4" />
                       </button>
@@ -842,7 +844,7 @@ export default function UsersPage() {
                         <button
                           onClick={() => handleDelete(u.id, u.username)}
                           className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
-                          title="Löschen"
+                          title={tr('Löschen', 'Delete')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -855,7 +857,7 @@ export default function UsersPage() {
           </tbody>
         </table>
         {users.length === 0 && (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">Keine Benutzer vorhanden</div>
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">{tr('Keine Benutzer vorhanden', 'No users found')}</div>
         )}
       </div>
 
@@ -865,7 +867,7 @@ export default function UsersPage() {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                Benutzer bearbeiten: {editUser.username}
+                {tr('Benutzer bearbeiten', 'Edit user')}: {editUser.username}
               </h2>
               <button onClick={() => setEditUser(null)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                 <X className="w-5 h-5" />
@@ -893,7 +895,7 @@ export default function UsersPage() {
                   <Upload className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Klicken zum Ändern</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{tr('Klicken zum Ändern', 'Click to change')}</div>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -905,7 +907,7 @@ export default function UsersPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Name', 'Name')}</label>
                 <input
                   type="text"
                   value={editData.full_name}
@@ -914,7 +916,7 @@ export default function UsersPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">E-Mail</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('E-Mail', 'Email')}</label>
                 <input
                   type="email"
                   value={editData.email}
@@ -923,18 +925,18 @@ export default function UsersPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rolle</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Rolle', 'Role')}</label>
                 <select
                   value={editData.role}
                   onChange={(e) => setEditData({ ...editData, role: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 >
                   <option value="user">User</option>
-                  <option value="admin">Admin</option>
+                  <option value="admin">{tr('Admin', 'Admin')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nebenstelle</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Nebenstelle', 'Extension')}</label>
                 <select
                   value={editExtension}
                   onChange={(e) => {
@@ -962,7 +964,7 @@ export default function UsersPage() {
                   }}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 >
-                  <option value="">-- keine --</option>
+                  <option value="">{tr('-- keine --', '-- none --')}</option>
                   {getAvailableExtensions(editUser.id).map(p => (
                     <option key={p.id} value={p.extension}>
                       {p.extension} {p.caller_id ? `(${p.caller_id})` : ''}
@@ -978,7 +980,7 @@ export default function UsersPage() {
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <PhoneOutgoing className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Ausgehende Rufnummer</label>
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{tr('Ausgehende Rufnummer', 'Outbound number')}</label>
                     </div>
                     <select
                       value={editDid ? `${editTrunkId}:${editDid}` : ''}
@@ -995,11 +997,11 @@ export default function UsersPage() {
                       }}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     >
-                      <option value="">-- keine Rufnummer --</option>
+                      <option value="">{tr('-- keine Rufnummer --', '-- no number --')}</option>
                       {/* Show currently assigned outbound DID */}
                       {editDid && editTrunkId && (
                         <option value={`${editTrunkId}:${editDid}`}>
-                          {editDid} (aktuell)
+                          {editDid} {tr('(aktuell)', '(current)')}
                         </option>
                       )}
                       {editDidsPool.map(group => (
@@ -1019,8 +1021,8 @@ export default function UsersPage() {
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <PhoneIncoming className="w-4 h-4 text-green-600 dark:text-green-400" />
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Eingehende Rufnummern</label>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">(weitere)</span>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{tr('Eingehende Rufnummern', 'Inbound numbers')}</label>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{tr('(weitere)', '(additional)')}</span>
                       </div>
                       <div className="space-y-2">
                         {editInboundPool.map(group => (
@@ -1061,13 +1063,13 @@ export default function UsersPage() {
                 onClick={() => setEditUser(null)}
                 className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg transition-colors"
               >
-                Abbrechen
+                {tr('Abbrechen', 'Cancel')}
               </button>
               <button
                 onClick={handleEditSave}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
               >
-                Speichern
+                {tr('Speichern', 'Save')}
               </button>
             </div>
           </div>
@@ -1079,13 +1081,13 @@ export default function UsersPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
-              Passwort ändern: {passwordUsername}
+              {tr('Passwort ändern', 'Change password')}: {passwordUsername}
             </h2>
             <input
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Neues Passwort (min. 6 Zeichen)"
+              placeholder={tr('Neues Passwort (min. 6 Zeichen)', 'New password (min. 6 characters)')}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none mb-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               autoFocus
               onKeyDown={(e) => e.key === 'Enter' && handlePasswordChange()}
@@ -1095,14 +1097,14 @@ export default function UsersPage() {
                 onClick={() => { setPasswordUserId(null); setNewPassword('') }}
                 className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg transition-colors"
               >
-                Abbrechen
+                {tr('Abbrechen', 'Cancel')}
               </button>
               <button
                 onClick={handlePasswordChange}
                 disabled={newPassword.length < 6}
                 className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-4 py-2 rounded-lg transition-colors"
               >
-                Speichern
+                {tr('Speichern', 'Save')}
               </button>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useI18n } from '../context/I18nContext'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 
 interface FAQItem {
@@ -7,7 +8,7 @@ interface FAQItem {
   answer: string
 }
 
-const faqSections: { title: string; items: FAQItem[] }[] = [
+const faqSectionsDe: { title: string; items: FAQItem[] }[] = [
   {
     title: 'Erste Schritte',
     items: [
@@ -94,9 +95,97 @@ const faqSections: { title: string; items: FAQItem[] }[] = [
   },
 ]
 
+const faqSectionsEn: { title: string; items: FAQItem[] }[] = [
+  {
+    title: 'Getting started',
+    items: [
+      {
+        question: 'How do I sign in?',
+        answer: 'Open the GonoPBX web interface in your browser and enter your username and password. You will receive your credentials from your administrator.',
+      },
+      {
+        question: 'How do I change my password?',
+        answer: 'Click your username in the top right and choose "Change password". Enter your current password and the new password. Admins can also change passwords under Settings → Users.',
+      },
+      {
+        question: 'What do I see on the dashboard?',
+        answer: 'The dashboard shows an overview of all extensions and trunks with their current status (online/offline), the number of active calls, and overall system status.',
+      },
+    ],
+  },
+  {
+    title: 'Set up your phone',
+    items: [
+      {
+        question: 'Which data do I need for phone registration?',
+        answer: 'You need: the SIP server (server IP), your extension number as username, the SIP password, and port 5060 (UDP). You can find these in your welcome email or ask your administrator.',
+      },
+      {
+        question: 'Which phones and softphones are supported?',
+        answer: 'GonoPBX is compatible with all SIP-capable devices. This includes hardware phones from Yealink, Snom, Grandstream, Poly, etc., and softphones like MicroSIP (Windows), Linphone (all platforms) or Zoiper.',
+      },
+      {
+        question: 'My phone won’t register — what can I do?',
+        answer: 'Check: 1) Are SIP server, username and password correct? 2) Is port 5060/UDP allowed in the firewall? 3) Is the extension shown as "offline" on the dashboard? Contact your admin if the issue persists.',
+      },
+    ],
+  },
+  {
+    title: 'Calls & numbers',
+    items: [
+      {
+        question: 'How do inbound calls work?',
+        answer: 'Inbound calls are routed to your extension via the assigned numbers (DIDs). An extension can have multiple numbers, even from different trunks.',
+      },
+      {
+        question: 'How do outbound calls work?',
+        answer: 'For outbound calls, the selected outbound number is sent as caller ID. If multiple numbers are assigned, you can choose the DID under Extension details → "Outbound number". If none is selected, the first assigned number is used.',
+      },
+      {
+        question: 'Where can I find the call history?',
+        answer: 'Under "Call history" in the main menu you can see all inbound and outbound calls with date, time, duration and status. You can filter by date and extension.',
+      },
+      {
+        question: 'What is P-Asserted-Identity (PAI)?',
+        answer: 'PAI is a SIP header that confirms the caller identity to the provider. With number blocks, many providers require the main number of the block as PAI. You can configure PAI per extension under Extension details → "P-Asserted-Identity (PAI)". The domain is taken from the trunk.',
+      },
+      {
+        question: 'What is call forwarding and how do I set it up?',
+        answer: 'Call forwarding routes calls to another number when you are unavailable or don’t answer. Click your extension on the dashboard to configure forwarding.',
+      },
+    ],
+  },
+  {
+    title: 'Administration',
+    items: [
+      {
+        question: 'How do I create a new extension?',
+        answer: 'As admin: go to Settings → Users → "New user". There you can create a new extension and assign numbers during user creation.',
+      },
+      {
+        question: 'How do I configure a trunk?',
+        answer: 'Under "Trunks" in the main menu you can create and manage SIP trunks. Enter your provider credentials (server, username, password) and define the number block.',
+      },
+      {
+        question: 'How do I configure email delivery?',
+        answer: 'Under Settings → Email you can configure the SMTP server. It is used for welcome emails and voicemail notifications.',
+      },
+      {
+        question: 'How do I update GonoPBX?',
+        answer: 'Easiest via the web UI: Settings → Server → Update → "Install update". Alternatively via SSH: git pull origin main && docker compose up -d --build. Database migrations run automatically on startup.',
+      },
+      {
+        question: 'How do I connect GonoPBX to Home Assistant?',
+        answer: 'Under Settings → Home Assistant you can enable the integration. Enter the MQTT broker and generate an API key. GonoPBX will send call events via MQTT and provide sensors for extensions, trunks and active calls.',
+      },
+    ],
+  },
+]
+
 export default function FAQPage() {
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
   const { user } = useAuth()
+  const { tr, lang } = useI18n()
 
   const toggleItem = (key: string) => {
     setOpenItems(prev => {
@@ -112,29 +201,29 @@ export default function FAQPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Häufig gestellte Fragen</h1>
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{tr('Häufig gestellte Fragen', 'Frequently asked questions')}</h1>
 
       {user?.role === 'admin' && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Admin‑Handbuch</h2>
+            <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">{tr('Admin‑Handbuch', 'Admin handbook')}</h2>
           </div>
           <div className="px-6 py-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-              Download der aktuellen PDF‑Version für Betrieb, Wartung und Sicherheit.
+              {tr('Download der aktuellen PDF‑Version für Betrieb, Wartung und Sicherheit.', 'Download the current PDF for operations, maintenance and security.')}
             </p>
             <a
               href="https://gonopbx.de/admin-handbuch.pdf"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-sm transition-colors"
               download
             >
-              Handbuch (PDF)
+              {tr('Handbuch (PDF)', 'Handbook (PDF)')}
             </a>
           </div>
         </div>
       )}
 
-      {faqSections.map((section, si) => (
+      {(lang === 'en' ? faqSectionsEn : faqSectionsDe).map((section, si) => (
         <div key={si} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">{section.title}</h2>

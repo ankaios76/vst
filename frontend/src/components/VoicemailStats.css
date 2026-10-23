@@ -1,7 +1,7 @@
 .voicemail-stats-card {
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
   overflow: hidden;
   height: 100%;
   display: flex;
@@ -13,18 +13,18 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .card-header h3 {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--color-text);
   margin: 0;
 }
 
 .view-all-link {
-  color: #1976d2;
+  color: var(--color-link);
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
@@ -32,7 +32,7 @@
 }
 
 .view-all-link:hover {
-  color: #1565c0;
+  color: var(--color-link);
   text-decoration: underline;
 }
 
@@ -48,14 +48,14 @@
 .card-content.error {
   justify-content: center;
   align-items: center;
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 .spinner-small {
   width: 32px;
   height: 32px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #1976d2;
+  border: 3px solid var(--color-surface-subtle);
+  border-top: 3px solid var(--color-link);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -77,16 +77,16 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  border-radius: 10px;
-  background: #f8f9fa;
+  border-radius: var(--radius-card);
+  background: var(--color-surface-subtle);
 }
 
 .stat-item.primary {
-  background: #f0f7ff;
+  background: var(--color-surface-accent);
 }
 
 .stat-item.highlight {
-  background: #fff3e0;
+  background: var(--color-surface-subtle);
 }
 
 .stat-icon {
@@ -101,14 +101,14 @@
 .stat-value {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--color-text);
   line-height: 1;
   margin-bottom: 0.25rem;
 }
 
 .stat-label {
   font-size: 0.875rem;
-  color: #666;
+  color: var(--color-text-muted);
   font-weight: 500;
 }
 
@@ -123,7 +123,7 @@
   font-size: 0.875rem;
   font-weight: 600;
   text-transform: uppercase;
-  color: #666;
+  color: var(--color-text-muted);
   margin: 0;
   letter-spacing: 0.5px;
 }
@@ -149,26 +149,26 @@
 .mailbox-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #333;
+  color: var(--color-text);
 }
 
 .mailbox-count {
   font-size: 0.875rem;
   font-weight: 700;
-  color: #1976d2;
+  color: var(--color-link);
 }
 
 .progress-bar {
   height: 8px;
-  background: #e0e0e0;
-  border-radius: 4px;
+  background: var(--color-border);
+  border-radius: var(--radius-input);
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #1976d2 0%, #42a5f5 100%);
-  border-radius: 4px;
+  background: linear-gradient(90deg, var(--color-link) 0%, var(--color-link) 100%);
+  border-radius: var(--radius-input);
   transition: width 0.3s ease;
 }
 
@@ -178,39 +178,28 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1rem;
-  background: #fff3e0;
-  border: 1px solid #ffb74d;
-  border-radius: 8px;
-  color: #e65100;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-input);
+  color: var(--color-warning);
   font-size: 0.875rem;
   font-weight: 500;
 }
 
 .alert-banner svg {
   flex-shrink: 0;
-  color: #f57c00;
+  color: var(--color-warning);
 }
 
-/* ===== Dark Mode ===== */
-.dark .voicemail-stats-card { background: #1f2937; border-color: #374151; }
-.dark .card-header { border-bottom-color: #374151; }
-.dark .card-header h3 { color: #e5e7eb; }
-.dark .view-all-link { color: #60a5fa; }
-.dark .view-all-link:hover { color: #93bbfd; }
-.dark .card-content.loading, .dark .card-content.error { color: #9ca3af; }
-.dark .spinner-small { border-color: #374151; border-top-color: #60a5fa; }
-.dark .stat-item { background: #374151; }
-.dark .stat-item.primary { background: #1e3a5f; }
-.dark .stat-item.highlight { background: #451a03; }
-.dark .stat-value { color: #e5e7eb; }
-.dark .stat-label { color: #9ca3af; }
-.dark .section-title { color: #9ca3af; }
-.dark .mailbox-label { color: #d1d5db; }
-.dark .mailbox-count { color: #60a5fa; }
-.dark .progress-bar { background: #4b5563; }
-.dark .progress-fill { background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%); }
-.dark .alert-banner { background: #451a03; border-color: #92400e; color: #fbbf24; }
-.dark .alert-banner svg { color: #f59e0b; }
+/* Kein eigener Dark-Mode-Block mehr.
+
+   Die Regeln oben greifen ausschliesslich auf die semantischen Tokens zu,
+   und die werden in tokens.css unter .dark neu belegt — der Block hier war
+   nicht nur ueberfluessig, er kehrte die Farben um: ein frueherer
+   skriptgesteuerter Durchgang hat dunkle Hex-Werte auf --color-text
+   abgebildet, weil die Variable im Hellmodus Onyx ist. Im Dunkelmodus ist
+   sie beinahe Weiss, wodurch Karten und Knoepfe hell wurden und
+   --color-border als Textfarbe fast unsichtbar war. */
 
 /* Responsive */
 @media (max-width: 640px) {

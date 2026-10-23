@@ -25,7 +25,7 @@ _CSEQ_RE = re.compile(r"^CSeq:\s*(.+)", re.IGNORECASE | re.MULTILINE)
 # "00123 1770969579 * <== 192.168.1.1:5060     INVITE sip:1001@... SIP/2.0"
 # "00124 1770969579 * ==> 192.168.1.1:5060     SIP/2.0 200 OK"
 _HISTORY_LINE_RE = re.compile(
-    r"^(\d{5})\s+(\d+)\s+\*\s+(<==>|<==|==>)\s+(\S+)\s+(.+)$"
+    r"^(\d+)\s+(\d+)\s+\*\s+(<==>|<==|==>)\s+(\S+)\s+(.+)$"
 )
 
 # Entry detail header:
@@ -66,8 +66,9 @@ class SIPDebugBuffer:
         """Enable history capture in Asterisk and start polling."""
         if not self._ami_client or not self._ami_client.connected:
             raise RuntimeError("AMI not connected")
-        # Enable pjsip history in Asterisk
+        # Enable pjsip history and packet logger in Asterisk
         await self._ami_client.send_action("Command", Command="pjsip set history on")
+        await self._ami_client.send_action("Command", Command="pjsip set logger on")
         # Clear previous history to start fresh
         await self._ami_client.send_action("Command", Command="pjsip set history clear")
         self._last_entry_num = -1
@@ -83,6 +84,7 @@ class SIPDebugBuffer:
         if self._ami_client and self._ami_client.connected:
             try:
                 await self._ami_client.send_action("Command", Command="pjsip set history off")
+                await self._ami_client.send_action("Command", Command="pjsip set logger off")
             except Exception as e:
                 logger.warning(f"Failed to disable pjsip history: {e}")
         if self._poll_task and not self._poll_task.done():

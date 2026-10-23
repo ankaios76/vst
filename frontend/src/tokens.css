@@ -1,0 +1,161 @@
+/* ============================================================
+   VST — Token-Ebene, Plusnet Corporate Design
+   Brand Guidelines, Stand Dezember 2025.
+
+   Einzige Stelle im Frontend, an der Farbwerte stehen dürfen.
+   Alles andere greift über diese Variablen oder über die in
+   tailwind.config.js darauf gemappten Klassen zu.
+   ============================================================ */
+
+/* ---------- Schriften ----------------------------------------
+   Manrope kommt als npm-Paket @fontsource/manrope (SIL OFL); die
+   @font-face-Regeln und die woff2-Dateien liegen dort. Eingebunden
+   wird in src/main.tsx, weil Vite die Paket-CSS über den Import-Graph
+   auflöst. Stratos ist kommerziell und liegt nicht im Repo — deshalb
+   zeigt --font-headline vorerst auf --font-body. Siehe BRANDING.md.
+   ------------------------------------------------------------ */
+
+:root {
+  /* ---------- Primärfarben ---------- */
+  --pn-bordeaux: #96144B;
+  --pn-white: #FFFFFF;
+  --pn-petrol: #008796;
+
+  /* ---------- Typografie-Farbe ----------
+     Laut CD ausschließlich für Schrift, nie als Fläche.
+     Einzige Ausnahme: Dark Mode, siehe unten. */
+  --pn-onyx: #141E28;
+
+  /* ---------- Sekundärfarben ---------- */
+  --pn-tuerkis: #6ED6E0;
+  --pn-eisblau: #DBF7FF;
+  --pn-onyx-5: #F3F3F4;
+  --pn-onyx-10: #E8E9EA;
+  --pn-onyx-40: #A1A5A9;
+
+  /* ---------- Tertiärfarben ----------
+     Laut CD reine Informationsfarben: Diagramme und Statusanzeigen.
+     Niemals als Flächen- oder Markenfarbe verwenden. */
+  --pn-rot: #E66455;
+  --pn-gelb: #FFC882;
+  --pn-gruen: #6BAF78;
+  --pn-lila: #7D55C3;
+
+  /* ---------- Semantische Zuordnung ---------- */
+  --color-primary: var(--pn-bordeaux);
+  --color-primary-contrast: var(--pn-white);
+  --color-text: var(--pn-onyx);
+
+  /* Links: Petrol, um 12 % mit Onyx abgedunkelt.
+     Reines Petrol erreicht auf Weiß nur 4,28:1 und auf Onyx 5 nur 3,86:1
+     und verfehlt AA für Text unter 24 px. Abgedunkelt sind es 5,06:1 bzw.
+     4,57:1. Die 12 % sind dieselbe Stufe, die das CD-lose Hover benutzt —
+     kein neuer Farbton, nur eine dunklere Lage derselben Farbe.
+     Reines Petrol bleibt als --pn-petrol für Flächen und Grafik. */
+  --color-link: color-mix(in srgb, var(--pn-petrol) 88%, var(--pn-onyx));
+  --color-text-muted: var(--pn-onyx-40);
+  --color-text-on-primary: var(--pn-white);
+  --color-surface: var(--pn-white);
+  --color-surface-subtle: var(--pn-onyx-5);
+  --color-surface-accent: var(--pn-eisblau);
+  --color-border: var(--pn-onyx-10);
+  --color-success: var(--pn-gruen);
+  --color-warning: var(--pn-gelb);
+  --color-danger: var(--pn-rot);
+  --color-info: var(--pn-petrol);
+
+  /* ---------- Statusfarben als Schrift ----------
+     Die Tertiaerfarben sind als Punkt, Flaeche und Diagrammfarbe gedacht
+     und dafuer richtig belegt. Als Schrift verfehlen sie AA deutlich:
+     Gruen 2,62:1, Rot 3,32:1, Gelb 1,52:1 auf Weiss. Fuer die Textlage
+     deshalb dieselbe Abdunklung mit Onyx wie bei den Links — die Reinfarbe
+     bleibt oben unveraendert und traegt weiter Punkte und Flaechen.
+     tailwind.config.js bindet diese Werte an text-*, die Reinfarben an
+     bg-* und border-*. */
+  --color-success-text: color-mix(in srgb, var(--pn-gruen) 62%, var(--pn-onyx));
+  --color-warning-text: color-mix(in srgb, var(--pn-gelb) 46%, var(--pn-onyx));
+  --color-danger-text: color-mix(in srgb, var(--pn-rot) 74%, var(--pn-onyx));
+  --color-info-text: color-mix(in srgb, var(--pn-petrol) 88%, var(--pn-onyx));
+
+  /* ---------- Interaktionszustände ----------
+     Das CD definiert keine Hover-/Active-Farben. Sie entstehen durch
+     Abdunkeln der Basisfarbe mit Onyx, nicht durch neue Farbtöne. */
+  --color-primary-hover: color-mix(in srgb, var(--color-primary) 88%, var(--pn-onyx));
+  --color-primary-active: color-mix(in srgb, var(--color-primary) 80%, var(--pn-onyx));
+  --color-link-hover: color-mix(in srgb, var(--pn-petrol) 80%, var(--pn-onyx));
+  --color-link-active: color-mix(in srgb, var(--pn-petrol) 72%, var(--pn-onyx));
+  --color-surface-hover: var(--pn-onyx-5);
+
+  /* ---------- Form ----------
+     CD: 12 pt bei 1920 px Breite, proportional skaliert. */
+  --radius-icon: 2px;
+  --radius-card: 10px;
+  --radius-input: 8px;
+
+  /* ---------- Schrift ---------- */
+  --font-headline: 'Manrope', system-ui, sans-serif; /* TODO: Stratos, sobald lizenzierte Datei vorliegt */
+  --font-body: 'Manrope', system-ui, sans-serif;
+
+  /* ---------- Fokus ---------- */
+  --focus-ring: var(--color-link);
+
+  font-family: var(--font-body);
+  color: var(--color-text);
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* ---------- Dark Mode ----------
+   Vom CD nicht definiert, hier minimal extrapoliert.
+   Bewusste Abweichungen, dokumentiert in BRANDING.md:
+   - Onyx trägt hier doch eine Fläche. Auf dunklem Grund ist das
+     unvermeidbar, und es bleibt die CD-Farbe.
+   - Bordeaux ist auf dunklem Grund zu dunkel für Text und Icons.
+     Akzent ist dort Türkis; Bordeaux nur noch für gefüllte Flächen.
+   - Links in Türkis statt Petrol, Petrol reißt den Kontrast auf Onyx. */
+.dark {
+  --color-primary: var(--pn-bordeaux);        /* nur noch für gefüllte Flächen */
+  --color-primary-contrast: var(--pn-white);
+  --color-accent: var(--pn-tuerkis);          /* Text und Icons statt Bordeaux */
+  --color-link: var(--pn-tuerkis);
+  --color-text: #E8E9EA;
+  --color-text-muted: #A1A5A9;
+  --color-surface: #1F2833;                   /* aufgehellte Onyx-Stufe */
+  --color-surface-subtle: #2C343E;
+  --color-surface-accent: #0B4D5A;
+  --color-border: #434B53;
+  --color-surface-hover: #2C343E;
+  --focus-ring: var(--pn-tuerkis);
+
+  /* Auf dunklem Grund tragen die Reinfarben: Gruen 5,70:1 und Gelb 9,82:1
+     auf der Kartenflaeche. Nur Rot liegt mit 4,48:1 knapp darunter und
+     wird mit Weiss aufgehellt statt mit Onyx abgedunkelt. */
+  --color-success-text: var(--pn-gruen);
+  --color-warning-text: var(--pn-gelb);
+  --color-danger-text: color-mix(in srgb, var(--pn-rot) 85%, var(--pn-white));
+  --color-info-text: var(--pn-tuerkis);
+
+  --color-primary-hover: color-mix(in srgb, var(--color-primary) 88%, var(--pn-white));
+  --color-primary-active: color-mix(in srgb, var(--color-primary) 78%, var(--pn-white));
+  --color-link-hover: color-mix(in srgb, var(--color-link) 88%, var(--pn-white));
+  --color-link-active: color-mix(in srgb, var(--color-link) 78%, var(--pn-white));
+
+  color: var(--color-text);
+}
+
+/* Im Hellmodus gibt es keinen eigenen Akzent — dort ist es die Hausfarbe. */
+:root { --color-accent: var(--color-primary); }
+
+/* ---------- Globale Grundlagen ----------
+   Ligaturen laut CD abschalten: bessere Lesbarkeit in kleinen Größen
+   und in der Barrierefreiheit. */
+* {
+  font-variant-ligatures: none;
+}
+
+/* Sichtbarer Fokus auf allen interaktiven Elementen. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-icon);
+}

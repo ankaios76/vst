@@ -438,7 +438,7 @@ export default function UsersPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500 dark:text-gray-400">{tr('Lade Benutzer...', 'Loading users...')}</div>
+    return <div className="text-center py-12 text-muted">{tr('Lade Benutzer...', 'Loading users...')}</div>
   }
 
   // DID pools for create form
@@ -454,7 +454,7 @@ export default function UsersPage() {
       <div className="flex items-center justify-end">
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+          className="flex items-center gap-2 bg-brand hover:bg-brand-hover text-on-primary px-4 py-2 rounded-input transition-colors"
         >
           <UserPlus className="w-5 h-5" />
           {tr('Neuer Benutzer', 'New user')}
@@ -462,14 +462,14 @@ export default function UsersPage() {
       </div>
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-surface-subtle border border-rot-500 text-danger px-4 py-3 rounded-input text-sm">
           {error}
         </div>
       )}
 
       {showForm && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">{tr('Neuen Benutzer anlegen', 'Create new user')}</h2>
+        <div className="bg-surface rounded-card shadow-sm border border-subtle p-6">
+          <h2 className="text-lg font-semibold text-content mb-4">{tr('Neuen Benutzer anlegen', 'Create new user')}</h2>
           <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
             {/* Avatar upload for create form */}
@@ -486,15 +486,15 @@ export default function UsersPage() {
                       className="w-16 h-16 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full bg-surface-subtle text-muted flex items-center justify-center">
                       <Upload className="w-6 h-6" />
                     </div>
                   )}
-                  <div className="absolute inset-0 rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all">
-                    <Upload className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 rounded-full bg-onyx-900 bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all">
+                    <Upload className="w-5 h-5 text-on-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                 </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
+                <div className="text-sm text-muted">
                   {createAvatarFile ? createAvatarFile.name : tr('Foto hochladen (optional)', 'Upload photo (optional)')}
                 </div>
                 <input
@@ -508,56 +508,56 @@ export default function UsersPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Benutzername', 'Username')}</label>
+              <label className="block text-sm font-medium text-content mb-1">{tr('Benutzername', 'Username')}</label>
               <input
                 type="text"
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                 placeholder={tr('benutzername', 'username')}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Passwort', 'Password')}</label>
+              <label className="block text-sm font-medium text-content mb-1">{tr('Passwort', 'Password')}</label>
               <input
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                 placeholder={tr('Passwort', 'Password')}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Name', 'Name')}</label>
+              <label className="block text-sm font-medium text-content mb-1">{tr('Name', 'Name')}</label>
               <input
                 type="text"
                 value={formData.full_name}
                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                 placeholder={tr('Vor- und Nachname', 'Full name')}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('E-Mail', 'Email')}</label>
+              <label className="block text-sm font-medium text-content mb-1">{tr('E-Mail', 'Email')}</label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                 placeholder="email@example.com"
               />
-              <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+              <p className="mt-1 text-xs text-warning">
                 {tr('An diese Adresse werden die Zugangsdaten gesendet.', 'Login credentials will be sent to this address.')}
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Rolle', 'Role')}</label>
+              <label className="block text-sm font-medium text-content mb-1">{tr('Rolle', 'Role')}</label>
               <select
                 value={formData.role}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
               >
                 <option value="user">User</option>
                 <option value="admin">{tr('Admin', 'Admin')}</option>
@@ -567,14 +567,14 @@ export default function UsersPage() {
             {/* Extension: toggle between existing and new */}
             <div className="md:col-span-3">
               <div className="flex items-center gap-3 mb-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{tr('Nebenstelle', 'Extension')}</label>
+                <label className="block text-sm font-medium text-content">{tr('Nebenstelle', 'Extension')}</label>
                 <button
                   type="button"
                   onClick={() => { setCreateNewExt(!createNewExt); setFormData({ ...formData, extension: '' }); setNewExtData({ extension: '', secret: '', caller_id: '' }) }}
                   className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full transition-colors ${
                     createNewExt
-                      ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/60'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      ? 'bg-surface-subtle text-success hover:bg-surface-hover'
+                      : 'bg-surface-subtle text-muted hover:bg-surface-hover'
                   }`}
                 >
                   <Plus className="w-3 h-3" />
@@ -586,7 +586,7 @@ export default function UsersPage() {
                 <select
                   value={formData.extension}
                   onChange={(e) => setFormData({ ...formData, extension: e.target.value })}
-                  className="w-full md:w-1/3 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full md:w-1/3 px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                 >
                   <option value="">{tr('-- keine --', '-- none --')}</option>
                   {getAvailableExtensions().map(p => (
@@ -596,26 +596,26 @@ export default function UsersPage() {
                   ))}
                 </select>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-surface-subtle border border-gruen-500 rounded-input">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Extension-Nr.', 'Extension number')}</label>
+                    <label className="block text-sm font-medium text-content mb-1">{tr('Extension-Nr.', 'Extension number')}</label>
                     <input
                       type="text"
                       value={newExtData.extension}
                       onChange={(e) => setNewExtData({ ...newExtData, extension: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-success focus:border-gruen-500 outline-none bg-surface text-content"
                       placeholder={tr('z.B. 1001', 'e.g. 1001')}
                       required={createNewExt}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('SIP-Passwort', 'SIP password')}</label>
+                    <label className="block text-sm font-medium text-content mb-1">{tr('SIP-Passwort', 'SIP password')}</label>
                     <div className="flex gap-2">
                       <input
                         type="text"
                         value={newExtData.secret}
                         onChange={(e) => setNewExtData({ ...newExtData, secret: e.target.value })}
-                        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none font-mono text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        className="flex-1 px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-success focus:border-gruen-500 outline-none font-mono text-sm bg-surface text-content"
                         placeholder={tr('SIP-Passwort', 'SIP password')}
                         required={createNewExt}
                       />
@@ -623,20 +623,20 @@ export default function UsersPage() {
                         type="button"
                         onClick={handleGeneratePassword}
                         disabled={generatingPw}
-                        className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg transition-colors"
+                        className="px-3 py-2 bg-surface-subtle hover:bg-surface-hover border border-subtle rounded-input transition-colors"
                         title={tr('Sicheres Passwort generieren', 'Generate strong password')}
                       >
-                        <RefreshCw className={`w-4 h-4 text-gray-600 dark:text-gray-400 ${generatingPw ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`w-4 h-4 text-muted ${generatingPw ? 'animate-spin' : ''}`} />
                       </button>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Caller-ID (optional)', 'Caller ID (optional)')}</label>
+                    <label className="block text-sm font-medium text-content mb-1">{tr('Caller-ID (optional)', 'Caller ID (optional)')}</label>
                     <input
                       type="text"
                       value={newExtData.caller_id}
                       onChange={(e) => setNewExtData({ ...newExtData, caller_id: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-success focus:border-gruen-500 outline-none bg-surface text-content"
                       placeholder={tr('Wird aus Name übernommen', 'Derived from name')}
                     />
                   </div>
@@ -647,12 +647,12 @@ export default function UsersPage() {
             {/* Rufnummern section */}
             {getFormExtension() && (availableDids.length > 0) && (
               <div className="md:col-span-3">
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg space-y-4">
+                <div className="p-4 bg-surface-accent border border-subtle rounded-input space-y-4">
                   {/* Ausgehende Rufnummer */}
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <PhoneOutgoing className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{tr('Ausgehende Rufnummer', 'Outbound number')}</label>
+                      <PhoneOutgoing className="w-4 h-4 text-link" />
+                      <label className="text-sm font-medium text-content">{tr('Ausgehende Rufnummer', 'Outbound number')}</label>
                     </div>
                     <select
                       value={formDid ? `${formTrunkId}:${formDid}` : ''}
@@ -667,7 +667,7 @@ export default function UsersPage() {
                           setFormDid(didParts.join(':'))
                         }
                       }}
-                      className="w-full md:w-2/3 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      className="w-full md:w-2/3 px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none text-sm bg-surface text-content"
                     >
                       <option value="">{tr('-- keine Rufnummer --', '-- no number --')}</option>
                       {createDidsPool.map(group => (
@@ -684,29 +684,29 @@ export default function UsersPage() {
                   {createInboundPool.length > 0 && (
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <PhoneIncoming className="w-4 h-4 text-green-600 dark:text-green-400" />
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{tr('Eingehende Rufnummern', 'Inbound numbers')}</label>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{tr('(weitere Rufnummern, die bei dieser Nebenstelle klingeln)', '(additional numbers that ring on this extension)')}</span>
+                        <PhoneIncoming className="w-4 h-4 text-success" />
+                        <label className="text-sm font-medium text-content">{tr('Eingehende Rufnummern', 'Inbound numbers')}</label>
+                        <span className="text-xs text-muted">{tr('(weitere Rufnummern, die bei dieser Nebenstelle klingeln)', '(additional numbers that ring on this extension)')}</span>
                       </div>
                       <div className="space-y-2">
                         {createInboundPool.map(group => (
-                          <div key={group.trunk_id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-                            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">{group.trunk_name}</div>
+                          <div key={group.trunk_id} className="bg-surface rounded-input border border-subtle p-3">
+                            <div className="text-xs font-medium text-muted mb-2">{group.trunk_name}</div>
                             <div className="flex flex-wrap gap-2">
                               {group.dids.map(did => {
                                 const checked = isDidSelected(formInboundDids, group.trunk_id, did)
                                 return (
                                   <label
                                     key={did}
-                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono cursor-pointer transition-colors ${
-                                      checked ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border border-green-300 dark:border-green-700' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'
+                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-input text-xs font-mono cursor-pointer transition-colors ${
+                                      checked ? 'bg-surface-subtle text-success border border-gruen-500 border-gruen-500' : 'bg-surface-subtle text-muted border border-subtle hover:bg-surface-hover'
                                     }`}
                                   >
                                     <input
                                       type="checkbox"
                                       checked={checked}
                                       onChange={() => toggleDid(formInboundDids, setFormInboundDids, group.trunk_id, did)}
-                                      className="w-3.5 h-3.5 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                      className="w-3.5 h-3.5 rounded border-subtle text-success focus:ring-success"
                                     />
                                     {did}
                                   </label>
@@ -725,14 +725,14 @@ export default function UsersPage() {
             <div className="md:col-span-3 flex gap-3">
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+                className="bg-brand hover:bg-brand-hover text-on-primary px-6 py-2 rounded-input transition-colors"
               >
                 {tr('Anlegen', 'Create')}
               </button>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-6 py-2 rounded-lg transition-colors"
+                className="bg-surface-subtle hover:bg-surface-hover text-content px-6 py-2 rounded-input transition-colors"
               >
                 {tr('Abbrechen', 'Cancel')}
               </button>
@@ -741,19 +741,19 @@ export default function UsersPage() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-surface rounded-card shadow-sm border border-subtle overflow-hidden">
         <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
+          <thead className="bg-surface-subtle border-b border-subtle">
             <tr>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Benutzer', 'User')}</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('E-Mail', 'Email')}</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Nebenstelle', 'Extension')}</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Rufnummern', 'Numbers')}</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Rolle', 'Role')}</th>
-              <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Aktionen', 'Actions')}</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-muted uppercase">{tr('Benutzer', 'User')}</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-muted uppercase">{tr('E-Mail', 'Email')}</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-muted uppercase">{tr('Nebenstelle', 'Extension')}</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-muted uppercase">{tr('Rufnummern', 'Numbers')}</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-muted uppercase">{tr('Rolle', 'Role')}</th>
+              <th className="text-right px-6 py-3 text-xs font-medium text-muted uppercase">{tr('Aktionen', 'Actions')}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="divide-y divide-subtle">
             {users.map((u) => {
               const ext = getUserExtension(u.id)
               const extRoutes = ext ? getRoutesForExtension(ext) : []
@@ -763,7 +763,7 @@ export default function UsersPage() {
               return (
                 <tr
                   key={u.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
+                  className="hover:bg-surface-hover cursor-pointer"
                   onClick={() => openEditModal(u)}
                 >
                   <td className="px-6 py-4">
@@ -775,50 +775,50 @@ export default function UsersPage() {
                           className="w-8 h-8 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 flex items-center justify-center text-sm font-semibold">
+                        <div className="w-8 h-8 rounded-full bg-surface-accent text-link flex items-center justify-center text-sm font-semibold">
                           {getInitial(u)}
                         </div>
                       )}
                       <div>
-                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{u.full_name || u.username}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">{u.username}</div>
+                        <div className="text-sm font-medium text-content">{u.full_name || u.username}</div>
+                        <div className="text-xs text-muted">{u.username}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{u.email || '-'}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                  <td className="px-6 py-4 text-sm text-muted">{u.email || '-'}</td>
+                  <td className="px-6 py-4 text-sm text-muted">
                     {ext ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-mono">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-surface-accent text-link text-xs font-mono">
                         {ext}
                       </span>
                     ) : (
-                      <span className="text-gray-400 dark:text-gray-500">-</span>
+                      <span className="text-muted">-</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                  <td className="px-6 py-4 text-sm text-muted">
                     {outboundRoute ? (
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-mono">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-subtle text-success text-xs font-mono">
                           <PhoneOutgoing className="w-3 h-3" />
                           {outboundRoute.did}
                         </span>
                         {inboundCount > 0 && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-accent text-link text-xs">
                             <PhoneIncoming className="w-3 h-3" />
                             +{inboundCount}
                           </span>
                         )}
                       </div>
                     ) : (
-                      <span className="text-gray-400 dark:text-gray-500">-</span>
+                      <span className="text-muted">-</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         u.role === 'admin'
-                          ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
+                          ? 'bg-surface-subtle text-content text-content'
+                          : 'bg-surface-subtle text-content text-content'
                       }`}
                     >
                       {u.role}
@@ -828,14 +828,14 @@ export default function UsersPage() {
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => openEditModal(u)}
-                        className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                        className="text-muted hover:text-content transition-colors"
                         title={tr('Bearbeiten', 'Edit')}
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => { setPasswordUserId(u.id); setPasswordUsername(u.username); setNewPassword('') }}
-                        className="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                        className="text-link hover:text-link transition-colors"
                         title={tr('Passwort ändern', 'Change password')}
                       >
                         <KeyRound className="w-4 h-4" />
@@ -843,7 +843,7 @@ export default function UsersPage() {
                       {u.username !== 'admin' && (
                         <button
                           onClick={() => handleDelete(u.id, u.username)}
-                          className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+                          className="text-danger hover:text-danger transition-colors"
                           title={tr('Löschen', 'Delete')}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -857,19 +857,19 @@ export default function UsersPage() {
           </tbody>
         </table>
         {users.length === 0 && (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">{tr('Keine Benutzer vorhanden', 'No users found')}</div>
+          <div className="text-center py-8 text-muted">{tr('Keine Benutzer vorhanden', 'No users found')}</div>
         )}
       </div>
 
       {/* Edit User Modal */}
       {editUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-onyx-900 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-surface rounded-card shadow-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+              <h2 className="text-lg font-semibold text-content">
                 {tr('Benutzer bearbeiten', 'Edit user')}: {editUser.username}
               </h2>
-              <button onClick={() => setEditUser(null)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+              <button onClick={() => setEditUser(null)} className="text-muted hover:text-content">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -887,15 +887,15 @@ export default function UsersPage() {
                     className="w-16 h-16 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 flex items-center justify-center text-xl font-semibold">
+                  <div className="w-16 h-16 rounded-full bg-surface-accent text-link flex items-center justify-center text-xl font-semibold">
                     {getInitial(editUser)}
                   </div>
                 )}
-                <div className="absolute inset-0 rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all">
-                  <Upload className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 rounded-full bg-onyx-900 bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all">
+                  <Upload className="w-5 h-5 text-on-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">{tr('Klicken zum Ändern', 'Click to change')}</div>
+              <div className="text-sm text-muted">{tr('Klicken zum Ändern', 'Click to change')}</div>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -907,36 +907,36 @@ export default function UsersPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Name', 'Name')}</label>
+                <label className="block text-sm font-medium text-content mb-1">{tr('Name', 'Name')}</label>
                 <input
                   type="text"
                   value={editData.full_name}
                   onChange={(e) => setEditData({ ...editData, full_name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('E-Mail', 'Email')}</label>
+                <label className="block text-sm font-medium text-content mb-1">{tr('E-Mail', 'Email')}</label>
                 <input
                   type="email"
                   value={editData.email}
                   onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Rolle', 'Role')}</label>
+                <label className="block text-sm font-medium text-content mb-1">{tr('Rolle', 'Role')}</label>
                 <select
                   value={editData.role}
                   onChange={(e) => setEditData({ ...editData, role: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                 >
                   <option value="user">User</option>
                   <option value="admin">{tr('Admin', 'Admin')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Nebenstelle', 'Extension')}</label>
+                <label className="block text-sm font-medium text-content mb-1">{tr('Nebenstelle', 'Extension')}</label>
                 <select
                   value={editExtension}
                   onChange={(e) => {
@@ -962,7 +962,7 @@ export default function UsersPage() {
                       setEditInboundRouteMap(new Map())
                     }
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                 >
                   <option value="">{tr('-- keine --', '-- none --')}</option>
                   {getAvailableExtensions(editUser.id).map(p => (
@@ -975,12 +975,12 @@ export default function UsersPage() {
 
               {/* Rufnummern im Edit-Modal */}
               {editExtension && (
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg space-y-4">
+                <div className="p-3 bg-surface-accent border border-subtle rounded-input space-y-4">
                   {/* Ausgehende Rufnummer */}
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <PhoneOutgoing className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{tr('Ausgehende Rufnummer', 'Outbound number')}</label>
+                      <PhoneOutgoing className="w-4 h-4 text-link" />
+                      <label className="text-sm font-medium text-content">{tr('Ausgehende Rufnummer', 'Outbound number')}</label>
                     </div>
                     <select
                       value={editDid ? `${editTrunkId}:${editDid}` : ''}
@@ -995,7 +995,7 @@ export default function UsersPage() {
                           setEditDid(didParts.join(':'))
                         }
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none text-sm bg-surface text-content"
                     >
                       <option value="">{tr('-- keine Rufnummer --', '-- no number --')}</option>
                       {/* Show currently assigned outbound DID */}
@@ -1020,29 +1020,29 @@ export default function UsersPage() {
                   {editInboundPool.length > 0 && (
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <PhoneIncoming className="w-4 h-4 text-green-600 dark:text-green-400" />
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{tr('Eingehende Rufnummern', 'Inbound numbers')}</label>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{tr('(weitere)', '(additional)')}</span>
+                        <PhoneIncoming className="w-4 h-4 text-success" />
+                        <label className="text-sm font-medium text-content">{tr('Eingehende Rufnummern', 'Inbound numbers')}</label>
+                        <span className="text-xs text-muted">{tr('(weitere)', '(additional)')}</span>
                       </div>
                       <div className="space-y-2">
                         {editInboundPool.map(group => (
-                          <div key={group.trunk_id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-                            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">{group.trunk_name}</div>
+                          <div key={group.trunk_id} className="bg-surface rounded-input border border-subtle p-3">
+                            <div className="text-xs font-medium text-muted mb-2">{group.trunk_name}</div>
                             <div className="flex flex-wrap gap-2">
                               {group.dids.map(did => {
                                 const checked = isDidSelected(editInboundDids, group.trunk_id, did)
                                 return (
                                   <label
                                     key={did}
-                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono cursor-pointer transition-colors ${
-                                      checked ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border border-green-300 dark:border-green-700' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'
+                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-input text-xs font-mono cursor-pointer transition-colors ${
+                                      checked ? 'bg-surface-subtle text-success border border-gruen-500 border-gruen-500' : 'bg-surface-subtle text-muted border border-subtle hover:bg-surface-hover'
                                     }`}
                                   >
                                     <input
                                       type="checkbox"
                                       checked={checked}
                                       onChange={() => toggleDid(editInboundDids, setEditInboundDids, group.trunk_id, did)}
-                                      className="w-3.5 h-3.5 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                      className="w-3.5 h-3.5 rounded border-subtle text-success focus:ring-success"
                                     />
                                     {did}
                                   </label>
@@ -1061,13 +1061,13 @@ export default function UsersPage() {
             <div className="flex gap-3 justify-end mt-6">
               <button
                 onClick={() => setEditUser(null)}
-                className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg transition-colors"
+                className="bg-surface-subtle hover:bg-surface-hover text-content px-4 py-2 rounded-input transition-colors"
               >
                 {tr('Abbrechen', 'Cancel')}
               </button>
               <button
                 onClick={handleEditSave}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                className="bg-brand hover:bg-brand-hover text-on-primary px-4 py-2 rounded-input transition-colors"
               >
                 {tr('Speichern', 'Save')}
               </button>
@@ -1078,9 +1078,9 @@ export default function UsersPage() {
 
       {/* Password Change Modal */}
       {passwordUserId !== null && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
+        <div className="fixed inset-0 bg-onyx-900 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-surface rounded-card shadow-lg p-6 w-full max-w-md">
+            <h2 className="text-lg font-semibold text-content mb-4">
               {tr('Passwort ändern', 'Change password')}: {passwordUsername}
             </h2>
             <input
@@ -1088,21 +1088,21 @@ export default function UsersPage() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder={tr('Neues Passwort (min. 6 Zeichen)', 'New password (min. 6 characters)')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none mb-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none mb-4 bg-surface text-content"
               autoFocus
               onKeyDown={(e) => e.key === 'Enter' && handlePasswordChange()}
             />
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => { setPasswordUserId(null); setNewPassword('') }}
-                className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg transition-colors"
+                className="bg-surface-subtle hover:bg-surface-hover text-content px-4 py-2 rounded-input transition-colors"
               >
                 {tr('Abbrechen', 'Cancel')}
               </button>
               <button
                 onClick={handlePasswordChange}
                 disabled={newPassword.length < 6}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-4 py-2 rounded-lg transition-colors"
+                className="bg-brand hover:bg-brand-hover disabled:bg-onyx-400 text-on-primary px-4 py-2 rounded-input transition-colors"
               >
                 {tr('Speichern', 'Save')}
               </button>

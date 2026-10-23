@@ -195,8 +195,8 @@ export default function ContactsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{tr('Telefonbuch', 'Contacts')}</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{tr('Global und pro Nebenstelle verwaltete Kontakte', 'Contacts managed globally and per extension')}</p>
+          <h1 className="text-xl font-semibold text-content">{tr('Telefonbuch', 'Contacts')}</h1>
+          <p className="text-sm text-muted">{tr('Global und pro Nebenstelle verwaltete Kontakte', 'Contacts managed globally and per extension')}</p>
         </div>
         <div className="flex items-center gap-2">
           <input
@@ -212,14 +212,14 @@ export default function ContactsPage() {
           />
           <button
             onClick={onPickFile}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-input bg-surface-subtle hover:bg-surface-subtle text-content"
           >
             <Upload className="w-4 h-4" />
             {tr('Import', 'Import')}
           </button>
           <button
             onClick={handleExport}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-input bg-brand hover:bg-brand-hover text-on-primary"
           >
             <Download className="w-4 h-4" />
             {tr('Export', 'Export')}
@@ -228,29 +228,29 @@ export default function ContactsPage() {
       </div>
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-2 rounded-lg text-sm">
+        <div className="bg-surface-subtle border border-rot-500 text-danger px-4 py-2 rounded-input text-sm">
           {error}
         </div>
       )}
       {success && (
-        <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-2 rounded-lg text-sm">
+        <div className="bg-surface-subtle border border-gruen-500 text-success px-4 py-2 rounded-input text-sm">
           {success}
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
+      <div className="bg-surface rounded-card shadow-sm p-4">
         <div className="flex flex-wrap items-center gap-3">
           {isAdmin ? (
             <>
               <button
                 onClick={() => setScope('global')}
-                className={`px-3 py-2 rounded-lg text-sm ${scope === 'global' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                className={`px-3 py-2 rounded-input text-sm ${scope === 'global' ? 'bg-surface-accent text-link bg-surface-accent' : 'text-content hover:bg-surface-hover'}`}
               >
                 {tr('Globales Telefonbuch', 'Global contacts')}
               </button>
               <button
                 onClick={() => setScope('extension')}
-                className={`px-3 py-2 rounded-lg text-sm ${scope === 'extension' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                className={`px-3 py-2 rounded-input text-sm ${scope === 'extension' ? 'bg-surface-accent text-link bg-surface-accent' : 'text-content hover:bg-surface-hover'}`}
               >
                 {tr('Nebenstellen-Telefonbuch', 'Extension contacts')}
               </button>
@@ -258,7 +258,7 @@ export default function ContactsPage() {
                 <select
                   value={selectedExtension || ''}
                   onChange={(e) => setExtension(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="px-3 py-2 border border-subtle rounded-input bg-surface text-content"
                 >
                   {extensions.map((p) => (
                     <option key={p.extension} value={p.extension}>
@@ -269,7 +269,7 @@ export default function ContactsPage() {
               )}
             </>
           ) : (
-            <div className="text-sm text-gray-600 dark:text-gray-300">
+            <div className="text-sm text-content">
               {tr('Nebenstellen-Telefonbuch', 'Extension contacts')}{' '}
               {user?.extension ? `(${tr('Nebenstelle', 'Extension')} ${user.extension})` : ''}
             </div>
@@ -277,15 +277,15 @@ export default function ContactsPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+      <div className="bg-surface rounded-card shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+          <h2 className="text-lg font-semibold text-content">
             {editingId ? tr('Kontakt bearbeiten', 'Edit contact') : tr('Kontakt anlegen', 'Create contact')}
           </h2>
           {editingId && (
             <button
               onClick={resetForm}
-              className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              className="inline-flex items-center gap-2 text-sm text-muted hover:text-content"
             >
               <X className="w-4 h-4" /> {tr('Abbrechen', 'Cancel')}
             </button>
@@ -293,56 +293,56 @@ export default function ContactsPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Name', 'Name')} *</label>
+            <label className="block text-sm font-medium text-content mb-1">{tr('Name', 'Name')} *</label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link outline-none bg-surface text-content"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Durchwahl', 'Extension')}</label>
+            <label className="block text-sm font-medium text-content mb-1">{tr('Durchwahl', 'Extension')}</label>
             <input
               type="text"
               value={form.internal_extension}
               onChange={(e) => setForm({ ...form, internal_extension: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link outline-none bg-surface text-content"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Externe Nummer', 'External number')}</label>
+            <label className="block text-sm font-medium text-content mb-1">{tr('Externe Nummer', 'External number')}</label>
             <input
               type="text"
               value={form.external_number}
               onChange={(e) => setForm({ ...form, external_number: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link outline-none bg-surface text-content"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Firma', 'Company')}</label>
+            <label className="block text-sm font-medium text-content mb-1">{tr('Firma', 'Company')}</label>
             <input
               type="text"
               value={form.company}
               onChange={(e) => setForm({ ...form, company: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link outline-none bg-surface text-content"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Tag/Gruppe', 'Tag/Group')}</label>
+            <label className="block text-sm font-medium text-content mb-1">{tr('Tag/Gruppe', 'Tag/Group')}</label>
             <input
               type="text"
               value={form.tag}
               onChange={(e) => setForm({ ...form, tag: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link outline-none bg-surface text-content"
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Notiz', 'Note')}</label>
+            <label className="block text-sm font-medium text-content mb-1">{tr('Notiz', 'Note')}</label>
             <textarea
               value={form.note}
               onChange={(e) => setForm({ ...form, note: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link outline-none bg-surface text-content"
               rows={3}
             />
           </div>
@@ -351,7 +351,7 @@ export default function ContactsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-300"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-input bg-brand hover:bg-brand-hover text-on-primary disabled:bg-onyx-400"
           >
             {editingId ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
             {editingId ? tr('Speichern', 'Save') : tr('Anlegen', 'Create')}
@@ -359,48 +359,48 @@ export default function ContactsPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('Kontakte', 'Contacts')}</h2>
+      <div className="bg-surface rounded-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-subtle">
+          <h2 className="text-lg font-semibold text-content">{tr('Kontakte', 'Contacts')}</h2>
         </div>
         {loading ? (
-          <div className="p-6 text-gray-500 dark:text-gray-400">{tr('Lade...', 'Loading...')}</div>
+          <div className="p-6 text-muted">{tr('Lade...', 'Loading...')}</div>
         ) : contacts.length === 0 ? (
-          <div className="p-6 text-gray-500 dark:text-gray-400">{tr('Noch keine Kontakte vorhanden.', 'No contacts yet.')}</div>
+          <div className="p-6 text-muted">{tr('Noch keine Kontakte vorhanden.', 'No contacts yet.')}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 dark:bg-gray-700/50 text-left">
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Name', 'Name')}</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Durchwahl', 'Extension')}</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Extern', 'External')}</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Firma', 'Company')}</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Tag', 'Tag')}</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Notiz', 'Note')}</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300 w-28">{tr('Aktionen', 'Actions')}</th>
+                <tr className="bg-surface-subtle/50 text-left">
+                  <th className="px-4 py-3 font-medium text-content">{tr('Name', 'Name')}</th>
+                  <th className="px-4 py-3 font-medium text-content">{tr('Durchwahl', 'Extension')}</th>
+                  <th className="px-4 py-3 font-medium text-content">{tr('Extern', 'External')}</th>
+                  <th className="px-4 py-3 font-medium text-content">{tr('Firma', 'Company')}</th>
+                  <th className="px-4 py-3 font-medium text-content">{tr('Tag', 'Tag')}</th>
+                  <th className="px-4 py-3 font-medium text-content">{tr('Notiz', 'Note')}</th>
+                  <th className="px-4 py-3 font-medium text-content w-28">{tr('Aktionen', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody>
                 {contacts.map((c) => (
-                  <tr key={c.id} className="border-t border-gray-200 dark:border-gray-700">
-                    <td className="px-4 py-3 text-gray-800 dark:text-gray-200">{c.name}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{c.internal_extension || '–'}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{c.external_number || '–'}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{c.company || '–'}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{c.tag || '–'}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{c.note || '–'}</td>
+                  <tr key={c.id} className="border-t border-subtle">
+                    <td className="px-4 py-3 text-content">{c.name}</td>
+                    <td className="px-4 py-3 text-content">{c.internal_extension || '–'}</td>
+                    <td className="px-4 py-3 text-content">{c.external_number || '–'}</td>
+                    <td className="px-4 py-3 text-content">{c.company || '–'}</td>
+                    <td className="px-4 py-3 text-content">{c.tag || '–'}</td>
+                    <td className="px-4 py-3 text-content">{c.note || '–'}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => startEdit(c)}
-                          className="text-blue-600 hover:text-blue-700 text-sm"
+                          className="text-link hover:text-link-hover text-sm"
                         >
                           {tr('Bearbeiten', 'Edit')}
                         </button>
                         <button
                           onClick={() => handleDelete(c.id)}
-                          className="text-red-600 hover:text-red-700"
+                          className="text-danger hover:text-danger"
                           title={tr('Löschen', 'Delete')}
                         >
                           <Trash2 className="w-4 h-4" />

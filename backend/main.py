@@ -22,6 +22,7 @@ import os
 from ami_client import AsteriskAMIClient
 from database import engine, Base
 from routers import peers, trunks, routes, dashboard, cdr, voicemail, callforward, groups, ivr, contacts
+from routers import blocklist as blocklist_router
 from routers import auth as auth_router, users as users_router
 from routers import settings as settings_router
 from routers import audit as audit_router
@@ -387,6 +388,7 @@ app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"]
 app.include_router(cdr.router, prefix="/api/cdr", tags=["Call Records"])
 app.include_router(voicemail.router, prefix="/api/voicemail", tags=["Voicemail"])
 app.include_router(callforward.router, prefix="/api/callforward", tags=["Call Forwarding"])
+app.include_router(blocklist_router.router, prefix="/api/blocklist", tags=["Blocklist"])
 app.include_router(groups.router, prefix="/api/groups", tags=["Ring Groups"])
 app.include_router(ivr.router, prefix="/api/ivr", tags=["IVR"])
 app.include_router(contacts.router, prefix="/api/contacts", tags=["Contacts"])

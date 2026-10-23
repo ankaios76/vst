@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Search, Filter, RefreshCw } from 'lucide-react'
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Search, Filter, RefreshCw, Ban, Trash2 } from 'lucide-react'
 import { api } from '../services/api'
 import { useI18n } from '../context/I18nContext'
 
@@ -25,8 +25,23 @@ interface CDRStats {
   calls_this_week: number
 }
 
+interface BlockedCaller {
+  id: number
+  number: string
+  destination: string
+  description: string | null
+  enabled: boolean
+}
+
 export default function CDRPage() {
   const [records, setRecords] = useState<CDRRecord[]>([])
+  const [blocked, setBlocked] = useState<BlockedCaller[]>([])
+  const [blockDestination, setBlockDestination] = useState('')
+  const [blockBusy, setBlockBusy] = useState<string | null>(null)
+  const [blockError, setBlockError] = useState<string | null>(null)
+  const [showBlocklist, setShowBlocklist] = useState(false)
+  const [blockAnonymous, setBlockAnonymous] = useState(false)
+  const [anonBusy, setAnonBusy] = useState(false)
   const [stats, setStats] = useState<CDRStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [filterSrc, setFilterSrc] = useState('')
@@ -57,8 +72,83 @@ export default function CDRPage() {
     }
   }
 
+  const fetchBlocklist = async () => {
+    try {
+      const [list, dest, anon] = await Promise.all([
+        api.getBlocklist(),
+        api.getBlocklistDestination(),
+        api.getBlockAnonymous(),
+      ])
+      setBlocked(list)
+      setBlockDestination(dest.destination)
+      setBlockAnonymous(anon.block_anonymous)
+      // Gibt es Sperren, den Bereich aufklappen - sonst findet niemand den Weg zurueck.
+      if (list.length > 0 || anon.block_anonymous) setShowBlocklist(true)
+    } catch (error) {
+      console.error('Failed to fetch blocklist:', error)
+    }
+  }
+
+  // Nummern koennen im CDR mit Leerzeichen oder Bindestrichen stehen, in der
+  // Sperrliste stehen sie nur mit Ziffern - vor dem Vergleich angleichen.
+  const normalize = (n: string | null) =>
+    (n || '').split('').filter(c => /[0-9+]/.test(c)).join('')
+
+  const isBlocked = (number: string | null) => {
+    const n = normalize(number)
+    return n !== '' && blocked.some(b => b.number === n)
+  }
+
+  const handleBlock = async (record: CDRRecord) => {
+    const number = normalize(record.src)
+    if (!number) return
+    if (!confirm(
+      `Anrufe von ${record.src} kuenftig nach ${blockDestination} umleiten?\n\n` +
+      `Der Anrufer erreicht dich damit nicht mehr.`
+    )) return
+    setBlockBusy(number)
+    setBlockError(null)
+    try {
+      await api.blockCaller({ number, description: `Gesperrt aus der Anrufliste am ${new Date().toLocaleDateString('de-DE')}` })
+      await fetchBlocklist()
+    } catch (e: any) {
+      setBlockError(e?.message || 'Nummer konnte nicht gesperrt werden.')
+    } finally {
+      setBlockBusy(null)
+    }
+  }
+
+  const handleToggleAnonymous = async (enabled: boolean) => {
+    setAnonBusy(true)
+    setBlockError(null)
+    const previous = blockAnonymous
+    setBlockAnonymous(enabled)
+    try {
+      await api.setBlockAnonymous(enabled)
+    } catch (e: any) {
+      setBlockAnonymous(previous)
+      setBlockError(e?.message || 'Einstellung konnte nicht gespeichert werden.')
+    } finally {
+      setAnonBusy(false)
+    }
+  }
+
+  const handleUnblock = async (entry: BlockedCaller) => {
+    setBlockBusy(entry.number)
+    setBlockError(null)
+    try {
+      await api.unblockCaller(entry.id)
+      await fetchBlocklist()
+    } catch (e: any) {
+      setBlockError(e?.message || 'Sperre konnte nicht aufgehoben werden.')
+    } finally {
+      setBlockBusy(null)
+    }
+  }
+
   useEffect(() => {
     fetchCDR()
+    fetchBlocklist()
   }, [])
 
   const handleFilter = () => {
@@ -96,67 +186,160 @@ export default function CDRPage() {
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
+          <div className="bg-surface rounded-input shadow p-4">
+            <div className="flex items-center gap-2 text-muted mb-1">
               <Phone className="w-4 h-4" />
               <span className="text-sm">{tr('Gesamt', 'Total')}</span>
             </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.total_calls}</p>
+            <p className="text-2xl font-bold text-content">{stats.total_calls}</p>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-1">
+          <div className="bg-surface rounded-input shadow p-4">
+            <div className="flex items-center gap-2 text-success mb-1">
               <Phone className="w-4 h-4" />
               <span className="text-sm">{tr('Angenommen', 'Answered')}</span>
             </div>
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.answered_calls}</p>
+            <p className="text-2xl font-bold text-success">{stats.answered_calls}</p>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400 mb-1">
+          <div className="bg-surface rounded-input shadow p-4">
+            <div className="flex items-center gap-2 text-warning mb-1">
               <PhoneMissed className="w-4 h-4" />
               <span className="text-sm">{tr('Verpasst', 'Missed')}</span>
             </div>
-            <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.missed_calls}</p>
+            <p className="text-2xl font-bold text-warning">{stats.missed_calls}</p>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-1">
+          <div className="bg-surface rounded-input shadow p-4">
+            <div className="flex items-center gap-2 text-link mb-1">
               <Clock className="w-4 h-4" />
               <span className="text-sm">{tr('Ø Dauer', 'Avg duration')}</span>
             </div>
-            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{formatDuration(Math.round(stats.avg_duration))}</p>
+            <p className="text-2xl font-bold text-link">{formatDuration(Math.round(stats.avg_duration))}</p>
           </div>
         </div>
       )}
 
+      {/* Sperrliste */}
+      <div className="bg-surface rounded-input shadow p-4">
+        <button
+          onClick={() => setShowBlocklist(v => !v)}
+          className="flex items-center gap-2 w-full text-left"
+        >
+          <Ban className="w-6 h-6 text-muted" />
+          <h2 className="font-semibold text-content">
+            Gesperrte Anrufer{blocked.length > 0 ? ` (${blocked.length})` : ''}
+          </h2>
+          <span className="ml-auto text-sm text-muted">
+            {showBlocklist ? 'einklappen' : 'anzeigen'}
+          </span>
+        </button>
+
+        {showBlocklist && (
+          <div className="mt-4 space-y-4">
+            <div className="flex flex-wrap items-end gap-3">
+              <div>
+                <label className="block text-sm text-muted mb-1">
+                  Gesperrte Anrufer umleiten nach
+                </label>
+                <input
+                  type="text"
+                  value={blockDestination}
+                  onChange={(e) => setBlockDestination(e.target.value)}
+                  onBlur={() => api.setBlocklistDestination(blockDestination)
+                    .then(fetchBlocklist)
+                    .catch((e: any) => setBlockError(e?.message || 'Ziel konnte nicht gespeichert werden.'))}
+                  className="px-3 py-2 bg-surface text-content border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link"
+                />
+              </div>
+              <p className="text-sm text-muted max-w-md">
+                Gilt für neu gesperrte Nummern. Bereits gesperrte behalten ihr Ziel.
+              </p>
+            </div>
+
+            <label className="flex items-start gap-3 cursor-pointer border-t border-subtle pt-4">
+              <input
+                type="checkbox"
+                checked={blockAnonymous}
+                disabled={anonBusy}
+                onChange={e => handleToggleAnonymous(e.target.checked)}
+                className="mt-1 w-4 h-4 rounded border-subtle text-brand focus:ring-link disabled:opacity-50"
+              />
+              <span className="text-sm">
+                <span className="font-medium text-content">
+                  Anrufer mit unterdrückter Rufnummer sperren
+                </span>
+                <span className="block text-muted mt-0.5">
+                  Betrifft Anrufe ganz ohne Rufnummer und solche, die als „nicht anzeigen“
+                  gekennzeichnet sind. Sie werden auf dasselbe Ziel umgeleitet.
+                  Achtung: manche Behörden und Arztpraxen rufen grundsätzlich anonym an.
+                </span>
+                {anonBusy && (
+                  <span className="block text-muted mt-1">Dialplan wird neu geschrieben…</span>
+                )}
+              </span>
+            </label>
+
+            {blockError && (
+              <p className="text-sm text-danger">{blockError}</p>
+            )}
+
+            {blocked.length === 0 ? (
+              <p className="text-sm text-muted">
+                Niemand gesperrt. In der Anrufliste unten steht bei jedem Anruf ein Knopf „Sperren“.
+              </p>
+            ) : (
+              <ul className="divide-y divide-subtle">
+                {blocked.map(b => (
+                  <li key={b.id} className="py-2 flex items-center gap-3">
+                    <span className="font-medium text-content">{b.number}</span>
+                    <span className="text-sm text-muted">→ {b.destination}</span>
+                    {b.description && (
+                      <span className="text-sm text-muted truncate">{b.description}</span>
+                    )}
+                    <button
+                      onClick={() => handleUnblock(b)}
+                      disabled={blockBusy === b.number}
+                      className="ml-auto inline-flex items-center gap-1 text-xs text-content hover:text-danger border border-subtle rounded px-2 py-1 transition disabled:opacity-50"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Sperre aufheben
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+      <div className="bg-surface rounded-input shadow p-4">
         <div className="flex items-center gap-2 mb-4">
-          <Filter className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          <h2 className="font-semibold text-gray-900 dark:text-gray-100">{tr('Filter', 'Filter')}</h2>
+          <Filter className="w-6 h-6 text-muted" />
+          <h2 className="font-semibold text-content">{tr('Filter', 'Filter')}</h2>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{tr('Von (Quelle)', 'From (source)')}</label>
+            <label className="block text-sm text-muted mb-1">{tr('Von (Quelle)', 'From (source)')}</label>
             <input
               type="text"
               value={filterSrc}
               onChange={(e) => setFilterSrc(e.target.value)}
               placeholder={tr('z.B. 1000', 'e.g. 1000')}
-              className="w-full px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 bg-surface text-content border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link"
             />
           </div>
           
           <div>
-            <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{tr('Nach (Ziel)', 'To (destination)')}</label>
+            <label className="block text-sm text-muted mb-1">{tr('Nach (Ziel)', 'To (destination)')}</label>
             <input
               type="text"
               value={filterDst}
               onChange={(e) => setFilterDst(e.target.value)}
               placeholder={tr('z.B. 1001', 'e.g. 1001')}
-              className="w-full px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 bg-surface text-content border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link"
             />
           </div>
           
@@ -164,14 +347,14 @@ export default function CDRPage() {
           <div className="flex items-end gap-2">
             <button
               onClick={handleFilter}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center gap-2 px-4 py-2 bg-brand text-on-primary rounded-input hover:bg-brand-hover"
             >
               <Search className="w-4 h-4" />
               {tr('Suchen', 'Search')}
             </button>
             <button
               onClick={clearFilters}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
+              className="flex items-center gap-2 px-4 py-2 bg-surface-subtle text-content rounded-input hover:bg-surface-hover"
             >
               <RefreshCw className="w-4 h-4" />
             </button>
@@ -180,50 +363,77 @@ export default function CDRPage() {
       </div>
 
       {/* CDR Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="font-semibold text-gray-900 dark:text-gray-100">{tr('Anrufverlauf', 'Call history')}</h2>
+      <div className="bg-surface rounded-input shadow overflow-hidden">
+        <div className="px-6 py-4 border-b border-subtle">
+          <h2 className="font-semibold text-content">{tr('Anrufverlauf', 'Call history')}</h2>
         </div>
         
         {loading ? (
-          <div className="p-8 text-center text-gray-500 dark:text-gray-400">{tr('Laden...', 'Loading...')}</div>
+          <div className="p-8 text-center text-muted">{tr('Laden...', 'Loading...')}</div>
         ) : records.length === 0 ? (
-          <div className="p-8 text-center text-gray-500 dark:text-gray-400">{tr('Keine Anrufe gefunden', 'No calls found')}</div>
+          <div className="p-8 text-center text-muted">{tr('Keine Anrufe gefunden', 'No calls found')}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-700">
+              <thead className="bg-surface-subtle">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Zeit', 'Time')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Von', 'From')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Nach', 'To')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Dauer', 'Duration')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Gesprächszeit', 'Billable time')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">{tr('Zeit', 'Time')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">{tr('Von', 'From')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">{tr('Nach', 'To')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">{tr('Dauer', 'Duration')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">{tr('Gesprächszeit', 'Billable time')}</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-muted uppercase">Aktion</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="divide-y divide-subtle">
                 {records.map((record) => (
-                  <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                  <tr key={record.id} className="hover:bg-surface-hover">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-content">
                       {record.call_date ? formatDate(record.call_date) : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <PhoneOutgoing className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{record.src || '-'}</span>
+                        <PhoneOutgoing className="w-4 h-4 text-muted" />
+                        <span className="text-sm font-medium text-content">{record.src || '-'}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <PhoneIncoming className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{record.dst || '-'}</span>
+                        <PhoneIncoming className="w-4 h-4 text-muted" />
+                        <span className="text-sm font-medium text-content">{record.dst || '-'}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                       {formatDuration(record.duration)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                       {formatDuration(record.billsec)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      {isBlocked(record.src) ? (
+                        <button
+                          onClick={() => {
+                            const entry = blocked.find(b => b.number === normalize(record.src))
+                            if (entry) handleUnblock(entry)
+                          }}
+                          disabled={blockBusy === normalize(record.src)}
+                          title={`Sperre für ${record.src} aufheben`}
+                          className="inline-flex items-center gap-1 text-xs text-danger hover:text-content border border-rot-500 border-rot-500 rounded px-2 py-1 transition disabled:opacity-50"
+                        >
+                          <Ban className="w-3.5 h-3.5" />
+                          {blockBusy === normalize(record.src) ? 'Moment…' : 'Entsperren'}
+                        </button>
+                      ) : normalize(record.src) ? (
+                        <button
+                          onClick={() => handleBlock(record)}
+                          disabled={blockBusy === normalize(record.src)}
+                          title={`Anrufe von ${record.src} nach ${blockDestination} umleiten`}
+                          className="inline-flex items-center gap-1 text-xs text-content hover:text-danger border border-subtle rounded px-2 py-1 transition disabled:opacity-50"
+                        >
+                          <Ban className="w-3.5 h-3.5" />
+                          {blockBusy === normalize(record.src) ? 'Sperre…' : 'Sperren'}
+                        </button>
+                      ) : null}
                     </td>
                   </tr>
                 ))}

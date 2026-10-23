@@ -149,6 +149,7 @@ def generate_trunk_config(trunk: SIPTrunk, skip_identify: bool = False) -> str:
     config = f"\n; --- Trunk: {trunk.name} (ID {tid}) ---\n"
 
     transport_line = ""
+    transport_reg_line = "\ntransport=transport-udp"
     from_domain = trunk.sip_server
     client_domain = trunk.sip_server
     from_user_line = ""
@@ -161,10 +162,12 @@ def generate_trunk_config(trunk: SIPTrunk, skip_identify: bool = False) -> str:
             contact_user = from_user_value
     if trunk.provider == "telekom_deutschlandlan":
         transport_line = "\ntransport=transport-tcp"
+        transport_reg_line = "\ntransport=transport-tcp"
         from_domain = "sip-trunk.telekom.de"
         client_domain = "sip-trunk.telekom.de"
     if trunk.provider == "telekom_companyflex":
         transport_line = "\ntransport=transport-tcp"
+        transport_reg_line = "\ntransport=transport-tcp"
         from_domain = "tel.t-online.de"
         client_domain = "tel.t-online.de"
     if trunk.provider == "telekom_allip":
@@ -181,6 +184,7 @@ outbound_auth=trunk-auth-{tid}
 server_uri=sip:{trunk.sip_server}
 client_uri=sip:{contact_user}@{client_domain}
 contact_user={contact_user}
+{transport_reg_line}
 
 [trunk-ep-{tid}]
 type=endpoint

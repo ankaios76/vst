@@ -204,22 +204,22 @@ export default function GroupsPage() {
   }
 
   if (loading) {
-    return <div className="p-6 text-gray-500">{tr('Lade Gruppen…', 'Loading groups...')}</div>
+    return <div className="p-6 text-muted">{tr('Lade Gruppen…', 'Loading groups...')}</div>
   }
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-surface rounded-card shadow-sm border border-subtle p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('Gruppen (Sammelruf)', 'Ring groups')}</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <h2 className="text-lg font-semibold text-content">{tr('Gruppen (Sammelruf)', 'Ring groups')}</h2>
+            <p className="text-sm text-muted">
               {tr('Richten Sie Sammelrufe mit verschiedenen Klingelstrategien ein. Mitglieder werden aus bestehenden Nebenstellen gewählt.', 'Configure ring groups with different ringing strategies. Members are chosen from existing extensions.')}
             </p>
           </div>
           <button
             onClick={openCreate}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-brand hover:bg-brand-hover text-on-primary rounded-input text-sm font-medium"
           >
             <Plus className="w-4 h-4" />
             {tr('Neue Gruppe', 'New group')}
@@ -227,12 +227,12 @@ export default function GroupsPage() {
         </div>
 
         {groups.length === 0 ? (
-          <div className="mt-6 text-sm text-gray-500">{tr('Noch keine Gruppen angelegt.', 'No groups created yet.')}</div>
+          <div className="mt-6 text-sm text-muted">{tr('Noch keine Gruppen angelegt.', 'No groups created yet.')}</div>
         ) : (
           <div className="mt-6 overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                <tr className="text-left text-muted border-b border-subtle">
                   <th className="py-2 pr-4">{tr('Name', 'Name')}</th>
                   <th className="py-2 pr-4">{tr('Nummer', 'Number')}</th>
                   <th className="py-2 pr-4">{tr('Strategie', 'Strategy')}</th>
@@ -244,18 +244,18 @@ export default function GroupsPage() {
               </thead>
               <tbody>
                 {groups.map(g => (
-                  <tr key={g.id} className="border-b border-gray-100 dark:border-gray-700">
-                    <td className="py-3 pr-4 font-medium text-gray-800 dark:text-gray-200">{g.name}</td>
-                    <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{g.extension}</td>
-                    <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">
+                  <tr key={g.id} className="border-b border-subtle">
+                    <td className="py-3 pr-4 font-medium text-content">{g.name}</td>
+                    <td className="py-3 pr-4 text-content">{g.extension}</td>
+                    <td className="py-3 pr-4 text-content">
                       {STRATEGIES.find(s => s.value === g.strategy)?.label || g.strategy}
                     </td>
-                    <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">
+                    <td className="py-3 pr-4 text-content">
                       {g.members?.length ? g.members.join(', ') : '—'}
                     </td>
-                    <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{g.ring_time || 20}s</td>
+                    <td className="py-3 pr-4 text-content">{g.ring_time || 20}s</td>
                     <td className="py-3 pr-4">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs ${g.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs ${g.enabled ? 'bg-surface-subtle text-success' : 'bg-surface-subtle text-muted'}`}>
                         {g.enabled ? tr('Aktiv', 'Active') : tr('Inaktiv', 'Inactive')}
                       </span>
                     </td>
@@ -263,14 +263,14 @@ export default function GroupsPage() {
                       <div className="inline-flex items-center gap-2">
                         <button
                           onClick={() => openEdit(g)}
-                          className="p-2 text-gray-500 hover:text-blue-600"
+                          className="p-2 text-muted hover:text-link"
                           title={tr('Bearbeiten', 'Edit')}
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(g)}
-                          className="p-2 text-gray-500 hover:text-red-600"
+                          className="p-2 text-muted hover:text-danger"
                           title={tr('Löschen', 'Delete')}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -286,18 +286,18 @@ export default function GroupsPage() {
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-onyx-900 bg-opacity-40 p-4">
+          <div className="bg-surface rounded-card shadow-xl border border-subtle w-full max-w-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-subtle">
               <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-blue-600" />
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                <Users className="w-5 h-5 text-link" />
+                <h3 className="text-lg font-semibold text-content">
                   {editing ? tr('Gruppe bearbeiten', 'Edit group') : tr('Gruppe anlegen', 'Create group')}
                 </h3>
               </div>
               <button
                 onClick={() => setShowForm(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-muted hover:text-muted"
               >
                 ✕
               </button>
@@ -305,28 +305,28 @@ export default function GroupsPage() {
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {error && (
-                <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+                <div className="text-sm text-danger bg-surface-subtle border border-rot-500 rounded-input p-3">
                   {error}
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Name', 'Name')}</label>
+                  <label className="block text-sm font-medium text-content mb-1">{tr('Name', 'Name')}</label>
                   <input
                     type="text"
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                     placeholder={tr('z.B. Support', 'e.g. Support')}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Gruppen-Nummer', 'Group number')}</label>
+                  <label className="block text-sm font-medium text-content mb-1">{tr('Gruppen-Nummer', 'Group number')}</label>
                   <select
                     value={form.extension}
                     onChange={e => setForm({ ...form, extension: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                     required
                   >
                     <option value="">{tr('Bitte wählen', 'Please select')}</option>
@@ -335,11 +335,11 @@ export default function GroupsPage() {
                     ))}
                   </select>
                   {availableExtensions.length === 0 && (
-                    <div className="text-xs text-gray-500 mt-1">{tr('Keine freien Nummern im Bereich 1000–1999.', 'No free numbers in the 1000–1999 range.')}</div>
+                    <div className="text-xs text-muted mt-1">{tr('Keine freien Nummern im Bereich 1000–1999.', 'No free numbers in the 1000–1999 range.')}</div>
                   )}
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Eingehende Rufnummer (optional)', 'Inbound number (optional)')}</label>
+                  <label className="block text-sm font-medium text-content mb-1">{tr('Eingehende Rufnummer (optional)', 'Inbound number (optional)')}</label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <select
                       value={form.inbound_trunk_id ?? ''}
@@ -347,7 +347,7 @@ export default function GroupsPage() {
                         const nextId = e.target.value ? Number(e.target.value) : null
                         setForm({ ...form, inbound_trunk_id: nextId, inbound_did: '' })
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                     >
                       <option value="">{tr('Leitung wählen', 'Select trunk')}</option>
                       {trunkOptions.map(t => (
@@ -357,7 +357,7 @@ export default function GroupsPage() {
                     <select
                       value={form.inbound_did}
                       onChange={e => setForm({ ...form, inbound_did: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                       disabled={!form.inbound_trunk_id}
                     >
                       <option value="">{tr('Rufnummer wählen', 'Select number')}</option>
@@ -366,14 +366,14 @@ export default function GroupsPage() {
                       ))}
                     </select>
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">{tr('Wählt eine freie Nummer aus dem Nummernblock der Leitung und legt automatisch eine Inbound-Route an.', 'Selects a free number from the trunk block and creates an inbound route automatically.')}</div>
+                  <div className="text-xs text-muted mt-1">{tr('Wählt eine freie Nummer aus dem Nummernblock der Leitung und legt automatisch eine Inbound-Route an.', 'Selects a free number from the trunk block and creates an inbound route automatically.')}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Strategie', 'Strategy')}</label>
+                  <label className="block text-sm font-medium text-content mb-1">{tr('Strategie', 'Strategy')}</label>
                   <select
                     value={form.strategy}
                     onChange={e => setForm({ ...form, strategy: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                   >
                     {STRATEGIES.map(s => (
                       <option key={s.value} value={s.value}>{s.label}</option>
@@ -381,31 +381,31 @@ export default function GroupsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Klingelzeit (Sek.)', 'Ring time (sec)')}</label>
+                  <label className="block text-sm font-medium text-content mb-1">{tr('Klingelzeit (Sek.)', 'Ring time (sec)')}</label>
                   <input
                     type="number"
                     min={5}
                     max={120}
                     value={form.ring_time}
                     onChange={e => setForm({ ...form, ring_time: Number(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{tr('Mitglieder (bestehende Nebenstellen)', 'Members (existing extensions)')}</label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-auto border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                <label className="block text-sm font-medium text-content mb-2">{tr('Mitglieder (bestehende Nebenstellen)', 'Members (existing extensions)')}</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-auto border border-subtle rounded-input p-3">
                   {memberOptions.length === 0 && (
-                    <div className="text-sm text-gray-500">{tr('Keine Nebenstellen verfügbar', 'No extensions available')}</div>
+                    <div className="text-sm text-muted">{tr('Keine Nebenstellen verfügbar', 'No extensions available')}</div>
                   )}
                   {memberOptions.map(p => (
-                    <label key={p.extension} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <label key={p.extension} className="flex items-center gap-2 text-sm text-content">
                       <input
                         type="checkbox"
                         checked={form.members.includes(p.extension)}
                         onChange={() => toggleMember(p.extension)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-subtle text-link focus:ring-link"
                       />
                       <span>{p.extension}{p.caller_id ? ` – ${p.caller_id}` : ''}</span>
                     </label>
@@ -414,12 +414,12 @@ export default function GroupsPage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <label className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <label className="inline-flex items-center gap-2 text-sm text-content">
                   <input
                     type="checkbox"
                     checked={form.enabled}
                     onChange={e => setForm({ ...form, enabled: e.target.checked })}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-subtle text-link focus:ring-link"
                   />
                   {tr('Aktiv', 'Active')}
                 </label>
@@ -428,14 +428,14 @@ export default function GroupsPage() {
                   <button
                     type="button"
                     onClick={() => setShowForm(false)}
-                    className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300"
+                    className="px-4 py-2 text-sm rounded-input border border-subtle text-content"
                   >
                     {tr('Abbrechen', 'Cancel')}
                   </button>
                   <button
                     type="submit"
                     disabled={saving}
-                    className="px-4 py-2 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-60"
+                    className="px-4 py-2 text-sm rounded-input bg-brand hover:bg-brand-hover text-on-primary disabled:opacity-60"
                   >
                     {saving ? tr('Speichern…', 'Saving...') : tr('Speichern', 'Save')}
                   </button>

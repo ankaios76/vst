@@ -111,6 +111,7 @@ class AsteriskAMIClient:
                 await self.broadcast_callback({
                     'type': 'ami_event',
                     'event_name': event_name,
+                    'event': dict(event),
                     'active_calls': list(self.active_calls.values())
                 })
 

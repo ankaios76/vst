@@ -210,6 +210,19 @@ class CallForward(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class BlockedCaller(Base):
+    """Unerwuenschter Anrufer. Eingehende Anrufe dieser Nummer werden nicht
+    zugestellt, sondern auf destination umgeleitet."""
+    __tablename__ = "blocked_callers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    number = Column(String(40), nullable=False, unique=True, index=True)
+    destination = Column(String(40), nullable=False)
+    description = Column(String(200))
+    enabled = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class CDR(Base):
     __tablename__ = "cdr"
     

@@ -161,10 +161,10 @@ export default function SIPDebugPage() {
   return (
     <div className="space-y-6">
       {/* Status Bar */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
+      <div className="bg-surface rounded-card shadow-sm p-4">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">SIP Debug</h1>
+            <h1 className="text-xl font-semibold text-content">SIP Debug</h1>
             <button
               onClick={toggleCapture}
               disabled={toggling}
@@ -172,26 +172,26 @@ export default function SIPDebugPage() {
               title={enabled ? tr('Capture deaktivieren', 'Disable capture') : tr('Capture aktivieren', 'Enable capture')}
             >
               {enabled ? (
-                <ToggleRight className="w-8 h-8 text-green-500" />
+                <ToggleRight className="w-8 h-8 text-success" />
               ) : (
-                <ToggleLeft className="w-8 h-8 text-gray-400" />
+                <ToggleLeft className="w-8 h-8 text-muted" />
               )}
-              <span className={`text-sm font-medium ${enabled ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
+              <span className={`text-sm font-medium ${enabled ? 'text-success' : 'text-muted'}`}>
                 {toggling ? '...' : enabled ? tr('Aktiv', 'Active') : tr('Inaktiv', 'Inactive')}
               </span>
             </button>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              <span className="font-medium text-gray-700 dark:text-gray-300">{messageCount}</span> {tr('Nachrichten', 'messages')}
+            <div className="text-sm text-muted">
+              <span className="font-medium text-content">{messageCount}</span> {tr('Nachrichten', 'messages')}
               {' / '}
-              <span className="font-medium text-gray-700 dark:text-gray-300">{callCount}</span> {tr('Calls', 'calls')}
+              <span className="font-medium text-content">{callCount}</span> {tr('Calls', 'calls')}
             </div>
             <button
               onClick={refresh}
               disabled={loading}
-              className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="p-2 rounded-input text-muted hover:bg-surface-hover transition-colors"
               title={tr('Aktualisieren', 'Refresh')}
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -199,7 +199,7 @@ export default function SIPDebugPage() {
           </div>
         </div>
         {enabled && (
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+          <p className="text-xs text-muted mt-2">
             {tr('Auto-Refresh alle 10 Sekunden. Nachrichten werden max. 2 Stunden gespeichert.', 'Auto-refresh every 10 seconds. Messages are kept for up to 2 hours.')}
           </p>
         )}
@@ -207,24 +207,24 @@ export default function SIPDebugPage() {
 
       {/* Call List */}
       {calls.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 text-center text-gray-500 dark:text-gray-400">
+        <div className="bg-surface rounded-card shadow-sm p-8 text-center text-muted">
           {enabled
             ? tr('Noch keine SIP-Nachrichten erfasst. Starten Sie einen Anruf.', 'No SIP messages captured yet. Start a call.')
             : tr('Capture ist deaktiviert. Aktivieren Sie den Toggle oben.', 'Capture is disabled. Enable the toggle above.')}
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-surface rounded-card shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 dark:bg-gray-700/50 text-left">
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300 w-8"></th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Zeit', 'Time')}</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Call-ID', 'Call ID')}</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Von', 'From')}</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Nach', 'To')}</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">{tr('Methode', 'Method')}</th>
-                  <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300 text-right">Msgs</th>
+                <tr className="bg-surface-subtle/50 text-left">
+                  <th className="px-4 py-3 font-medium text-content w-8"></th>
+                  <th className="px-4 py-3 font-medium text-content">{tr('Zeit', 'Time')}</th>
+                  <th className="px-4 py-3 font-medium text-content">{tr('Call-ID', 'Call ID')}</th>
+                  <th className="px-4 py-3 font-medium text-content">{tr('Von', 'From')}</th>
+                  <th className="px-4 py-3 font-medium text-content">{tr('Nach', 'To')}</th>
+                  <th className="px-4 py-3 font-medium text-content">{tr('Methode', 'Method')}</th>
+                  <th className="px-4 py-3 font-medium text-content text-right">Msgs</th>
                 </tr>
               </thead>
               <tbody>
@@ -234,74 +234,74 @@ export default function SIPDebugPage() {
                       <div>
                         <button
                           onClick={() => selectCall(call.call_id)}
-                          className={`w-full flex items-center text-left px-4 py-3 transition-colors border-b border-gray-100 dark:border-gray-700 ${
+                          className={`w-full flex items-center text-left px-4 py-3 transition-colors border-b border-subtle ${
                             selectedCallId === call.call_id
-                              ? 'bg-blue-50 dark:bg-blue-900/20'
-                              : 'hover:bg-gray-50 dark:hover:bg-gray-700/30'
+                              ? 'bg-surface-accent bg-surface-accent'
+                              : 'hover:bg-surface-hover/30'
                           }`}
                         >
                           <div className="w-8 flex-shrink-0">
                             {selectedCallId === call.call_id ? (
-                              <ChevronDown className="w-4 h-4 text-blue-500" />
+                              <ChevronDown className="w-4 h-4 text-link" />
                             ) : (
-                              <ChevronRight className="w-4 h-4 text-gray-400" />
+                              <ChevronRight className="w-4 h-4 text-muted" />
                             )}
                           </div>
                           <div className="flex-1 grid grid-cols-6 gap-4 items-center">
-                            <div className="text-gray-500 dark:text-gray-400">{formatDateTime(call.first_seen)}</div>
-                            <div className="font-mono text-xs text-gray-600 dark:text-gray-300" title={call.call_id}>
+                            <div className="text-muted">{formatDateTime(call.first_seen)}</div>
+                            <div className="font-mono text-xs text-content" title={call.call_id}>
                               {shortCallId(call.call_id)}
                             </div>
-                            <div className="text-gray-700 dark:text-gray-300">{extractParty(call.from)}</div>
-                            <div className="text-gray-700 dark:text-gray-300">{extractParty(call.to)}</div>
+                            <div className="text-content">{extractParty(call.from)}</div>
+                            <div className="text-content">{extractParty(call.to)}</div>
                             <div>
-                              <span className="inline-block px-2 py-0.5 text-xs font-medium rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400">
+                              <span className="inline-block px-2 py-0.5 text-xs font-medium rounded bg-surface-accent text-link bg-surface-accent">
                                 {call.method || '?'}
                               </span>
                             </div>
-                            <div className="text-right text-gray-500 dark:text-gray-400">{call.message_count}</div>
+                            <div className="text-right text-muted">{call.message_count}</div>
                           </div>
                         </button>
 
                         {/* Expanded SIP Messages */}
                         {selectedCallId === call.call_id && messages.length > 0 && (
-                          <div className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700 px-6 py-4 space-y-2">
+                          <div className="bg-surface-subtle bg-surface-subtle/50 border-b border-subtle px-6 py-4 space-y-2">
                             {messages.map((msg, idx) => (
-                              <div key={idx} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                              <div key={idx} className="border border-subtle rounded-input overflow-hidden">
                                 <button
                                   onClick={() => setExpandedMsg(expandedMsg === idx ? null : idx)}
-                                  className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                  className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-surface-hover transition-colors"
                                 >
                                   {msg.direction === 'sent' ? (
-                                    <ArrowRight className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                                    <ArrowRight className="w-4 h-4 text-link flex-shrink-0" />
                                   ) : (
-                                    <ArrowLeft className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                    <ArrowLeft className="w-4 h-4 text-success flex-shrink-0" />
                                   )}
-                                  <span className="text-xs text-gray-400 dark:text-gray-500 w-20 flex-shrink-0">
+                                  <span className="text-xs text-muted w-20 flex-shrink-0">
                                     {formatTime(msg.timestamp)}
                                   </span>
                                   <span className={`text-sm font-medium ${
                                     msg.method
-                                      ? 'text-blue-700 dark:text-blue-400'
+                                      ? 'text-link'
                                       : msg.status_code >= 200 && msg.status_code < 300
-                                        ? 'text-green-700 dark:text-green-400'
+                                        ? 'text-success'
                                         : msg.status_code >= 400
-                                          ? 'text-red-700 dark:text-red-400'
-                                          : 'text-yellow-700 dark:text-yellow-400'
+                                          ? 'text-danger'
+                                          : 'text-warning'
                                   }`}>
                                     {msg.method || `${msg.status_code}`}
                                   </span>
-                                  <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">{msg.cseq}</span>
+                                  <span className="text-xs text-muted ml-2">{msg.cseq}</span>
                                   <div className="flex-1" />
                                   {expandedMsg === idx ? (
-                                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                                    <ChevronDown className="w-4 h-4 text-muted" />
                                   ) : (
-                                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                                    <ChevronRight className="w-4 h-4 text-muted" />
                                   )}
                                 </button>
                                 {expandedMsg === idx && (
-                                  <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 overflow-x-auto">
-                                    <pre className="text-xs font-mono text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-all">
+                                  <div className="border-t border-subtle bg-surface p-4 overflow-x-auto">
+                                    <pre className="text-xs font-mono text-content whitespace-pre-wrap break-all">
                                       {msg.raw_text}
                                     </pre>
                                   </div>

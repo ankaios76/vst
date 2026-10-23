@@ -14,7 +14,7 @@
 .page-header h1 {
   font-size: 2rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--color-text);
   margin: 0;
 }
 
@@ -28,29 +28,29 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: #f5f5f5;
-  border-radius: 8px;
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-input);
   font-size: 0.9rem;
 }
 
 .stat-badge.unread {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: var(--color-surface-accent);
+  color: var(--color-link);
 }
 
 .stat-label {
-  color: #666;
+  color: var(--color-text-muted);
   font-weight: 500;
 }
 
 .stat-value {
   font-weight: 700;
   font-size: 1.1rem;
-  color: #1a1a1a;
+  color: var(--color-text);
 }
 
 .stat-badge.unread .stat-value {
-  color: #1976d2;
+  color: var(--color-link);
 }
 
 .voicemail-container {
@@ -62,9 +62,9 @@
 
 /* Sidebar */
 .voicemail-sidebar {
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
   padding: 1.5rem;
   height: fit-content;
 }
@@ -81,7 +81,7 @@
   font-size: 0.875rem;
   font-weight: 600;
   text-transform: uppercase;
-  color: #666;
+  color: var(--color-text-muted);
   margin: 0 0 1rem 0;
   letter-spacing: 0.5px;
 }
@@ -99,7 +99,7 @@
   padding: 0.75rem 1rem;
   background: transparent;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-input);
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
@@ -107,12 +107,12 @@
 }
 
 .mailbox-item:hover {
-  background: #f5f5f5;
+  background: var(--color-surface-subtle);
 }
 
 .mailbox-item.active {
-  background: #1976d2;
-  color: white;
+  background: var(--color-link);
+  color: var(--color-text-on-primary);
 }
 
 .mailbox-name {
@@ -120,15 +120,15 @@
 }
 
 .mailbox-count {
-  background: rgba(0, 0, 0, 0.1);
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
   padding: 0.25rem 0.5rem;
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   font-size: 0.85rem;
   font-weight: 600;
 }
 
 .mailbox-item.active .mailbox-count {
-  background: rgba(255, 255, 255, 0.2);
+  background: color-mix(in srgb, var(--color-text-on-primary) 25%, transparent);
 }
 
 .checkbox-label {
@@ -137,7 +137,7 @@
   gap: 0.5rem;
   cursor: pointer;
   font-size: 0.95rem;
-  color: #333;
+  color: var(--color-text);
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -148,9 +148,9 @@
 
 /* Content Area */
 .voicemail-content {
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
   overflow: hidden;
 }
 
@@ -161,14 +161,14 @@
   align-items: center;
   justify-content: center;
   min-height: 400px;
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #1976d2;
+  border: 4px solid var(--color-surface-subtle);
+  border-top: 4px solid var(--color-link);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
@@ -187,12 +187,12 @@
 .empty-state h3 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
   margin: 0 0 0.5rem 0;
 }
 
 .empty-state p {
-  color: #666;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
@@ -204,22 +204,22 @@
 
 .voicemail-item {
   padding: 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border);
   cursor: pointer;
   transition: background 0.2s ease;
 }
 
 .voicemail-item:hover {
-  background: #f9f9f9;
+  background: var(--color-surface-subtle);
 }
 
 .voicemail-item.selected {
-  background: #f0f7ff;
+  background: var(--color-surface-accent);
 }
 
 .voicemail-item.unread {
-  background: #fafafa;
-  border-left: 4px solid #1976d2;
+  background: var(--color-surface-subtle);
+  border-left: 4px solid var(--color-link);
 }
 
 .voicemail-item:last-child {
@@ -239,10 +239,10 @@
 }
 
 .unread-badge {
-  background: #1976d2;
-  color: white;
+  background: var(--color-link);
+  color: var(--color-text-on-primary);
   padding: 0.25rem 0.75rem;
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -252,14 +252,14 @@
 .caller-id {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--color-text);
 }
 
 .mailbox-badge {
-  background: #e0e0e0;
-  color: #666;
+  background: var(--color-border);
+  color: var(--color-text-muted);
   padding: 0.25rem 0.75rem;
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   font-size: 0.85rem;
   font-weight: 500;
 }
@@ -268,7 +268,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
 }
 
@@ -278,41 +278,24 @@
 
 .voicemail-meta .duration {
   font-weight: 600;
-  color: #1976d2;
+  color: var(--color-link);
 }
 
 .voicemail-player-wrapper {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--color-border);
 }
 
-/* ===== Dark Mode ===== */
-.dark .page-header h1 { color: #e5e7eb; }
-.dark .stat-badge { background: #374151; }
-.dark .stat-badge.unread { background: #1e3a5f; color: #60a5fa; }
-.dark .stat-label { color: #9ca3af; }
-.dark .stat-value { color: #e5e7eb; }
-.dark .stat-badge.unread .stat-value { color: #60a5fa; }
-.dark .voicemail-sidebar { background: #1f2937; border-color: #374151; }
-.dark .filter-section h3 { color: #9ca3af; }
-.dark .mailbox-item:hover { background: #374151; }
-.dark .mailbox-item.active { background: #1d4ed8; color: white; }
-.dark .checkbox-label { color: #d1d5db; }
-.dark .voicemail-content { background: #1f2937; border-color: #374151; }
-.dark .loading-state, .dark .empty-state { color: #9ca3af; }
-.dark .spinner { border-color: #374151; border-top-color: #60a5fa; }
-.dark .empty-state h3 { color: #d1d5db; }
-.dark .empty-state p { color: #9ca3af; }
-.dark .voicemail-item { border-bottom-color: #374151; }
-.dark .voicemail-item:hover { background: #374151; }
-.dark .voicemail-item.selected { background: #1e3a5f; }
-.dark .voicemail-item.unread { background: #1a1a2e; border-left-color: #60a5fa; }
-.dark .caller-id { color: #e5e7eb; }
-.dark .mailbox-badge { background: #374151; color: #9ca3af; }
-.dark .voicemail-meta { color: #9ca3af; }
-.dark .voicemail-meta .duration { color: #60a5fa; }
-.dark .voicemail-player-wrapper { border-top-color: #374151; }
+/* Kein eigener Dark-Mode-Block mehr.
+
+   Die Regeln oben greifen ausschliesslich auf die semantischen Tokens zu,
+   und die werden in tokens.css unter .dark neu belegt — der Block hier war
+   nicht nur ueberfluessig, er kehrte die Farben um: ein frueherer
+   skriptgesteuerter Durchgang hat dunkle Hex-Werte auf --color-text
+   abgebildet, weil die Variable im Hellmodus Onyx ist. Im Dunkelmodus ist
+   sie beinahe Weiss, wodurch Karten und Knoepfe hell wurden und
+   --color-border als Textfarbe fast unsichtbar war. */
 
 /* Responsive */
 @media (max-width: 968px) {

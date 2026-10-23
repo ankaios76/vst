@@ -10,6 +10,7 @@ import FAQPage from './pages/FAQPage'
 import ContactsPage from './pages/ContactsPage'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
+import { Logo } from './components/Logo'
 import { api } from './services/api'
 import { useI18n } from './context/I18nContext'
 
@@ -80,8 +81,8 @@ function AppContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-gray-500 dark:text-gray-400">{tr('Lade...', 'Loading...')}</div>
+      <div className="min-h-screen bg-surface-subtle flex items-center justify-center">
+        <div className="text-muted">{tr('Lade…', 'Loading…')}</div>
       </div>
     )
   }
@@ -124,14 +125,17 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen bg-surface-subtle">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm dark:shadow-gray-900/50 sticky top-0 z-50">
+      <header className="bg-surface border-b border-subtle sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="GonoPBX" className="h-14 w-auto" />
+            {/* Logo. Die VST-Wortmarke ist 4,33:1 und auf 32 px Hoehe nur
+                138 px breit — deutlich ueber der CD-Mindestbreite von 80 px
+                und schmal genug fuer jede Schirmbreite. Ein Umschalten auf
+                die Bildmarke solo ist daher nicht noetig. */}
+            <div className="flex items-center pr-6">
+              <Logo className="h-8 w-auto" />
             </div>
 
             {/* Desktop Navigation */}
@@ -142,10 +146,10 @@ function AppContent() {
                   <button
                     key={item.id}
                     onClick={() => setCurrentPage(item.id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-input transition-colors ${
                       currentPage === item.id
-                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400'
-                        : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                        ? 'bg-brand text-on-primary'
+                        : 'text-content hover:bg-surface-hover'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
@@ -157,39 +161,39 @@ function AppContent() {
               {/* Theme toggle */}
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors ml-2"
+                className="p-2 rounded-input text-muted hover:bg-surface-hover transition-colors ml-2"
                 title={theme === 'dark' ? tr('Light Mode', 'Light Mode') : tr('Dark Mode', 'Dark Mode')}
               >
                 {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
 
               {/* User info & actions */}
-              <div className="ml-2 pl-4 border-l border-gray-200 dark:border-gray-700 flex items-center gap-2">
+              <div className="ml-2 pl-4 border-l border-subtle flex items-center gap-2">
                 <button
                   onClick={openPwModal}
-                  className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 px-1 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="flex items-center gap-1.5 text-sm text-muted hover:text-content px-1 py-1 rounded-input hover:bg-surface-hover transition-colors"
                   title={`${user?.full_name || user?.username} – ${tr('Passwort ändern', 'Change password')}`}
                 >
                   {user?.avatar_url ? (
                     <img
                       src={user.avatar_url}
                       alt=""
-                      className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-600"
+                      className="w-8 h-8 rounded-full object-cover ring-2 ring-subtle"
                     />
                   ) : (
-                    <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 flex items-center justify-center text-sm font-semibold ring-2 ring-gray-200 dark:ring-gray-600">
+                    <span className="w-8 h-8 rounded-full bg-brand text-on-primary flex items-center justify-center text-sm font-semibold ring-2 ring-subtle">
                       {(user?.full_name || user?.username || '?').charAt(0).toUpperCase()}
                     </span>
                   )}
                   {user?.role === 'admin' && (
-                    <span className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400 px-1.5 py-0.5 rounded-full">
+                    <span className="text-xs bg-surface-accent text-content px-1.5 py-0.5 rounded-full">
                       {tr('Admin', 'Admin')}
                     </span>
                   )}
                 </button>
                 <button
                   onClick={logout}
-                  className="flex items-center gap-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                  className="flex items-center gap-1 text-muted hover:text-danger transition-colors px-2 py-1 rounded-input hover:bg-surface-hover"
                   title={tr('Abmelden', 'Sign out')}
                 >
                   <LogOut className="w-4 h-4" />
@@ -201,18 +205,18 @@ function AppContent() {
             <div className="md:hidden flex items-center gap-2">
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
+                className="p-2 rounded-input text-muted hover:bg-surface-hover transition-colors"
               >
                 {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="p-2 rounded-input hover:bg-surface-hover"
               >
                 {mobileMenuOpen ? (
-                  <X className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+                  <X className="w-6 h-6 text-content" />
                 ) : (
-                  <Menu className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+                  <Menu className="w-6 h-6 text-content" />
                 )}
               </button>
             </div>
@@ -221,7 +225,7 @@ function AppContent() {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <nav className="md:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <nav className="md:hidden border-t border-subtle bg-surface">
             {navigation.map((item) => {
               const Icon = item.icon
               return (
@@ -233,8 +237,8 @@ function AppContent() {
                   }}
                   className={`flex items-center gap-3 w-full px-4 py-3 ${
                     currentPage === item.id
-                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                      : 'text-gray-600 dark:text-gray-300'
+                      ? 'bg-brand text-on-primary'
+                      : 'text-content'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -244,14 +248,14 @@ function AppContent() {
             })}
             <button
               onClick={() => { openPwModal(); setMobileMenuOpen(false) }}
-              className="flex items-center gap-3 w-full px-4 py-3 text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700"
+              className="flex items-center gap-3 w-full px-4 py-3 text-content border-t border-subtle"
             >
               <KeyRound className="w-5 h-5" />
               {tr('Passwort ändern', 'Change password')}
             </button>
             <button
               onClick={logout}
-              className="flex items-center gap-3 w-full px-4 py-3 text-red-600 dark:text-red-400 border-t border-gray-200 dark:border-gray-700"
+              className="flex items-center gap-3 w-full px-4 py-3 text-danger border-t border-subtle"
             >
               <LogOut className="w-5 h-5" />
               {tr('Abmelden', 'Sign out')} ({user?.username})
@@ -266,60 +270,75 @@ function AppContent() {
       </main>
 
       {/* Footer */}
-      <footer className="text-center py-4 text-xs text-gray-400 dark:text-gray-600">
-        &copy; {new Date().getFullYear()} Norbert Hengsteler. {tr('Alle Rechte vorbehalten.', 'All rights reserved.')} · Made with <span className="text-red-500">❤</span> in Bremen
+      <footer className="bg-surface-subtle border-t border-subtle mt-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-xs text-muted space-y-1">
+          <p>VST &middot; vstpbx.de &middot; privates Projekt, kein Produkt der Plusnet GmbH</p>
+          <p>Konzept, Entwicklung und Design, &copy; {new Date().getFullYear()} Norbert Hengsteler. {tr('Alle Rechte vorbehalten.', 'All rights reserved.')}</p>
+          <p>
+            {tr('Telefonanlage auf Basis von', 'PBX based on')}{' '}
+            <a
+              href="https://www.asterisk.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-link hover:text-link-hover underline"
+            >
+              Asterisk
+            </a>
+            , einem Open-Source-Projekt von Sangoma Technologies
+          </p>
+        </div>
       </footer>
 
       {/* Password Change Modal */}
       {showPwModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-onyx-900 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-surface rounded-card border border-subtle p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('Passwort ändern', 'Change password')}</h2>
-              <button onClick={() => setShowPwModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <h2 className="font-headline text-lg font-semibold text-content">{tr('Passwort ändern', 'Change password')}</h2>
+              <button onClick={() => setShowPwModal(false)} className="text-muted hover:text-content">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {pwError && (
-              <div className="mb-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-2 rounded-lg text-sm">
+              <div className="mb-4 bg-rot-50 border border-rot-200 text-rot-700 px-4 py-2 rounded-input text-sm">
                 {pwError}
               </div>
             )}
             {pwSuccess && (
-              <div className="mb-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-2 rounded-lg text-sm">
+              <div className="mb-4 bg-gruen-50 border border-gruen-200 text-gruen-700 px-4 py-2 rounded-input text-sm">
                 {pwSuccess}
               </div>
             )}
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Aktuelles Passwort', 'Current password')}</label>
+                <label className="block text-sm font-medium text-content mb-1">{tr('Aktuelles Passwort', 'Current password')}</label>
                 <input
                   type="password"
                   value={currentPw}
                   onChange={(e) => setCurrentPw(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                   autoFocus
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Neues Passwort', 'New password')}</label>
+                <label className="block text-sm font-medium text-content mb-1">{tr('Neues Passwort', 'New password')}</label>
                 <input
                   type="password"
                   value={newPw}
                   onChange={(e) => setNewPw(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                   placeholder={tr('Mindestens 6 Zeichen', 'At least 6 characters')}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Neues Passwort wiederholen', 'Repeat new password')}</label>
+                <label className="block text-sm font-medium text-content mb-1">{tr('Neues Passwort wiederholen', 'Repeat new password')}</label>
                 <input
                   type="password"
                   value={newPwRepeat}
                   onChange={(e) => setNewPwRepeat(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                   onKeyDown={(e) => e.key === 'Enter' && handleChangePassword()}
                 />
               </div>
@@ -328,14 +347,14 @@ function AppContent() {
             <div className="flex gap-3 justify-end mt-6">
               <button
                 onClick={() => setShowPwModal(false)}
-                className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg transition-colors"
+                className="border border-brand text-brand hover:bg-surface-hover px-4 py-2 rounded-input transition-colors"
               >
                 {tr('Abbrechen', 'Cancel')}
               </button>
               <button
                 onClick={handleChangePassword}
                 disabled={pwSaving || !currentPw || !newPw || !newPwRepeat}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 dark:disabled:bg-blue-800 text-white px-4 py-2 rounded-lg transition-colors"
+                className="bg-brand hover:bg-brand-hover disabled:opacity-50 text-on-primary px-4 py-2 rounded-input transition-colors"
               >
                 {pwSaving ? tr('Speichern...', 'Saving...') : tr('Passwort ändern', 'Change password')}
               </button>

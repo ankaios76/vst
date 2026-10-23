@@ -189,11 +189,11 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
   const getDirectionIcon = (direction: 'inbound' | 'outbound' | 'internal') => {
     switch (direction) {
       case 'inbound':
-        return <ArrowDownLeft className="w-4 h-4 text-green-600 dark:text-green-400" />
+        return <ArrowDownLeft className="w-4 h-4 text-success" />
       case 'outbound':
-        return <ArrowUpRight className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        return <ArrowUpRight className="w-4 h-4 text-link" />
       case 'internal':
-        return <Repeat2 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+        return <Repeat2 className="w-4 h-4 text-muted" />
     }
   }
 
@@ -211,11 +211,9 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
   const getDirectionColor = (direction: 'inbound' | 'outbound' | 'internal') => {
     switch (direction) {
       case 'inbound':
-        return 'text-green-700 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-900/30 dark:border-green-800'
       case 'outbound':
-        return 'text-blue-700 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-900/30 dark:border-blue-800'
       case 'internal':
-        return 'text-gray-600 bg-gray-50 border-gray-200 dark:text-gray-400 dark:bg-gray-700 dark:border-gray-700'
+        return 'text-content bg-surface-subtle border-subtle'
     }
   }
 
@@ -226,38 +224,38 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[120px]">
 
         {/* Begrüßung */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow px-6 h-full flex items-center">
+        <div className="bg-surface rounded-card border border-subtle px-6 h-full flex items-center">
           <div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <p className="text-2xl font-bold text-content">
               {getGreeting()}, {user?.full_name || user?.username || tr('User', 'User')}
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{getFormattedDate()}</p>
+            <p className="text-sm text-muted mt-1">{getFormattedDate()}</p>
           </div>
         </div>
 
-        {/* GonoPBX Status */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow px-6 h-full flex items-center justify-between">
+        {/* VST Status */}
+        <div className="bg-surface rounded-card border border-subtle px-6 h-full flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">GonoPBX</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <p className="text-sm text-muted">VST</p>
+            <p className="text-2xl font-bold text-content">
               {status?.asterisk === 'connected' ? tr('Online', 'Online') : tr('Offline', 'Offline')}
             </p>
             {status?.version && (
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">v{status.version}</p>
+              <p className="text-xs text-muted mt-0.5">v{status.version}</p>
             )}
           </div>
-          <div className={`p-3 rounded-full ${status?.asterisk === 'connected' ? 'bg-green-100 dark:bg-green-900/40' : 'bg-red-100 dark:bg-red-900/40'}`}>
+          <div className={`p-3 rounded-full ${status?.asterisk === 'connected' ? 'bg-surface-subtle' : 'bg-surface-subtle'}`}>
             {status?.asterisk === 'connected'
-              ? <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
-              : <XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />}
+              ? <CheckCircle className="w-6 h-6 text-success" />
+              : <XCircle className="w-6 h-6 text-danger" />}
           </div>
         </div>
 
         {/* Endpoints */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow px-6 h-full flex items-center">
+        <div className="bg-surface rounded-card border border-subtle px-6 h-full flex items-center">
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-gray-600 dark:text-gray-400">{tr('Endpoints Online', 'Endpoints Online')}</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <p className="text-sm text-muted">{tr('Endpoints Online', 'Endpoints Online')}</p>
+            <p className="text-2xl font-bold text-content">
               {onlineEndpoints} / {totalEndpoints}
             </p>
           </div>
@@ -275,7 +273,7 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
                 {visible.map(ep => {
                   const isOnline = ep.status === 'online'
                   const opacity = isOnline ? '' : 'opacity-40'
-                  const statusDot = isOnline ? 'bg-green-500' : 'bg-gray-400'
+                  const statusDot = isOnline ? 'bg-success' : 'bg-muted'
                   const isTrunk = ep.type === 'trunk'
                   const providerKey = (ep as any).provider || ''
                   const provider = PROVIDER_INFO[providerKey]
@@ -285,27 +283,27 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
                         <img
                           src={provider.logo}
                           alt=""
-                          className={`${avatarSize} rounded-full object-contain bg-white ring-2 ring-white ${opacity}`}
+                          className={`${avatarSize} rounded-full object-contain bg-surface ring-2 ring-surface ${opacity}`}
                         />
                       ) : ep.avatar_url ? (
                         <img
                           src={ep.avatar_url}
                           alt=""
-                          className={`${avatarSize} rounded-full object-cover ring-2 ring-white ${opacity}`}
+                          className={`${avatarSize} rounded-full object-cover ring-2 ring-surface ${opacity}`}
                         />
                       ) : (
-                        <span className={`${avatarSize} rounded-full ${isTrunk ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400'} flex items-center justify-center font-semibold ring-2 ring-white ${opacity}`}>
+                        <span className={`${avatarSize} rounded-full ${isTrunk ? 'bg-surface-subtle text-warning' : 'bg-surface-accent text-link'} flex items-center justify-center font-semibold ring-2 ring-surface ${opacity}`}>
                           {(ep.user_name || ep.display_name || ep.endpoint).charAt(0).toUpperCase()}
                         </span>
                       )}
-                      <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ${statusDot} ring-2 ring-white`} />
+                      <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ${statusDot} ring-2 ring-surface`} />
                     </div>
                   )
                 })}
                 {overflow > 0 && (
                   <button
                     onClick={() => onNavigate?.('settings')}
-                    className={`${avatarSize} rounded-full bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-400 flex items-center justify-center font-semibold ring-2 ring-white hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer`}
+                    className={`${avatarSize} rounded-full bg-surface-subtle text-muted flex items-center justify-center font-semibold ring-2 ring-surface hover:bg-surface-hover transition-colors cursor-pointer`}
                     title={tr('Alle Endpoints anzeigen', 'Show all endpoints')}
                   >
                     +{overflow}
@@ -319,14 +317,14 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
       </div>
 
       {/* Leitungen */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="bg-surface rounded-card border border-subtle p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Server className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{tr('Leitungen', 'Trunks')}</h2>
+          <Server className="w-6 h-6 text-muted" />
+          <h2 className="text-lg font-semibold text-content">{tr('Leitungen', 'Trunks')}</h2>
         </div>
 
         {loading ? (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-4">{tr('Laden...', 'Loading...')}</p>
+          <p className="text-muted text-center py-4">{tr('Laden...', 'Loading...')}</p>
         ) : status?.endpoints?.filter(e => e.type === 'trunk').length ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {status.endpoints.filter(e => e.type === 'trunk').map(endpoint => {
@@ -338,27 +336,29 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
               <div
                 key={endpoint.endpoint}
                 onClick={() => trunkId != null && onTrunkClick?.(trunkId)}
-                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition hover:shadow-md ${
-                  endpoint.status === 'online'
-                    ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800 hover:border-green-300 dark:hover:border-green-700'
-                    : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-500'
-                }`}
+                className="flex items-center gap-3 p-3 rounded-card border border-subtle bg-surface cursor-pointer transition-colors hover:border-brand"
               >
+                <span
+                  className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                    endpoint.status === 'online' ? 'bg-success' : 'bg-muted'
+                  }`}
+                  title={endpoint.status === 'online' ? 'Registriert' : 'Nicht registriert'}
+                />
                 {provider?.logo ? (
                   <img
                     src={provider.logo}
                     alt={provider.label}
-                    className="w-12 h-12 object-contain flex-shrink-0 rounded-full bg-white p-1"
+                    className="w-12 h-12 object-contain flex-shrink-0 rounded-full bg-surface p-1"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                   />
                 ) : (
-                  <Server className="w-5 h-5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                  <Server className="w-6 h-6 text-muted flex-shrink-0" />
                 )}
                 <div className="min-w-0">
-                  <div className="font-medium text-sm truncate dark:text-gray-200">
+                  <div className="font-medium text-sm truncate text-content">
                     {provider?.label || endpoint.display_name || endpoint.endpoint}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  <div className="text-xs text-muted truncate">
                     {endpoint.display_name}
                   </div>
                 </div>
@@ -367,29 +367,29 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
             })}
           </div>
         ) : (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-4">{tr('Keine Leitungen konfiguriert', 'No trunks configured')}</p>
+          <p className="text-muted text-center py-4">{tr('Keine Leitungen konfiguriert', 'No trunks configured')}</p>
         )}
       </div>
 
       {/* Nebenstellen */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="bg-surface rounded-card border border-subtle p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Phone className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{tr('Nebenstellen', 'Extensions')}</h2>
+          <Phone className="w-6 h-6 text-muted" />
+          <h2 className="text-lg font-semibold text-content">{tr('Nebenstellen', 'Extensions')}</h2>
         </div>
 
         {loading ? (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-4">{tr('Laden...', 'Loading...')}</p>
+          <p className="text-muted text-center py-4">{tr('Laden...', 'Loading...')}</p>
         ) : status?.endpoints?.filter(e => e.type !== 'trunk').length ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {status.endpoints.filter(e => e.type !== 'trunk').map(endpoint => (
               <div
                 key={endpoint.endpoint}
                 onClick={() => onExtensionClick?.(endpoint.endpoint)}
-                className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition hover:shadow-md ${
+                className={`flex items-center justify-between p-3 rounded-card border cursor-pointer transition-colors ${
                   endpoint.status === 'online'
-                    ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800 hover:border-green-300 dark:hover:border-green-700'
-                    : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-500'
+                    ? 'bg-surface-accent border-brand'
+                    : 'bg-surface border-subtle hover:border-brand'
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -400,14 +400,14 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
                       className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                     />
                   ) : (
-                    <Phone className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                    <Phone className="w-4 h-4 text-muted flex-shrink-0" />
                   )}
                   <div>
-                    <span className="font-medium dark:text-gray-200">
+                    <span className="font-medium text-content">
                       {endpoint.user_name || endpoint.display_name || endpoint.endpoint}
                     </span>
                     {(endpoint.user_name || endpoint.display_name) && (
-                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">{endpoint.endpoint}</span>
+                      <span className="text-xs text-muted ml-2">{endpoint.endpoint}</span>
                     )}
                     {(() => {
                       const extRoutes = routes.filter(r => r.destination_extension === endpoint.endpoint)
@@ -416,9 +416,9 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
                         <div className="mt-1 space-y-0.5">
                           {extRoutes.map((route, idx) => (
                             <div key={route.id} className="flex items-center gap-1.5">
-                              <span className="text-xs font-mono text-gray-600 dark:text-gray-400">{route.did}</span>
-                              <PhoneIncoming className="w-3 h-3 text-green-400" />
-                              {idx === 0 && <PhoneOutgoing className="w-3 h-3 text-blue-400" />}
+                              <span className="text-xs font-mono text-muted">{route.did}</span>
+                              <PhoneIncoming className="w-3 h-3 text-success" />
+                              {idx === 0 && <PhoneOutgoing className="w-3 h-3 text-link" />}
                             </div>
                           ))}
                         </div>
@@ -430,20 +430,20 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-4">{tr('Keine Nebenstellen registriert', 'No extensions registered')}</p>
+          <p className="text-muted text-center py-4">{tr('Keine Nebenstellen registriert', 'No extensions registered')}</p>
         )}
       </div>
 
       {/* Letzte Anrufe */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div className="px-6 py-4 border-b dark:border-gray-700 flex justify-between items-center">
+      <div className="bg-surface rounded-card border border-subtle">
+        <div className="px-6 py-4 border-b border-subtle flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <History className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{tr('Letzte Anrufe', 'Recent Calls')}</h2>
+            <History className="w-6 h-6 text-muted" />
+            <h2 className="text-lg font-semibold text-content">{tr('Letzte Anrufe', 'Recent Calls')}</h2>
           </div>
           <button
             onClick={() => onNavigate?.('cdr')}
-            className="flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 font-medium transition"
+            className="flex items-center gap-1 text-sm text-link hover:text-link-hover font-medium transition-colors"
           >
             {tr('Alle Anrufe', 'All calls')}
             <ArrowRight className="w-4 h-4" />
@@ -451,13 +451,13 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
         </div>
 
         {loading ? (
-          <div className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">{tr('Laden...', 'Loading...')}</div>
+          <div className="px-6 py-8 text-center text-muted">{tr('Laden...', 'Loading...')}</div>
         ) : recentCalls.length > 0 ? (
-          <div className="divide-y dark:divide-gray-700">
+          <div className="divide-y divide-subtle">
             {recentCalls.map(call => {
               const direction = getCallDirection(call)
               return (
-              <div key={call.id} className="px-6 py-3 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+              <div key={call.id} className="px-6 py-3 flex items-center gap-4 hover:bg-surface-hover transition-colors">
                 {/* Richtungs-Icon */}
                 <div className={`flex-shrink-0 p-2 rounded-full border ${getDirectionColor(direction)}`}>
                   {getDirectionIcon(direction)}
@@ -465,11 +465,11 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
                 {/* Details */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm truncate dark:text-gray-200">{getCallSrcName(call)}</span>
-                    <ArrowRight className="w-3 h-3 text-gray-400 dark:text-gray-500 flex-shrink-0" />
-                    <span className="font-medium text-sm truncate dark:text-gray-200">{getCallDstName(call)}</span>
+                    <span className="font-headline font-semibold text-sm truncate text-content">{getCallSrcName(call)}</span>
+                    <ArrowRight className="w-3 h-3 text-muted flex-shrink-0" />
+                    <span className="font-headline font-semibold text-sm truncate text-content">{getCallDstName(call)}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  <div className="flex items-center gap-3 text-xs text-muted mt-0.5">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       {formatTime(call.call_date)}
@@ -481,7 +481,7 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
                 </div>
                 {/* Richtungs-Badge */}
                 <div className="flex-shrink-0">
-                  <span className={`px-2 py-0.5 rounded text-xs border ${getDirectionColor(direction)}`}>
+                  <span className={`px-2 py-0.5 rounded-icon text-xs border ${getDirectionColor(direction)}`}>
                     {getDirectionLabel(direction)}
                   </span>
                 </div>
@@ -490,7 +490,7 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
             })}
           </div>
         ) : (
-          <div className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">{tr('Keine Anrufe vorhanden', 'No calls found')}</div>
+          <div className="px-6 py-8 text-center text-muted">{tr('Keine Anrufe vorhanden', 'No calls found')}</div>
         )}
       </div>
     </div>

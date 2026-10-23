@@ -249,7 +249,7 @@ export default function SettingsPage() {
       const info = await api.checkUpdate()
       setUpdateInfo(info)
       if (!info.update_available) {
-        setSuccess('GonoPBX ist auf dem neuesten Stand')
+        setSuccess('VST ist auf dem neuesten Stand')
       }
     } catch (err: any) {
       setError(err.message || tr('Update-Prüfung fehlgeschlagen', 'Update check failed'))
@@ -408,26 +408,26 @@ export default function SettingsPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500 dark:text-gray-400">{tr('Lade Einstellungen...', 'Loading settings...')}</div>
+    return <div className="text-center py-12 text-muted">{tr('Lade Einstellungen...', 'Loading settings...')}</div>
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{tr('Einstellungen', 'Settings')}</h1>
+      <h1 className="text-2xl font-bold text-content">{tr('Einstellungen', 'Settings')}</h1>
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-surface-subtle border border-rot-500 text-danger px-4 py-3 rounded-input text-sm">
           {error}
         </div>
       )}
       {success && (
-        <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-surface-subtle border border-gruen-500 text-success px-4 py-3 rounded-input text-sm">
           {success}
         </div>
       )}
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 dark:border-gray-700">
+      <div className="border-b border-subtle">
         <nav className="flex flex-wrap gap-1" aria-label="Tabs">
           {tabs.map(tab => {
             const Icon = tab.icon
@@ -438,8 +438,8 @@ export default function SettingsPage() {
                 onClick={() => { setActiveTab(tab.id); setError(''); setSuccess('') }}
                 className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
                   isActive
-                    ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                    ? 'border-accent text-accent'
+                    : 'border-transparent text-muted hover:text-content hover:border-subtle'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -468,70 +468,70 @@ export default function SettingsPage() {
       {/* Email Tab */}
       {activeTab === 'email' && (
         <div className="space-y-6">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">{tr('SMTP-Konfiguration', 'SMTP configuration')}</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+          <div className="bg-surface rounded-card shadow-sm border border-subtle p-6">
+            <h2 className="text-lg font-semibold text-content mb-2">{tr('SMTP-Konfiguration', 'SMTP configuration')}</h2>
+            <p className="text-sm text-muted mb-6">
               {tr('Konfigurieren Sie den SMTP-Server für den Versand von Voicemail-Benachrichtigungen per E-Mail.', 'Configure the SMTP server for voicemail email notifications.')}
             </p>
 
             <form onSubmit={handleSave} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('SMTP-Server', 'SMTP server')}</label>
+                  <label className="block text-sm font-medium text-content mb-1">{tr('SMTP-Server', 'SMTP server')}</label>
                   <input
                     type="text"
                     value={formData.smtp_host}
                     onChange={(e) => setFormData({ ...formData, smtp_host: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                     placeholder="mail.example.com"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Port', 'Port')}</label>
+                  <label className="block text-sm font-medium text-content mb-1">{tr('Port', 'Port')}</label>
                   <input
                     type="text"
                     value={formData.smtp_port}
                     onChange={(e) => setFormData({ ...formData, smtp_port: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                     placeholder="587"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Benutzername', 'Username')}</label>
+                  <label className="block text-sm font-medium text-content mb-1">{tr('Benutzername', 'Username')}</label>
                   <input
                     type="text"
                     value={formData.smtp_user}
                     onChange={(e) => setFormData({ ...formData, smtp_user: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                     placeholder="user@example.com"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Passwort', 'Password')}</label>
+                  <label className="block text-sm font-medium text-content mb-1">{tr('Passwort', 'Password')}</label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={formData.smtp_password}
                       onChange={(e) => setFormData({ ...formData, smtp_password: e.target.value })}
-                      className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 pr-10 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                       placeholder={tr('Passwort', 'Password')}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-content"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Absender-Adresse', 'From address')}</label>
+                  <label className="block text-sm font-medium text-content mb-1">{tr('Absender-Adresse', 'From address')}</label>
                   <input
                     type="email"
                     value={formData.smtp_from}
                     onChange={(e) => setFormData({ ...formData, smtp_from: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                     placeholder="voicemail@example.com"
                   />
                 </div>
@@ -541,18 +541,18 @@ export default function SettingsPage() {
                       type="checkbox"
                       checked={formData.smtp_tls === 'true'}
                       onChange={(e) => setFormData({ ...formData, smtp_tls: e.target.checked ? 'true' : 'false' })}
-                      className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-link border-subtle rounded focus:ring-link"
                     />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{tr('TLS verwenden', 'Use TLS')}</span>
+                    <span className="text-sm font-medium text-content">{tr('TLS verwenden', 'Use TLS')}</span>
                   </label>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-3">
+              <div className="pt-4 border-t border-subtle flex gap-3">
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg transition-colors"
+                  className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-onyx-400 text-on-primary px-6 py-2 rounded-input transition-colors"
                 >
                   <Save className="w-4 h-4" />
                   {saving ? tr('Speichern...', 'Saving...') : tr('Speichern', 'Save')}
@@ -561,9 +561,9 @@ export default function SettingsPage() {
             </form>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">{tr('Test-E-Mail senden', 'Send test email')}</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <div className="bg-surface rounded-card shadow-sm border border-subtle p-6">
+            <h2 className="text-lg font-semibold text-content mb-2">{tr('Test-E-Mail senden', 'Send test email')}</h2>
+            <p className="text-sm text-muted mb-4">
               {tr('Senden Sie eine Test-E-Mail, um die SMTP-Konfiguration zu überprüfen.', 'Send a test email to verify the SMTP configuration.')}
             </p>
             <div className="flex gap-3">
@@ -571,13 +571,13 @@ export default function SettingsPage() {
                 type="email"
                 value={testEmail}
                 onChange={(e) => setTestEmail(e.target.value)}
-                className="flex-1 max-w-md px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="flex-1 max-w-md px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                 placeholder={tr('empfaenger@example.com', 'recipient@example.com')}
               />
               <button
                 onClick={handleTestEmail}
                 disabled={testing}
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-6 py-2 rounded-lg transition-colors"
+                className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-onyx-400 text-on-primary px-6 py-2 rounded-input transition-colors"
               >
                 <Send className="w-4 h-4" />
                 {testing ? tr('Sende...', 'Sending...') : tr('Senden', 'Send')}
@@ -589,9 +589,9 @@ export default function SettingsPage() {
 
       {/* Audio Tab */}
       {activeTab === 'audio' && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">{tr('Audio-Codecs (Global)', 'Audio codecs (global)')}</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        <div className="bg-surface rounded-card shadow-sm border border-subtle p-6">
+          <h2 className="text-lg font-semibold text-content mb-2">{tr('Audio-Codecs (Global)', 'Audio codecs (global)')}</h2>
+          <p className="text-sm text-muted mb-6">
             {tr('Wählen Sie die Codecs aus, die standardmäßig für alle Nebenstellen verwendet werden.', 'Select the codecs used by default for all extensions.')}
             {' '}
             {tr('Einzelne Nebenstellen können diese Einstellung überschreiben.', 'Individual extensions can override this setting.')}
@@ -601,21 +601,21 @@ export default function SettingsPage() {
             {availableCodecs.map(codec => (
               <label
                 key={codec.id}
-                className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition ${
+                className={`flex items-start gap-3 p-3 rounded-input border cursor-pointer transition ${
                   selectedCodecs.includes(codec.id)
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    ? 'border-link bg-surface-accent'
+                    : 'border-subtle hover:border-subtle'
                 }`}
               >
                 <input
                   type="checkbox"
                   checked={selectedCodecs.includes(codec.id)}
                   onChange={() => toggleCodec(codec.id)}
-                  className="mt-0.5 w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500"
+                  className="mt-0.5 w-4 h-4 text-link border-subtle rounded focus:ring-link"
                 />
                 <div>
-                  <div className="text-sm font-medium text-gray-800 dark:text-gray-200">{codec.name}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">{codec.description}</div>
+                  <div className="text-sm font-medium text-content">{codec.name}</div>
+                  <div className="text-xs text-muted">{codec.description}</div>
                 </div>
               </label>
             ))}
@@ -624,7 +624,7 @@ export default function SettingsPage() {
           <button
             onClick={handleSaveCodecs}
             disabled={savingCodecs || selectedCodecs.length === 0}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-onyx-400 text-on-primary px-6 py-2 rounded-input transition-colors"
           >
             <Save className="w-4 h-4" />
             {savingCodecs ? tr('Speichern...', 'Saving...') : tr('Codecs speichern', 'Save codecs')}
@@ -636,18 +636,18 @@ export default function SettingsPage() {
       {activeTab === 'security' && (
         <div className="space-y-6">
           {/* IP Whitelist */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">{tr('IP-Whitelist für Registrierung', 'IP whitelist for registration')}</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+          <div className="bg-surface rounded-card shadow-sm border border-subtle p-6">
+            <h2 className="text-lg font-semibold text-content mb-2">{tr('IP-Whitelist für Registrierung', 'IP whitelist for registration')}</h2>
+            <p className="text-sm text-muted mb-6">
               {tr('Beschränken Sie die SIP-Registrierung auf bestimmte IP-Adressen oder Netzwerke (CIDR).', 'Restrict SIP registration to specific IPs or networks (CIDR).')}
               {' '}
               {tr('Wenn aktiviert, werden alle anderen IPs blockiert.', 'When enabled, all other IPs are blocked.')}
             </p>
 
             {whitelistEnabled && (
-              <div className="flex items-start gap-2 mb-4 p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-                <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-amber-800 dark:text-amber-300">
+              <div className="flex items-start gap-2 mb-4 p-3 bg-surface-subtle border border-gelb-600 rounded-input">
+                <AlertTriangle className="w-4 h-4 text-warning mt-0.5 flex-shrink-0" />
+                <span className="text-sm text-warning text-warning">
                   {tr('Achtung: Stellen Sie sicher, dass Ihre eigene IP-Adresse in der Liste enthalten ist,', 'Warning: Make sure your own IP address is included,')}
                   {' '}
                   {tr('bevor Sie die Whitelist aktivieren.', 'before enabling the whitelist.')}
@@ -660,16 +660,16 @@ export default function SettingsPage() {
                 <div
                   onClick={() => setWhitelistEnabled(!whitelistEnabled)}
                   className={`relative w-11 h-6 rounded-full transition-colors ${
-                    whitelistEnabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+                    whitelistEnabled ? 'bg-brand' : 'bg-surface-subtle bg-surface-subtle'
                   }`}
                 >
                   <div
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 bg-surface rounded-full shadow transition-transform ${
                       whitelistEnabled ? 'translate-x-5' : ''
                     }`}
                   />
                 </div>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-medium text-content">
                   {tr('Whitelist', 'Whitelist')} {whitelistEnabled ? tr('aktiviert', 'enabled') : tr('deaktiviert', 'disabled')}
                 </span>
               </label>
@@ -682,12 +682,12 @@ export default function SettingsPage() {
                   value={newIp}
                   onChange={(e) => setNewIp(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addIp())}
-                  className="flex-1 max-w-sm px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="flex-1 max-w-sm px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                   placeholder={tr('z.B. 203.0.113.5 oder 10.0.0.0/24', 'e.g. 203.0.113.5 or 10.0.0.0/24')}
                 />
                 <button
                   onClick={addIp}
-                  className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg transition-colors"
+                  className="flex items-center gap-1 bg-surface-subtle hover:bg-surface-hover text-content px-4 py-2 rounded-input transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   {tr('Hinzufügen', 'Add')}
@@ -699,12 +699,12 @@ export default function SettingsPage() {
                   {whitelistIps.map((ip) => (
                     <div
                       key={ip}
-                      className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg"
+                      className="flex items-center justify-between px-3 py-2 bg-surface-subtle border border-subtle rounded-input"
                     >
-                      <span className="text-sm font-mono text-gray-800 dark:text-gray-200">{ip}</span>
+                      <span className="text-sm font-mono text-content">{ip}</span>
                       <button
                         onClick={() => removeIp(ip)}
-                        className="text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors"
+                        className="text-danger hover:text-danger transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -712,14 +712,14 @@ export default function SettingsPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-400 dark:text-gray-500">{tr('Keine IPs konfiguriert', 'No IPs configured')}</p>
+                <p className="text-sm text-muted">{tr('Keine IPs konfiguriert', 'No IPs configured')}</p>
               )}
             </div>
 
             <button
               onClick={handleSaveWhitelist}
               disabled={savingWhitelist}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-onyx-400 text-on-primary px-6 py-2 rounded-input transition-colors"
             >
               <Save className="w-4 h-4" />
               {savingWhitelist ? tr('Speichern...', 'Saving...') : tr('Whitelist speichern', 'Save whitelist')}
@@ -727,38 +727,38 @@ export default function SettingsPage() {
           </div>
 
           {/* Weak Passwords */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="bg-surface rounded-card shadow-sm border border-subtle p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <ShieldAlert className="w-5 h-5 text-orange-500 dark:text-orange-400" />
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('Schwache SIP-Passwörter', 'Weak SIP passwords')}</h2>
+                <ShieldAlert className="w-5 h-5 text-warning text-warning" />
+                <h2 className="text-lg font-semibold text-content">{tr('Schwache SIP-Passwörter', 'Weak SIP passwords')}</h2>
               </div>
-              <button onClick={fetchWeakPasswords} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1">
+              <button onClick={fetchWeakPasswords} className="text-sm text-muted hover:text-content flex items-center gap-1">
                 <RefreshCw className={`w-4 h-4 ${loadingWeak ? 'animate-spin' : ''}`} />
                 {tr('Aktualisieren', 'Refresh')}
               </button>
             </div>
             {weakPasswords.length === 0 ? (
-              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
-                <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                <span className="text-sm text-green-800 dark:text-green-300">{tr('Alle SIP-Passwörter sind ausreichend stark', 'All SIP passwords are sufficiently strong')}</span>
+              <div className="flex items-center gap-2 p-3 bg-surface-subtle border border-gruen-500 rounded-input">
+                <CheckCircle className="w-4 h-4 text-success" />
+                <span className="text-sm text-success">{tr('Alle SIP-Passwörter sind ausreichend stark', 'All SIP passwords are sufficiently strong')}</span>
               </div>
             ) : (
               <div className="space-y-2">
                 {weakPasswords.map((pw: any) => (
-                  <div key={pw.id} className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg">
+                  <div key={pw.id} className="flex items-center justify-between px-4 py-3 bg-surface-subtle border border-subtle rounded-input">
                     <div>
-                      <span className="font-medium text-gray-800 dark:text-gray-200">{pw.extension}</span>
-                      {pw.caller_id && <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">({pw.caller_id})</span>}
+                      <span className="font-medium text-content">{pw.extension}</span>
+                      {pw.caller_id && <span className="text-sm text-muted ml-2">({pw.caller_id})</span>}
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-20 h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                      <div className="w-20 h-2 bg-surface-subtle rounded-full overflow-hidden">
                         <div
-                          className={`h-full ${pw.strength.level === 'medium' ? 'bg-yellow-500' : 'bg-red-500'}`}
+                          className={`h-full ${pw.strength.level === 'medium' ? 'bg-warning' : 'bg-danger'}`}
                           style={{ width: `${pw.strength.score}%` }}
                         />
                       </div>
-                      <span className={`text-xs font-medium ${pw.strength.level === 'medium' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
+                      <span className={`text-xs font-medium ${pw.strength.level === 'medium' ? 'text-warning' : 'text-danger'}`}>
                         {pw.strength.level === 'medium' ? tr('Mittel', 'Medium') : tr('Schwach', 'Weak')}
                       </span>
                     </div>
@@ -769,24 +769,24 @@ export default function SettingsPage() {
           </div>
 
           {/* Fail2Ban Status */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="bg-surface rounded-card shadow-sm border border-subtle p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Ban className="w-5 h-5 text-red-500 dark:text-red-400" />
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('Fail2Ban-Status', 'Fail2Ban status')}</h2>
+                <Ban className="w-5 h-5 text-danger" />
+                <h2 className="text-lg font-semibold text-content">{tr('Fail2Ban-Status', 'Fail2Ban status')}</h2>
               </div>
-              <button onClick={fetchFail2ban} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1">
+              <button onClick={fetchFail2ban} className="text-sm text-muted hover:text-content flex items-center gap-1">
                 <RefreshCw className={`w-4 h-4 ${loadingF2b ? 'animate-spin' : ''}`} />
                 {tr('Aktualisieren', 'Refresh')}
               </button>
             </div>
 
             {!fail2ban ? (
-              <div className="text-center py-4 text-gray-500 dark:text-gray-400">{tr('Lade Fail2Ban-Status...', 'Loading Fail2Ban status...')}</div>
+              <div className="text-center py-4 text-muted">{tr('Lade Fail2Ban-Status...', 'Loading Fail2Ban status...')}</div>
             ) : !fail2ban.available ? (
-              <div className="flex items-start gap-2 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg">
-                <AlertTriangle className="w-4 h-4 text-gray-500 dark:text-gray-400 mt-0.5" />
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-start gap-2 p-3 bg-surface-subtle border border-subtle rounded-input">
+                <AlertTriangle className="w-4 h-4 text-muted mt-0.5" />
+                <span className="text-sm text-muted">
                   {tr('Fail2Ban ist nicht verfügbar.', 'Fail2Ban is not available.')}{' '}
                   {fail2ban.error || tr('Stellen Sie sicher, dass Fail2Ban installiert ist.', 'Make sure Fail2Ban is installed.')}
                 </span>
@@ -795,32 +795,32 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 {/* Summary */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-red-700 dark:text-red-400">{fail2ban.active_bans}</div>
-                    <div className="text-xs text-red-600 dark:text-red-400">{tr('Aktive Bans', 'Active bans')}</div>
+                  <div className="p-3 bg-surface-subtle border border-rot-500 rounded-input text-center">
+                    <div className="text-2xl font-bold text-danger">{fail2ban.active_bans}</div>
+                    <div className="text-xs text-danger">{tr('Aktive Bans', 'Active bans')}</div>
                   </div>
-                  <div className="p-3 bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-orange-700 dark:text-orange-400">{fail2ban.bans_24h}</div>
-                    <div className="text-xs text-orange-600 dark:text-orange-400">{tr('Bans (24h)', 'Bans (24h)')}</div>
+                  <div className="p-3 bg-surface-subtle border border-gelb-600 rounded-input text-center">
+                    <div className="text-2xl font-bold text-warning">{fail2ban.bans_24h}</div>
+                    <div className="text-xs text-warning">{tr('Bans (24h)', 'Bans (24h)')}</div>
                   </div>
-                  <div className="p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-gray-700 dark:text-gray-300">{fail2ban.total_bans}</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">{tr('Bans gesamt', 'Total bans')}</div>
+                  <div className="p-3 bg-surface-subtle border border-subtle rounded-input text-center">
+                    <div className="text-2xl font-bold text-content">{fail2ban.total_bans}</div>
+                    <div className="text-xs text-muted">{tr('Bans gesamt', 'Total bans')}</div>
                   </div>
                 </div>
 
                 {/* Jails */}
                 {fail2ban.jails && fail2ban.jails.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{tr('Jails', 'Jails')}</h3>
+                    <h3 className="text-sm font-medium text-content mb-2">{tr('Jails', 'Jails')}</h3>
                     <div className="space-y-2">
                       {fail2ban.jails.map((jail: any) => (
-                        <div key={jail.name} className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <div key={jail.name} className="flex items-center justify-between px-3 py-2 bg-surface-subtle border border-subtle rounded-input">
                           <div className="flex items-center gap-2">
-                            {jail.enabled ? <CheckCircle className="w-4 h-4 text-green-500 dark:text-green-400" /> : <XCircle className="w-4 h-4 text-gray-400 dark:text-gray-500" />}
-                            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{jail.name}</span>
+                            {jail.enabled ? <CheckCircle className="w-4 h-4 text-success" /> : <XCircle className="w-4 h-4 text-muted" />}
+                            <span className="text-sm font-medium text-content">{jail.name}</span>
                           </div>
-                          <span className={`text-sm font-medium ${jail.active_bans > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                          <span className={`text-sm font-medium ${jail.active_bans > 0 ? 'text-danger' : 'text-muted'}`}>
                             {jail.active_bans} {tr('aktiv', 'active')}
                           </span>
                         </div>
@@ -832,26 +832,26 @@ export default function SettingsPage() {
                 {/* Recent bans */}
                 {fail2ban.recent_bans && fail2ban.recent_bans.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{tr('Letzte Bans', 'Recent bans')}</h3>
+                    <h3 className="text-sm font-medium text-content mb-2">{tr('Letzte Bans', 'Recent bans')}</h3>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
-                        <thead className="bg-gray-50 dark:bg-gray-700">
+                        <thead className="bg-surface-subtle">
                           <tr>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('IP', 'IP')}</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Jail', 'Jail')}</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Zeitpunkt', 'Time')}</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Status', 'Status')}</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Aktion', 'Action')}</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-muted uppercase">{tr('IP', 'IP')}</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-muted uppercase">{tr('Jail', 'Jail')}</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-muted uppercase">{tr('Zeitpunkt', 'Time')}</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-muted uppercase">{tr('Status', 'Status')}</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-muted uppercase">{tr('Aktion', 'Action')}</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody className="divide-y divide-subtle">
                           {fail2ban.recent_bans.map((ban: any, i: number) => (
                             <tr key={i}>
-                              <td className="px-3 py-2 font-mono text-gray-800 dark:text-gray-200">{ban.ip}</td>
-                              <td className="px-3 py-2 text-gray-600 dark:text-gray-400">{ban.jail}</td>
-                              <td className="px-3 py-2 text-gray-600 dark:text-gray-400">{new Date(ban.timestamp).toLocaleString(lang === 'en' ? 'en-US' : 'de-DE')}</td>
+                              <td className="px-3 py-2 font-mono text-content">{ban.ip}</td>
+                              <td className="px-3 py-2 text-muted">{ban.jail}</td>
+                              <td className="px-3 py-2 text-muted">{new Date(ban.timestamp).toLocaleString(lang === 'en' ? 'en-US' : 'de-DE')}</td>
                               <td className="px-3 py-2">
-                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${ban.active ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>
+                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${ban.active ? 'bg-surface-subtle text-danger' : 'bg-surface-subtle text-muted'}`}>
                                   {ban.active ? tr('Aktiv', 'Active') : tr('Abgelaufen', 'Expired')}
                                 </span>
                               </td>
@@ -867,7 +867,7 @@ export default function SettingsPage() {
                                         alert(e.message || tr('Entbannung fehlgeschlagen', 'Unban failed'))
                                       }
                                     }}
-                                    className="text-xs text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 flex items-center gap-1"
+                                    className="text-xs text-warning hover:text-warning flex items-center gap-1"
                                   >
                                     <Unlock className="w-3.5 h-3.5" />
                                     {tr('Entbannen', 'Unban')}
@@ -895,16 +895,16 @@ export default function SettingsPage() {
 
       {/* Audit Log Tab */}
       {activeTab === 'audit' && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-surface rounded-card shadow-sm border border-subtle p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('Audit-Log', 'Audit log')}</h2>
-              <span className="text-sm text-gray-500 dark:text-gray-400">({auditTotal} {tr('Einträge', 'entries')})</span>
+              <FileText className="w-5 h-5 text-muted" />
+              <h2 className="text-lg font-semibold text-content">{tr('Audit-Log', 'Audit log')}</h2>
+              <span className="text-sm text-muted">({auditTotal} {tr('Einträge', 'entries')})</span>
             </div>
             <button
               onClick={() => fetchAuditLogs(0)}
-              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1"
+              className="text-sm text-muted hover:text-content flex items-center gap-1"
             >
               <RefreshCw className={`w-4 h-4 ${loadingAudit ? 'animate-spin' : ''}`} />
               {tr('Aktualisieren', 'Refresh')}
@@ -912,25 +912,25 @@ export default function SettingsPage() {
           </div>
 
           {auditLogs.length === 0 && !loadingAudit ? (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">{tr('Keine Audit-Log-Einträge vorhanden', 'No audit log entries')}</div>
+            <div className="text-center py-8 text-muted">{tr('Keine Audit-Log-Einträge vorhanden', 'No audit log entries')}</div>
           ) : (
             <>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
+                  <thead className="bg-surface-subtle">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Zeitpunkt', 'Time')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Benutzer', 'User')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Aktion', 'Action')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Ressource', 'Resource')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{tr('Details', 'Details')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">{tr('Zeitpunkt', 'Time')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">{tr('Benutzer', 'User')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">{tr('Aktion', 'Action')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">{tr('Ressource', 'Resource')}</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">{tr('Details', 'Details')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody className="divide-y divide-subtle">
                     {auditLogs.map((log: any) => {
                       const isDelete = log.action?.includes('deleted')
                       const isCreate = log.action?.includes('created')
-                      const actionColor = isDelete ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30' : isCreate ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30' : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
+                      const actionColor = isDelete ? 'text-danger bg-surface-subtle' : isCreate ? 'text-success bg-surface-subtle' : 'text-link bg-surface-accent'
                       const actionLabel: Record<string, string> = {
                         peer_created: tr('Extension erstellt', 'Extension created'),
                         peer_updated: tr('Extension bearbeitet', 'Extension updated'),
@@ -953,21 +953,21 @@ export default function SettingsPage() {
                         ha_settings_updated: tr('Home Assistant geändert', 'Home Assistant updated'),
                       }
                       return (
-                        <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                          <td className="px-4 py-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                        <tr key={log.id} className="hover:bg-surface-hover">
+                          <td className="px-4 py-3 text-muted whitespace-nowrap">
                             {log.timestamp ? new Date(log.timestamp).toLocaleString(lang === 'en' ? 'en-US' : 'de-DE') : '-'}
                           </td>
-                          <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-200">{log.username}</td>
+                          <td className="px-4 py-3 font-medium text-content">{log.username}</td>
                           <td className="px-4 py-3">
                             <span className={`px-2 py-1 rounded text-xs font-medium ${actionColor}`}>
                               {actionLabel[log.action] || log.action}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
-                            {log.resource_type && <span className="text-gray-500 dark:text-gray-400">{log.resource_type}: </span>}
+                          <td className="px-4 py-3 text-muted">
+                            {log.resource_type && <span className="text-muted">{log.resource_type}: </span>}
                             {log.resource_id || '-'}
                           </td>
-                          <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">
+                          <td className="px-4 py-3 text-muted text-xs">
                             {log.details ? Object.entries(log.details).map(([k, v]) => `${k}: ${v}`).join(', ') : '-'}
                           </td>
                         </tr>
@@ -982,7 +982,7 @@ export default function SettingsPage() {
                   <button
                     onClick={() => fetchAuditLogs(auditOffset + 50)}
                     disabled={loadingAudit}
-                    className="px-6 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm transition-colors"
+                    className="px-6 py-2 bg-surface-subtle hover:bg-surface-hover text-content rounded-input text-sm transition-colors"
                   >
                   {loadingAudit ? tr('Lade...', 'Loading...') : tr('Mehr laden', 'Load more')}
                   </button>
@@ -997,9 +997,9 @@ export default function SettingsPage() {
       {activeTab === 'homeassistant' && (
         <div className="space-y-6">
           {/* Card 1: API-Zugang */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">{tr('API-Zugang', 'API access')}</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+          <div className="bg-surface rounded-card shadow-sm border border-subtle p-6">
+            <h2 className="text-lg font-semibold text-content mb-2">{tr('API-Zugang', 'API access')}</h2>
+            <p className="text-sm text-muted mb-6">
               {tr('Konfigurieren Sie den API-Zugang für die Home Assistant-Integration.', 'Configure API access for the Home Assistant integration.')}
             </p>
 
@@ -1010,16 +1010,16 @@ export default function SettingsPage() {
                   <div
                     onClick={() => setHaData(prev => ({ ...prev, ha_enabled: prev.ha_enabled === 'true' ? 'false' : 'true' }))}
                     className={`relative w-11 h-6 rounded-full transition-colors ${
-                      haData.ha_enabled === 'true' ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+                      haData.ha_enabled === 'true' ? 'bg-brand' : 'bg-surface-subtle bg-surface-subtle'
                     }`}
                   >
                     <div
-                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-surface rounded-full shadow transition-transform ${
                         haData.ha_enabled === 'true' ? 'translate-x-5' : ''
                       }`}
                     />
                   </div>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <span className="text-sm font-medium text-content">
                     {tr('Integration', 'Integration')} {haData.ha_enabled === 'true' ? tr('aktiviert', 'enabled') : tr('deaktiviert', 'disabled')}
                   </span>
                 </label>
@@ -1027,20 +1027,20 @@ export default function SettingsPage() {
 
               {/* API Key */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">API Key</label>
+                <label className="block text-sm font-medium text-content mb-1">API Key</label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <input
                       type={showHaApiKey ? 'text' : 'password'}
                       value={haData.ha_api_key}
                       onChange={(e) => setHaData(prev => ({ ...prev, ha_api_key: e.target.value }))}
-                      className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-mono text-sm"
+                      className="w-full px-3 py-2 pr-10 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content font-mono text-sm"
                       placeholder="API Key"
                     />
                     <button
                       type="button"
                       onClick={() => setShowHaApiKey(!showHaApiKey)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-content"
                     >
                       {showHaApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -1048,7 +1048,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleGenerateKey}
                     disabled={generatingKey}
-                    className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap"
+                    className="flex items-center gap-1.5 bg-surface-subtle hover:bg-surface-hover text-content px-4 py-2 rounded-input transition-colors text-sm whitespace-nowrap"
                   >
                     <Key className="w-4 h-4" />
                     {generatingKey ? tr('Generiere...', 'Generating...') : tr('Neuen Key generieren', 'Generate new key')}
@@ -1056,7 +1056,7 @@ export default function SettingsPage() {
                   {haData.ha_api_key && haData.ha_api_key !== '****' && (
                     <button
                       onClick={() => { navigator.clipboard.writeText(haData.ha_api_key); setSuccess(tr('API Key kopiert', 'API key copied')) }}
-                      className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg transition-colors"
+                      className="flex items-center gap-1 bg-surface-subtle hover:bg-surface-hover text-content px-3 py-2 rounded-input transition-colors"
                       title={tr('In Zwischenablage kopieren', 'Copy to clipboard')}
                     >
                       <Copy className="w-4 h-4" />
@@ -1066,11 +1066,11 @@ export default function SettingsPage() {
               </div>
 
               {/* Info Box */}
-              <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-blue-800 dark:text-blue-300">
-                  <p>{tr('Verwenden Sie diesen API Key in Ihrer Home Assistant', 'Use this API key in your Home Assistant')} <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded">configuration.yaml</code>:</p>
-                  <pre className="mt-2 text-xs bg-blue-100 dark:bg-blue-900/50 p-2 rounded font-mono overflow-x-auto">
+              <div className="flex items-start gap-2 p-3 bg-surface-accent border border-subtle rounded-input">
+                <Info className="w-4 h-4 text-link mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-link">
+                  <p>{tr('Verwenden Sie diesen API Key in Ihrer Home Assistant', 'Use this API key in your Home Assistant')} <code className="bg-surface-accent bg-surface-accent px-1 rounded">configuration.yaml</code>:</p>
+                  <pre className="mt-2 text-xs bg-surface-accent bg-surface-accent p-2 rounded font-mono overflow-x-auto">
 {`rest_command:
   gonopbx_call:
     url: "https://IHRE-PBX-IP/api/calls/originate"
@@ -1085,59 +1085,59 @@ export default function SettingsPage() {
           </div>
 
           {/* Card 2: MQTT Echtzeit-Events */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">{tr('MQTT Echtzeit-Events', 'MQTT real-time events')}</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              {tr('GonoPBX publiziert Anruf-Events, Extension- und Trunk-Status per MQTT.', 'GonoPBX publishes call events, extension and trunk status via MQTT.')}
+          <div className="bg-surface rounded-card shadow-sm border border-subtle p-6">
+            <h2 className="text-lg font-semibold text-content mb-2">{tr('MQTT Echtzeit-Events', 'MQTT real-time events')}</h2>
+            <p className="text-sm text-muted mb-6">
+              {tr('VST publiziert Anruf-Events, Extension- und Trunk-Status per MQTT.', 'VST publishes call events, extension and trunk status via MQTT.')}
               {' '}
               {tr('Verbinden Sie es mit Ihrem MQTT-Broker (z.B. Mosquitto in Home Assistant).', 'Connect it to your MQTT broker (e.g. Mosquitto in Home Assistant).')}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Broker (IP/Hostname)', 'Broker (IP/hostname)')}</label>
+                <label className="block text-sm font-medium text-content mb-1">{tr('Broker (IP/Hostname)', 'Broker (IP/hostname)')}</label>
                 <input
                   type="text"
                   value={haData.mqtt_broker}
                   onChange={(e) => setHaData(prev => ({ ...prev, mqtt_broker: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                   placeholder="192.168.1.100"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Port', 'Port')}</label>
+                <label className="block text-sm font-medium text-content mb-1">{tr('Port', 'Port')}</label>
                 <input
                   type="text"
                   value={haData.mqtt_port}
                   onChange={(e) => setHaData(prev => ({ ...prev, mqtt_port: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                   placeholder="1883"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Benutzername', 'Username')} <span className="text-gray-400 font-normal">({tr('optional', 'optional')})</span></label>
+                <label className="block text-sm font-medium text-content mb-1">{tr('Benutzername', 'Username')} <span className="text-muted font-normal">({tr('optional', 'optional')})</span></label>
                 <input
                   type="text"
                   value={haData.mqtt_user}
                   onChange={(e) => setHaData(prev => ({ ...prev, mqtt_user: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                   placeholder="mqtt_user"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{tr('Passwort', 'Password')} <span className="text-gray-400 font-normal">({tr('optional', 'optional')})</span></label>
+                <label className="block text-sm font-medium text-content mb-1">{tr('Passwort', 'Password')} <span className="text-muted font-normal">({tr('optional', 'optional')})</span></label>
                 <div className="relative">
                   <input
                     type={showMqttPassword ? 'text' : 'password'}
                     value={haData.mqtt_password}
                     onChange={(e) => setHaData(prev => ({ ...prev, mqtt_password: e.target.value }))}
-                    className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full px-3 py-2 pr-10 border border-subtle rounded-input focus:ring-2 focus:ring-link focus:border-link outline-none bg-surface text-content"
                     placeholder={tr('Passwort', 'Password')}
                   />
                   <button
                     type="button"
                     onClick={() => setShowMqttPassword(!showMqttPassword)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-content"
                   >
                     {showMqttPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -1147,26 +1147,26 @@ export default function SettingsPage() {
 
             {/* MQTT Test Result */}
             {mqttTestResult && (
-              <div className={`flex items-center gap-2 p-3 mb-4 rounded-lg border ${
+              <div className={`flex items-center gap-2 p-3 mb-4 rounded-input border ${
                 mqttTestResult.ok
-                  ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800'
-                  : 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800'
+                  ? 'bg-surface-subtle border-gruen-500'
+                  : 'bg-surface-subtle border-rot-500'
               }`}>
                 {mqttTestResult.ok
-                  ? <Wifi className="w-4 h-4 text-green-600 dark:text-green-400" />
-                  : <WifiOff className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  ? <Wifi className="w-4 h-4 text-success" />
+                  : <WifiOff className="w-4 h-4 text-danger" />
                 }
-                <span className={`text-sm ${mqttTestResult.ok ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>
+                <span className={`text-sm ${mqttTestResult.ok ? 'text-success' : 'text-danger'}`}>
                   {mqttTestResult.message}
                 </span>
               </div>
             )}
 
-            <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex gap-3 pt-4 border-t border-subtle">
               <button
                 onClick={handleTestMqtt}
                 disabled={testingMqtt || !haData.mqtt_broker}
-                className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 text-gray-700 dark:text-gray-300 px-5 py-2 rounded-lg transition-colors"
+                className="flex items-center gap-2 bg-surface-subtle hover:bg-surface-hover disabled:opacity-50 text-content px-5 py-2 rounded-input transition-colors"
               >
                 <Wifi className={`w-4 h-4 ${testingMqtt ? 'animate-pulse' : ''}`} />
                 {testingMqtt ? tr('Teste...', 'Testing...') : tr('Verbindung testen', 'Test connection')}
@@ -1174,7 +1174,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleSaveHA}
                 disabled={savingHA}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg transition-colors"
+                className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-onyx-400 text-on-primary px-6 py-2 rounded-input transition-colors"
               >
                 <Save className="w-4 h-4" />
                 {savingHA ? tr('Speichern...', 'Saving...') : tr('Speichern', 'Save')}
@@ -1188,12 +1188,12 @@ export default function SettingsPage() {
       {activeTab === 'server' && (
         <div className="space-y-6">
           {/* System Info */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="bg-surface rounded-card shadow-sm border border-subtle p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('System-Information', 'System information')}</h2>
+              <h2 className="text-lg font-semibold text-content">{tr('System-Information', 'System information')}</h2>
               <button
                 onClick={fetchServerInfo}
-                className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                className="flex items-center gap-1 text-sm text-muted hover:text-content transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
                 {tr('Aktualisieren', 'Refresh')}
@@ -1204,55 +1204,55 @@ export default function SettingsPage() {
               <div className="space-y-6">
                 {/* Version & Uptime */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
-                      <ServerIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <div className="flex items-center gap-3 p-4 bg-surface-subtle rounded-input">
+                    <div className="p-2 bg-surface-accent rounded-input">
+                      <ServerIcon className="w-5 h-5 text-link" />
                     </div>
                     <div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{tr('Version', 'Version')}</div>
-                      <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">v{serverInfo.version}</div>
+                      <div className="text-xs text-muted">{tr('Version', 'Version')}</div>
+                      <div className="text-lg font-semibold text-content">v{serverInfo.version}</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
-                      <Clock className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  <div className="flex items-center gap-3 p-4 bg-surface-subtle rounded-input">
+                    <div className="p-2 bg-surface-subtle rounded-input">
+                      <Clock className="w-5 h-5 text-success" />
                     </div>
                     <div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{tr('Uptime', 'Uptime')}</div>
-                      <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">{serverInfo.uptime}</div>
+                      <div className="text-xs text-muted">{tr('Uptime', 'Uptime')}</div>
+                      <div className="text-lg font-semibold text-content">{serverInfo.uptime}</div>
                     </div>
                   </div>
                 </div>
 
                 {/* Disk & Memory */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="p-4 bg-surface-subtle rounded-input">
                     <div className="flex items-center gap-2 mb-2">
-                      <HardDrive className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{tr('Festplatte', 'Disk')}</span>
+                      <HardDrive className="w-4 h-4 text-muted" />
+                      <span className="text-sm font-medium text-content">{tr('Festplatte', 'Disk')}</span>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5 mb-1">
+                    <div className="w-full bg-surface-subtle rounded-full h-2.5 mb-1">
                       <div
-                        className={`h-2.5 rounded-full ${serverInfo.disk.percent > 90 ? 'bg-red-500' : serverInfo.disk.percent > 70 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                        className={`h-2.5 rounded-full ${serverInfo.disk.percent > 90 ? 'bg-danger' : serverInfo.disk.percent > 70 ? 'bg-warning' : 'bg-success'}`}
                         style={{ width: `${serverInfo.disk.percent}%` }}
                       />
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-muted">
                       {serverInfo.disk.used_gb} GB / {serverInfo.disk.total_gb} GB {tr('belegt', 'used')} ({serverInfo.disk.percent}%)
                     </div>
                   </div>
-                  <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="p-4 bg-surface-subtle rounded-input">
                     <div className="flex items-center gap-2 mb-2">
-                      <Cpu className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{tr('Arbeitsspeicher', 'Memory')}</span>
+                      <Cpu className="w-4 h-4 text-muted" />
+                      <span className="text-sm font-medium text-content">{tr('Arbeitsspeicher', 'Memory')}</span>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5 mb-1">
+                    <div className="w-full bg-surface-subtle rounded-full h-2.5 mb-1">
                       <div
-                        className={`h-2.5 rounded-full ${serverInfo.memory.percent > 90 ? 'bg-red-500' : serverInfo.memory.percent > 70 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                        className={`h-2.5 rounded-full ${serverInfo.memory.percent > 90 ? 'bg-danger' : serverInfo.memory.percent > 70 ? 'bg-warning' : 'bg-success'}`}
                         style={{ width: `${serverInfo.memory.percent}%` }}
                       />
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-muted">
                       {serverInfo.memory.used_mb} MB / {serverInfo.memory.total_mb} MB {tr('belegt', 'used')} ({serverInfo.memory.percent}%)
                     </div>
                   </div>
@@ -1261,26 +1261,26 @@ export default function SettingsPage() {
                 {/* Container Status */}
                 {serverInfo.containers.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{tr('Container-Status', 'Container status')}</h3>
+                    <h3 className="text-sm font-medium text-content mb-3">{tr('Container-Status', 'Container status')}</h3>
                     <div className="space-y-2">
                       {serverInfo.containers.map(c => (
-                        <div key={c.name} className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div key={c.name} className="flex items-center justify-between px-4 py-3 bg-surface-subtle rounded-input">
                           <div className="flex items-center gap-3">
                             {c.state === 'running' ? (
-                              <CheckCircle className="w-4 h-4 text-green-500 dark:text-green-400" />
+                              <CheckCircle className="w-4 h-4 text-success" />
                             ) : (
-                              <XCircle className="w-4 h-4 text-red-500 dark:text-red-400" />
+                              <XCircle className="w-4 h-4 text-danger" />
                             )}
                             <div>
-                              <div className="text-sm font-medium text-gray-800 dark:text-gray-200">{c.service}</div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400">{c.status}</div>
+                              <div className="text-sm font-medium text-content">{c.service}</div>
+                              <div className="text-xs text-muted">{c.status}</div>
                             </div>
                           </div>
                           {['asterisk', 'backend', 'frontend'].includes(c.service) && (
                             <button
                               onClick={() => handleRestartService(c.service)}
                               disabled={restartingService === c.service}
-                              className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 disabled:text-gray-400 dark:disabled:text-gray-500 transition-colors"
+                              className="flex items-center gap-1 text-xs text-link hover:text-link-hover disabled:opacity-50 transition-colors"
                             >
                               <RefreshCw className={`w-3.5 h-3.5 ${restartingService === c.service ? 'animate-spin' : ''}`} />
                               {restartingService === c.service ? tr('Startet...', 'Starting...') : tr('Neustart', 'Restart')}
@@ -1293,29 +1293,29 @@ export default function SettingsPage() {
                 )}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">{tr('Lade System-Informationen...', 'Loading system information...')}</div>
+              <div className="text-center py-8 text-muted">{tr('Lade System-Informationen...', 'Loading system information...')}</div>
             )}
           </div>
 
           {/* Update Check */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="bg-surface rounded-card shadow-sm border border-subtle p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Download className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('Updates', 'Updates')}</h2>
+              <Download className="w-5 h-5 text-muted" />
+              <h2 className="text-lg font-semibold text-content">{tr('Updates', 'Updates')}</h2>
             </div>
 
             {updateInfo?.update_available && (
-              <div className="flex items-start gap-3 p-4 mb-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <ArrowUpCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <div className="flex items-start gap-3 p-4 mb-4 bg-surface-accent border border-subtle rounded-input">
+                <ArrowUpCircle className="w-5 h-5 text-link mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                  <div className="text-sm font-medium text-link">
                     {tr('Neue Version verfügbar', 'New version available')}: v{updateInfo.latest_version}
                   </div>
-                  <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                  <div className="text-xs text-link mt-1">
                     {tr('Aktuelle Version', 'Current version')}: v{updateInfo.current_version}
                   </div>
                   {updateInfo.release_notes && (
-                    <pre className="text-xs text-blue-700 dark:text-blue-300 mt-2 whitespace-pre-wrap font-sans max-h-40 overflow-y-auto">
+                    <pre className="text-xs text-link mt-2 whitespace-pre-wrap font-sans max-h-40 overflow-y-auto">
                       {updateInfo.release_notes}
                     </pre>
                   )}
@@ -1324,7 +1324,7 @@ export default function SettingsPage() {
                       href={updateInfo.release_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mt-2 underline"
+                      className="inline-flex items-center gap-1 text-xs text-link hover:text-link-hover mt-2 underline"
                     >
                       {tr('Release auf GitHub ansehen', 'View release on GitHub')}
                     </a>
@@ -1345,7 +1345,7 @@ export default function SettingsPage() {
                       }
                     }}
                     disabled={installingUpdate}
-                    className="mt-3 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-5 py-2 rounded-lg transition-colors text-sm"
+                    className="mt-3 flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-onyx-400 text-on-primary px-5 py-2 rounded-input transition-colors text-sm"
                   >
                     <Download className={`w-4 h-4 ${installingUpdate ? 'animate-bounce' : ''}`} />
                     {installingUpdate ? tr('Update wird installiert...', 'Update is being installed...') : tr(`Update auf v${updateInfo.latest_version} installieren`, `Install update v${updateInfo.latest_version}`)}
@@ -1355,11 +1355,11 @@ export default function SettingsPage() {
             )}
 
             {installingUpdate && (
-              <div className="flex items-center gap-3 p-4 mb-4 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-                <RefreshCw className="w-5 h-5 text-amber-600 dark:text-amber-400 animate-spin flex-shrink-0" />
+              <div className="flex items-center gap-3 p-4 mb-4 bg-surface-subtle border border-gelb-600 rounded-input">
+                <RefreshCw className="w-5 h-5 text-warning animate-spin flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-medium text-amber-800 dark:text-amber-300">{tr('Update wird installiert...', 'Update is being installed...')}</div>
-                  <div className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  <div className="text-sm font-medium text-warning text-warning">{tr('Update wird installiert...', 'Update is being installed...')}</div>
+                  <div className="text-xs text-warning mt-1">
                     {tr('Die Container werden neu gebaut. Die Seite wird automatisch neu geladen.', 'Containers are rebuilding. The page will reload automatically.')}
                   </div>
                 </div>
@@ -1367,16 +1367,16 @@ export default function SettingsPage() {
             )}
 
             {updateInfo && !updateInfo.update_available && (
-              <div className="flex items-center gap-2 p-3 mb-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
-                <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                <span className="text-sm text-green-800 dark:text-green-300">{tr('GonoPBX', 'GonoPBX')} v{updateInfo.current_version} {tr('ist aktuell', 'is up to date')}</span>
+              <div className="flex items-center gap-2 p-3 mb-4 bg-surface-subtle border border-gruen-500 rounded-input">
+                <CheckCircle className="w-4 h-4 text-success" />
+                <span className="text-sm text-success">VST v{updateInfo.current_version} {tr('ist aktuell', 'is up to date')}</span>
               </div>
             )}
 
             <button
               onClick={handleCheckUpdate}
               disabled={checkingUpdate || installingUpdate}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-onyx-400 text-on-primary px-6 py-2 rounded-input transition-colors"
             >
               <RefreshCw className={`w-4 h-4 ${checkingUpdate ? 'animate-spin' : ''}`} />
               {checkingUpdate ? tr('Prüfe...', 'Checking...') : tr('Auf Updates prüfen', 'Check for updates')}
@@ -1384,18 +1384,18 @@ export default function SettingsPage() {
           </div>
 
           {/* Server Reboot */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-red-100 dark:border-red-900 p-6">
+          <div className="bg-surface rounded-card shadow-sm border border-rot-500 border-rot-500 p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Power className="w-5 h-5 text-red-500 dark:text-red-400" />
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{tr('Server neu starten', 'Restart server')}</h2>
+              <Power className="w-5 h-5 text-danger" />
+              <h2 className="text-lg font-semibold text-content">{tr('Server neu starten', 'Restart server')}</h2>
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            <p className="text-sm text-muted mb-4">
               {tr('Startet den gesamten Server neu. Alle aktiven Verbindungen und Gespräche werden getrennt.', 'Restarts the entire server. All active connections and calls will be dropped.')}
             </p>
             <button
               onClick={handleReboot}
               disabled={rebooting}
-              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-6 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 border border-danger text-danger hover:bg-rot-50 disabled:opacity-50 px-6 py-2 rounded-input transition-colors"
             >
               <Power className="w-4 h-4" />
               {rebooting ? tr('Server startet neu...', 'Server is rebooting...') : tr('Server neu starten', 'Restart server')}

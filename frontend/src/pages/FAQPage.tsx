@@ -14,7 +14,7 @@ const faqSectionsDe: { title: string; items: FAQItem[] }[] = [
     items: [
       {
         question: 'Wie melde ich mich an?',
-        answer: 'Öffnen Sie die GonoPBX-Weboberfläche in Ihrem Browser und geben Sie Ihren Benutzernamen und Ihr Passwort ein. Die Zugangsdaten erhalten Sie von Ihrem Administrator.',
+        answer: 'Öffnen Sie die VST-Weboberfläche in Ihrem Browser und geben Sie Ihren Benutzernamen und Ihr Passwort ein. Die Zugangsdaten erhalten Sie von Ihrem Administrator.',
       },
       {
         question: 'Wie ändere ich mein Passwort?',
@@ -35,7 +35,7 @@ const faqSectionsDe: { title: string; items: FAQItem[] }[] = [
       },
       {
         question: 'Welche Telefone und Softphones werden unterstützt?',
-        answer: 'GonoPBX ist kompatibel mit allen SIP-fähigen Geräten. Dazu gehören Hardware-Telefone von Yealink, Snom, Grandstream, Poly u.a. sowie Softphones wie MicroSIP (Windows), Linphone (alle Plattformen) oder Othe Othe Othe Othe Othe Othe Zoiper.',
+        answer: 'VST ist kompatibel mit allen SIP-fähigen Geräten. Dazu gehören Hardware-Telefone von Yealink, Snom, Grandstream, Poly u.a. sowie Softphones wie MicroSIP (Windows), Linphone (alle Plattformen) oder Zoiper.',
       },
       {
         question: 'Mein Telefon registriert sich nicht – was kann ich tun?',
@@ -84,12 +84,12 @@ const faqSectionsDe: { title: string; items: FAQItem[] }[] = [
         answer: 'Unter Einstellungen → E-Mail können Sie den SMTP-Server konfigurieren. Dieser wird für Willkommens-E-Mails an neue Benutzer und Voicemail-Benachrichtigungen verwendet.',
       },
       {
-        question: 'Wie aktualisiere ich GonoPBX?',
+        question: 'Wie aktualisiere ich VST?',
         answer: 'Am einfachsten über das Webinterface: Einstellungen → Server → Update → "Update installieren". Alternativ manuell per SSH: git pull origin main && docker compose up -d --build. Die Datenbank-Migrationen laufen automatisch beim Start.',
       },
       {
-        question: 'Wie verbinde ich GonoPBX mit Home Assistant?',
-        answer: 'Unter Einstellungen → Home Assistant können Sie die Integration aktivieren. Tragen Sie den MQTT-Broker ein und generieren Sie einen API-Key. GonoPBX sendet dann Anruf-Events per MQTT und stellt Sensoren für Nebenstellen, Trunks und aktive Anrufe bereit.',
+        question: 'Wie verbinde ich VST mit Home Assistant?',
+        answer: 'Unter Einstellungen → Home Assistant können Sie die Integration aktivieren. Tragen Sie den MQTT-Broker ein und generieren Sie einen API-Key. VST sendet dann Anruf-Events per MQTT und stellt Sensoren für Nebenstellen, Trunks und aktive Anrufe bereit.',
       },
     ],
   },
@@ -201,20 +201,20 @@ export default function FAQPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{tr('Häufig gestellte Fragen', 'Frequently asked questions')}</h1>
+      <h1 className="text-2xl font-bold text-content">{tr('Häufig gestellte Fragen', 'Frequently asked questions')}</h1>
 
       {user?.role === 'admin' && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">{tr('Admin‑Handbuch', 'Admin handbook')}</h2>
+        <div className="bg-surface rounded-card shadow-sm border border-subtle overflow-hidden">
+          <div className="px-6 py-4 bg-surface-subtle border-b border-subtle">
+            <h2 className="text-lg font-semibold text-content">{tr('Admin‑Handbuch', 'Admin handbook')}</h2>
           </div>
           <div className="px-6 py-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+            <p className="text-sm text-muted leading-relaxed">
               {tr('Download der aktuellen PDF‑Version für Betrieb, Wartung und Sicherheit.', 'Download the current PDF for operations, maintenance and security.')}
             </p>
             <a
-              href="https://gonopbx.de/admin-handbuch.pdf"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-sm transition-colors"
+              href="/admin-handbuch.pdf"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-input bg-brand hover:bg-brand-hover text-on-primary text-sm font-semibold shadow-sm transition-colors"
               download
             >
               {tr('Handbuch (PDF)', 'Handbook (PDF)')}
@@ -224,11 +224,11 @@ export default function FAQPage() {
       )}
 
       {(lang === 'en' ? faqSectionsEn : faqSectionsDe).map((section, si) => (
-        <div key={si} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">{section.title}</h2>
+        <div key={si} className="bg-surface rounded-card shadow-sm border border-subtle overflow-hidden">
+          <div className="px-6 py-4 bg-surface-subtle border-b border-subtle">
+            <h2 className="text-lg font-semibold text-content">{section.title}</h2>
           </div>
-          <div className="divide-y divide-gray-200 dark:divide-gray-700">
+          <div className="divide-y divide-subtle">
             {section.items.map((item, qi) => {
               const key = `${si}-${qi}`
               const isOpen = openItems.has(key)
@@ -236,18 +236,18 @@ export default function FAQPage() {
                 <div key={qi}>
                   <button
                     onClick={() => toggleItem(key)}
-                    className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                    className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-surface-hover transition-colors"
                   >
-                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200 pr-4">{item.question}</span>
+                    <span className="text-sm font-medium text-content pr-4">{item.question}</span>
                     {isOpen ? (
-                      <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                      <ChevronDown className="w-4 h-4 text-muted flex-shrink-0" />
                     ) : (
-                      <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                      <ChevronRight className="w-4 h-4 text-muted flex-shrink-0" />
                     )}
                   </button>
                   {isOpen && (
                     <div className="px-6 pb-4">
-                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{item.answer}</p>
+                      <p className="text-sm text-muted leading-relaxed">{item.answer}</p>
                     </div>
                   )}
                 </div>

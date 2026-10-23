@@ -35,6 +35,8 @@ router = APIRouter(tags=["Settings"])
 
 SMTP_KEYS = ["smtp_host", "smtp_port", "smtp_tls", "smtp_user", "smtp_password", "smtp_from"]
 
+CALL_FORWARDING_KEYS = ["forward_clip_no_screening"]
+
 AVAILABLE_CODECS = [
     {"id": "ulaw", "name": "G.711 u-law", "description": "Standard Nord-Amerika, 64 kbit/s"},
     {"id": "alaw", "name": "G.711 a-law", "description": "Standard Europa, 64 kbit/s"},
@@ -56,6 +58,10 @@ class SettingsUpdate(BaseModel):
 
 class TestEmailRequest(BaseModel):
     to: str
+
+
+class CallForwardingSettingsUpdate(BaseModel):
+    forward_clip_no_screening: bool = False
 
 
 @router.get("/")
@@ -884,3 +890,53 @@ def install_update(
         return {"status": "ok", "message": "Update wird installiert. Die Seite wird in ca. 1-2 Minuten neu geladen."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Container-Rebuild fehlgeschlagen: {str(e)}")
+
+
+@router.get("/call-forwarding")
+def get_call_forwarding_settings(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    """Einstellungen rund um Rufumleitungen lesen."""
+    setting = db.query(SystemSettings).filter(
+        SystemSettings.key == "forward_clip_no_screening"
+    ).first()
+    enabled = bool(setting and str(setting.value).strip().lower() in ("1", "true", "yes", "on"))
+    return {"forward_clip_no_screening": enabled}
+
+
+@router.put("/call-forwarding")
+def update_call_forwarding_settings(
+    data: CallForwardingSettingsUpdate,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    """Einstellungen rund um Rufumleitungen speichern.
+
+    Der Wert wird nur beim Erzeugen des Dialplans gelesen, deshalb wird der
+    Dialplan hier direkt neu geschrieben und geladen - sonst wuerde die
+    Aenderung erst beim naechsten Speichern einer Umleitung wirksam.
+    """
+    value = "true" if data.forward_clip_no_screening else "false"
+    setting = db.query(SystemSettings).filter(
+        SystemSettings.key == "forward_clip_no_screening"
+    ).first()
+    if setting:
+        setting.value = value
+    else:
+        setting = SystemSettings(
+            key="forward_clip_no_screening",
+            value=value,
+            description=("Bei Weiterleitungen die Rufnummer des urspruenglichen Anrufers "
+                         "mitgeben (CLIP no screening). Muss beim Provider freigeschaltet sein."),
+        )
+        db.add(setting)
+    db.commit()
+
+    from routers.callforward import regenerate_dialplan
+    regenerate_dialplan(db)
+
+    log_action(db, current_user.username, "call_forwarding_settings_updated", "settings",
+               "call-forwarding", None, request.client.host if request.client else None)
+    return {"status": "ok", "forward_clip_no_screening": data.forward_clip_no_screening}

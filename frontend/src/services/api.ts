@@ -486,6 +486,56 @@ class ApiService {
     })
   }
 
+  // Sperrliste
+  async getBlocklist() {
+    return this.request<any[]>('/api/blocklist/')
+  }
+
+  async getBlocklistDestination() {
+    return this.request<{ destination: string }>('/api/blocklist/destination')
+  }
+
+  async setBlocklistDestination(destination: string) {
+    return this.request<any>('/api/blocklist/destination', {
+      method: 'PUT',
+      body: JSON.stringify({ destination }),
+    })
+  }
+
+  async getBlockAnonymous() {
+    return this.request<{ block_anonymous: boolean }>('/api/blocklist/anonymous')
+  }
+
+  async setBlockAnonymous(block_anonymous: boolean) {
+    return this.request<any>('/api/blocklist/anonymous', {
+      method: 'PUT',
+      body: JSON.stringify({ block_anonymous }),
+    })
+  }
+
+  async blockCaller(data: { number: string; description?: string }) {
+    return this.request<any>('/api/blocklist/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  async unblockCaller(id: number) {
+    return this.request<any>(`/api/blocklist/${id}`, { method: 'DELETE' })
+  }
+
+  // Rufumleitung: Rufnummernmitgabe (CLIP no screening)
+  async getCallForwardingSettings() {
+    return this.request<{ forward_clip_no_screening: boolean }>('/api/settings/call-forwarding')
+  }
+
+  async updateCallForwardingSettings(data: { forward_clip_no_screening: boolean }) {
+    return this.request<any>('/api/settings/call-forwarding', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
   // IP Whitelist
   async getIpWhitelist() {
     return this.request<{ enabled: boolean; ips: string[] }>('/api/settings/ip-whitelist')

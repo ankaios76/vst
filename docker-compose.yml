@@ -65,6 +65,7 @@ services:
       context: ./frontend
       args:
         - VITE_UI_LANG=${UI_LANG:-de}
+        - VITE_DEMO_HINT=${DEMO_HINT:-}
     container_name: pbx_frontend
     restart: unless-stopped
     ports:

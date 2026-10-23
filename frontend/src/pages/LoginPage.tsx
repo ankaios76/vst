@@ -4,6 +4,7 @@ import { Logo } from '../components/Logo'
 import { useI18n } from '../context/I18nContext'
 
 export default function LoginPage() {
+  const demoHint = (import.meta.env.VITE_DEMO_HINT as string | undefined) || ''
   const { login } = useAuth()
   const { tr } = useI18n()
   const [username, setUsername] = useState('')
@@ -87,6 +88,12 @@ export default function LoginPage() {
             </button>
           </form>
         </div>
+
+        {demoHint && (
+          <div className="mt-4 rounded-card border border-subtle bg-surface p-4 text-sm text-content text-center">
+            {demoHint}
+          </div>
+        )}
 
         <p className="text-center text-muted text-xs mt-6">
           {tr('Telefonanlage auf Basis von Asterisk', 'PBX based on Asterisk')}

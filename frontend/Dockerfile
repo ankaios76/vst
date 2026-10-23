@@ -3,6 +3,9 @@ FROM node:20-alpine as build
 
 ARG VITE_UI_LANG=de
 ENV VITE_UI_LANG=$VITE_UI_LANG
+# Optionaler Hinweis auf der Anmeldeseite (für öffentliche Demos), leer = nichts anzeigen
+ARG VITE_DEMO_HINT=
+ENV VITE_DEMO_HINT=$VITE_DEMO_HINT
 
 WORKDIR /app
 

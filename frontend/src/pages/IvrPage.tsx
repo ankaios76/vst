@@ -344,7 +344,7 @@ export default function IvrPage() {
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-onyx-900 bg-opacity-40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-900 bg-opacity-40 p-4">
           <div className="bg-surface rounded-card shadow-xl border border-subtle w-full max-w-3xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-subtle">
               <div className="flex items-center gap-2">
@@ -363,7 +363,7 @@ export default function IvrPage() {
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {error && (
-                <div className="text-sm text-danger bg-surface-subtle border border-rot-500 rounded-input p-3">
+                <div className="text-sm text-danger bg-surface-subtle border border-red-500 rounded-input p-3">
                   {error}
                 </div>
               )}

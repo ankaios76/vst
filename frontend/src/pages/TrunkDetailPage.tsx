@@ -55,7 +55,7 @@ export default function TrunkDetailPage({ trunkId, onBack }: Props) {
           <ArrowLeft className="w-5 h-5" />
           {tr('Zurück', 'Back')}
         </button>
-        <div className="bg-surface-subtle border border-rot-500 rounded-input p-6 text-center text-danger">
+        <div className="bg-surface-subtle border border-red-500 rounded-input p-6 text-center text-danger">
           {error || tr('Trunk nicht gefunden', 'Trunk not found')}
         </div>
       </div>

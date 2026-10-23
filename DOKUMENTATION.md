@@ -1,4 +1,4 @@
-# GonoPBX - Technische Dokumentation
+# VST - Technische Dokumentation
 
 **Version:** 2.1.2
 **Stand:** 18.02.2026
@@ -28,7 +28,7 @@
 
 ## Projektbeschreibung
 
-GonoPBX ist eine webbasierte Verwaltungsoberfläche für Asterisk PBX. Die Anwendung ermöglicht die vollständige Konfiguration und Echtzeit-Überwachung einer Asterisk-Telefonanlage über eine moderne Browser-Oberfläche. Alle Konfigurationsänderungen (PJSIP, Dialplan) werden automatisch generiert und in Asterisk geladen - ein manuelles Editieren von Konfigurationsdateien ist nicht erforderlich.
+VST ist eine webbasierte Verwaltungsoberfläche für Asterisk PBX. Die Anwendung ermöglicht die vollständige Konfiguration und Echtzeit-Überwachung einer Asterisk-Telefonanlage über eine moderne Browser-Oberfläche. Alle Konfigurationsänderungen (PJSIP, Dialplan) werden automatisch generiert und in Asterisk geladen - ein manuelles Editieren von Konfigurationsdateien ist nicht erforderlich.
 
 ### Kernfunktionen
 
@@ -109,7 +109,7 @@ Alle vier Container werden gestartet. Das Backend erstellt die Datenbanktabellen
 
 - **URL:** `http://<server-ip>:3000`
 - **Benutzer:** `admin`
-- **Passwort:** `GonoPBX2026!`
+- **Passwort:** das bei der Installation vergebene (`ADMIN_PASSWORD` in der `.env`)
 
 ### Frontend neu bauen (nach Code-Änderungen)
 
@@ -819,7 +819,7 @@ asterisk-pbx-gui/
 │   ├── tailwind.config.js
 │   ├── vite.config.ts
 │   ├── public/
-│   │   ├── logo.png                # GonoPBX Logo
+│   │   ├── logo.png                # VST Logo
 │   │   └── logos/
 │   │       └── plusnet.svg          # Plusnet Provider-Logo
 │   └── src/

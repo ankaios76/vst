@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# GonoPBX Release Script
+# VST Release Script
 # Erhöht die Patch-Version, aktualisiert die Dokumentation und erstellt Release Notes.
 #
 # Nutzung:
@@ -66,7 +66,7 @@ mkdir -p "$RELEASES_DIR"
 RELEASE_FILE="$RELEASES_DIR/v${NEW_VERSION}.md"
 
 cat > "$RELEASE_FILE" << EOF
-# GonoPBX v${NEW_VERSION}
+# VST v${NEW_VERSION}
 
 **Datum:** ${TODAY}
 **Vorherige Version:** ${CURRENT_VERSION}

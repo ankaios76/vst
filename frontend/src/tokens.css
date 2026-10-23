@@ -1,6 +1,5 @@
 /* ============================================================
-   VST — Token-Ebene, Plusnet Corporate Design
-   Brand Guidelines, Stand Dezember 2025.
+   VST — Design-Token der Oberfläche
 
    Einzige Stelle im Frontend, an der Farbwerte stehen dürfen.
    Alles andere greift über diese Variablen oder über die in
@@ -8,61 +7,58 @@
    ============================================================ */
 
 /* ---------- Schriften ----------------------------------------
-   Manrope kommt als npm-Paket @fontsource/manrope (SIL OFL); die
-   @font-face-Regeln und die woff2-Dateien liegen dort. Eingebunden
-   wird in src/main.tsx, weil Vite die Paket-CSS über den Import-Graph
-   auflöst. Stratos ist kommerziell und liegt nicht im Repo — deshalb
-   zeigt --font-headline vorerst auf --font-body. Siehe BRANDING.md.
+   Manrope kommt als npm-Paket @fontsource/manrope (SIL OFL); eingebunden
+   wird es in src/main.tsx. Es gibt keine zweite Schriftart.
    ------------------------------------------------------------ */
 
 :root {
   /* ---------- Primärfarben ---------- */
-  --pn-bordeaux: #96144B;
-  --pn-white: #FFFFFF;
-  --pn-petrol: #008796;
+  --vst-brand: #1A6FA8;
+  --vst-white: #FFFFFF;
+  --vst-teal: #008796;
 
   /* ---------- Typografie-Farbe ----------
      Laut CD ausschließlich für Schrift, nie als Fläche.
      Einzige Ausnahme: Dark Mode, siehe unten. */
-  --pn-onyx: #141E28;
+  --vst-ink: #141E28;
 
   /* ---------- Sekundärfarben ---------- */
-  --pn-tuerkis: #6ED6E0;
-  --pn-eisblau: #DBF7FF;
-  --pn-onyx-5: #F3F3F4;
-  --pn-onyx-10: #E8E9EA;
-  --pn-onyx-40: #A1A5A9;
+  --vst-aqua: #6ED6E0;
+  --vst-ice: #DBF7FF;
+  --vst-ink-5: #F3F3F4;
+  --vst-ink-10: #E8E9EA;
+  --vst-ink-40: #A1A5A9;
 
   /* ---------- Tertiärfarben ----------
      Laut CD reine Informationsfarben: Diagramme und Statusanzeigen.
      Niemals als Flächen- oder Markenfarbe verwenden. */
-  --pn-rot: #E66455;
-  --pn-gelb: #FFC882;
-  --pn-gruen: #6BAF78;
-  --pn-lila: #7D55C3;
+  --vst-red: #E66455;
+  --vst-yellow: #FFC882;
+  --vst-green: #6BAF78;
+  --vst-purple: #7D55C3;
 
   /* ---------- Semantische Zuordnung ---------- */
-  --color-primary: var(--pn-bordeaux);
-  --color-primary-contrast: var(--pn-white);
-  --color-text: var(--pn-onyx);
+  --color-primary: var(--vst-brand);
+  --color-primary-contrast: var(--vst-white);
+  --color-text: var(--vst-ink);
 
   /* Links: Petrol, um 12 % mit Onyx abgedunkelt.
      Reines Petrol erreicht auf Weiß nur 4,28:1 und auf Onyx 5 nur 3,86:1
      und verfehlt AA für Text unter 24 px. Abgedunkelt sind es 5,06:1 bzw.
      4,57:1. Die 12 % sind dieselbe Stufe, die das CD-lose Hover benutzt —
      kein neuer Farbton, nur eine dunklere Lage derselben Farbe.
-     Reines Petrol bleibt als --pn-petrol für Flächen und Grafik. */
-  --color-link: color-mix(in srgb, var(--pn-petrol) 88%, var(--pn-onyx));
-  --color-text-muted: var(--pn-onyx-40);
-  --color-text-on-primary: var(--pn-white);
-  --color-surface: var(--pn-white);
-  --color-surface-subtle: var(--pn-onyx-5);
-  --color-surface-accent: var(--pn-eisblau);
-  --color-border: var(--pn-onyx-10);
-  --color-success: var(--pn-gruen);
-  --color-warning: var(--pn-gelb);
-  --color-danger: var(--pn-rot);
-  --color-info: var(--pn-petrol);
+     Reines Petrol bleibt als --vst-teal für Flächen und Grafik. */
+  --color-link: color-mix(in srgb, var(--vst-teal) 88%, var(--vst-ink));
+  --color-text-muted: var(--vst-ink-40);
+  --color-text-on-primary: var(--vst-white);
+  --color-surface: var(--vst-white);
+  --color-surface-subtle: var(--vst-ink-5);
+  --color-surface-accent: var(--vst-ice);
+  --color-border: var(--vst-ink-10);
+  --color-success: var(--vst-green);
+  --color-warning: var(--vst-yellow);
+  --color-danger: var(--vst-red);
+  --color-info: var(--vst-teal);
 
   /* ---------- Statusfarben als Schrift ----------
      Die Tertiaerfarben sind als Punkt, Flaeche und Diagrammfarbe gedacht
@@ -72,19 +68,19 @@
      bleibt oben unveraendert und traegt weiter Punkte und Flaechen.
      tailwind.config.js bindet diese Werte an text-*, die Reinfarben an
      bg-* und border-*. */
-  --color-success-text: color-mix(in srgb, var(--pn-gruen) 62%, var(--pn-onyx));
-  --color-warning-text: color-mix(in srgb, var(--pn-gelb) 46%, var(--pn-onyx));
-  --color-danger-text: color-mix(in srgb, var(--pn-rot) 74%, var(--pn-onyx));
-  --color-info-text: color-mix(in srgb, var(--pn-petrol) 88%, var(--pn-onyx));
+  --color-success-text: color-mix(in srgb, var(--vst-green) 62%, var(--vst-ink));
+  --color-warning-text: color-mix(in srgb, var(--vst-yellow) 46%, var(--vst-ink));
+  --color-danger-text: color-mix(in srgb, var(--vst-red) 74%, var(--vst-ink));
+  --color-info-text: color-mix(in srgb, var(--vst-teal) 88%, var(--vst-ink));
 
   /* ---------- Interaktionszustände ----------
      Das CD definiert keine Hover-/Active-Farben. Sie entstehen durch
      Abdunkeln der Basisfarbe mit Onyx, nicht durch neue Farbtöne. */
-  --color-primary-hover: color-mix(in srgb, var(--color-primary) 88%, var(--pn-onyx));
-  --color-primary-active: color-mix(in srgb, var(--color-primary) 80%, var(--pn-onyx));
-  --color-link-hover: color-mix(in srgb, var(--pn-petrol) 80%, var(--pn-onyx));
-  --color-link-active: color-mix(in srgb, var(--pn-petrol) 72%, var(--pn-onyx));
-  --color-surface-hover: var(--pn-onyx-5);
+  --color-primary-hover: color-mix(in srgb, var(--color-primary) 88%, var(--vst-ink));
+  --color-primary-active: color-mix(in srgb, var(--color-primary) 80%, var(--vst-ink));
+  --color-link-hover: color-mix(in srgb, var(--vst-teal) 80%, var(--vst-ink));
+  --color-link-active: color-mix(in srgb, var(--vst-teal) 72%, var(--vst-ink));
+  --color-surface-hover: var(--vst-ink-5);
 
   /* ---------- Form ----------
      CD: 12 pt bei 1920 px Breite, proportional skaliert. */
@@ -114,10 +110,10 @@
      Akzent ist dort Türkis; Bordeaux nur noch für gefüllte Flächen.
    - Links in Türkis statt Petrol, Petrol reißt den Kontrast auf Onyx. */
 .dark {
-  --color-primary: var(--pn-bordeaux);        /* nur noch für gefüllte Flächen */
-  --color-primary-contrast: var(--pn-white);
-  --color-accent: var(--pn-tuerkis);          /* Text und Icons statt Bordeaux */
-  --color-link: var(--pn-tuerkis);
+  --color-primary: var(--vst-brand);        /* nur noch für gefüllte Flächen */
+  --color-primary-contrast: var(--vst-white);
+  --color-accent: var(--vst-aqua);          /* Text und Icons statt Bordeaux */
+  --color-link: var(--vst-aqua);
   --color-text: #E8E9EA;
   --color-text-muted: #A1A5A9;
   --color-surface: #1F2833;                   /* aufgehellte Onyx-Stufe */
@@ -125,20 +121,20 @@
   --color-surface-accent: #0B4D5A;
   --color-border: #434B53;
   --color-surface-hover: #2C343E;
-  --focus-ring: var(--pn-tuerkis);
+  --focus-ring: var(--vst-aqua);
 
   /* Auf dunklem Grund tragen die Reinfarben: Gruen 5,70:1 und Gelb 9,82:1
      auf der Kartenflaeche. Nur Rot liegt mit 4,48:1 knapp darunter und
      wird mit Weiss aufgehellt statt mit Onyx abgedunkelt. */
-  --color-success-text: var(--pn-gruen);
-  --color-warning-text: var(--pn-gelb);
-  --color-danger-text: color-mix(in srgb, var(--pn-rot) 85%, var(--pn-white));
-  --color-info-text: var(--pn-tuerkis);
+  --color-success-text: var(--vst-green);
+  --color-warning-text: var(--vst-yellow);
+  --color-danger-text: color-mix(in srgb, var(--vst-red) 85%, var(--vst-white));
+  --color-info-text: var(--vst-aqua);
 
-  --color-primary-hover: color-mix(in srgb, var(--color-primary) 88%, var(--pn-white));
-  --color-primary-active: color-mix(in srgb, var(--color-primary) 78%, var(--pn-white));
-  --color-link-hover: color-mix(in srgb, var(--color-link) 88%, var(--pn-white));
-  --color-link-active: color-mix(in srgb, var(--color-link) 78%, var(--pn-white));
+  --color-primary-hover: color-mix(in srgb, var(--color-primary) 88%, var(--vst-white));
+  --color-primary-active: color-mix(in srgb, var(--color-primary) 78%, var(--vst-white));
+  --color-link-hover: color-mix(in srgb, var(--color-link) 88%, var(--vst-white));
+  --color-link-active: color-mix(in srgb, var(--color-link) 78%, var(--vst-white));
 
   color: var(--color-text);
 }

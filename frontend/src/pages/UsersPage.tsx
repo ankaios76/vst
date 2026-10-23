@@ -462,7 +462,7 @@ export default function UsersPage() {
       </div>
 
       {error && (
-        <div className="bg-surface-subtle border border-rot-500 text-danger px-4 py-3 rounded-input text-sm">
+        <div className="bg-surface-subtle border border-red-500 text-danger px-4 py-3 rounded-input text-sm">
           {error}
         </div>
       )}
@@ -490,7 +490,7 @@ export default function UsersPage() {
                       <Upload className="w-6 h-6" />
                     </div>
                   )}
-                  <div className="absolute inset-0 rounded-full bg-onyx-900 bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all">
+                  <div className="absolute inset-0 rounded-full bg-ink-900 bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all">
                     <Upload className="w-5 h-5 text-on-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                 </div>
@@ -596,14 +596,14 @@ export default function UsersPage() {
                   ))}
                 </select>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-surface-subtle border border-gruen-500 rounded-input">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-surface-subtle border border-green-500 rounded-input">
                   <div>
                     <label className="block text-sm font-medium text-content mb-1">{tr('Extension-Nr.', 'Extension number')}</label>
                     <input
                       type="text"
                       value={newExtData.extension}
                       onChange={(e) => setNewExtData({ ...newExtData, extension: e.target.value })}
-                      className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-success focus:border-gruen-500 outline-none bg-surface text-content"
+                      className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-success focus:border-green-500 outline-none bg-surface text-content"
                       placeholder={tr('z.B. 1001', 'e.g. 1001')}
                       required={createNewExt}
                     />
@@ -615,7 +615,7 @@ export default function UsersPage() {
                         type="text"
                         value={newExtData.secret}
                         onChange={(e) => setNewExtData({ ...newExtData, secret: e.target.value })}
-                        className="flex-1 px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-success focus:border-gruen-500 outline-none font-mono text-sm bg-surface text-content"
+                        className="flex-1 px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-success focus:border-green-500 outline-none font-mono text-sm bg-surface text-content"
                         placeholder={tr('SIP-Passwort', 'SIP password')}
                         required={createNewExt}
                       />
@@ -636,7 +636,7 @@ export default function UsersPage() {
                       type="text"
                       value={newExtData.caller_id}
                       onChange={(e) => setNewExtData({ ...newExtData, caller_id: e.target.value })}
-                      className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-success focus:border-gruen-500 outline-none bg-surface text-content"
+                      className="w-full px-3 py-2 border border-subtle rounded-input focus:ring-2 focus:ring-success focus:border-green-500 outline-none bg-surface text-content"
                       placeholder={tr('Wird aus Name übernommen', 'Derived from name')}
                     />
                   </div>
@@ -699,7 +699,7 @@ export default function UsersPage() {
                                   <label
                                     key={did}
                                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-input text-xs font-mono cursor-pointer transition-colors ${
-                                      checked ? 'bg-surface-subtle text-success border border-gruen-500 border-gruen-500' : 'bg-surface-subtle text-muted border border-subtle hover:bg-surface-hover'
+                                      checked ? 'bg-surface-subtle text-success border border-green-500 border-green-500' : 'bg-surface-subtle text-muted border border-subtle hover:bg-surface-hover'
                                     }`}
                                   >
                                     <input
@@ -863,7 +863,7 @@ export default function UsersPage() {
 
       {/* Edit User Modal */}
       {editUser && (
-        <div className="fixed inset-0 bg-onyx-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-ink-900 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-surface rounded-card shadow-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-content">
@@ -891,7 +891,7 @@ export default function UsersPage() {
                     {getInitial(editUser)}
                   </div>
                 )}
-                <div className="absolute inset-0 rounded-full bg-onyx-900 bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all">
+                <div className="absolute inset-0 rounded-full bg-ink-900 bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all">
                   <Upload className="w-5 h-5 text-on-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
@@ -1035,7 +1035,7 @@ export default function UsersPage() {
                                   <label
                                     key={did}
                                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-input text-xs font-mono cursor-pointer transition-colors ${
-                                      checked ? 'bg-surface-subtle text-success border border-gruen-500 border-gruen-500' : 'bg-surface-subtle text-muted border border-subtle hover:bg-surface-hover'
+                                      checked ? 'bg-surface-subtle text-success border border-green-500 border-green-500' : 'bg-surface-subtle text-muted border border-subtle hover:bg-surface-hover'
                                     }`}
                                   >
                                     <input
@@ -1078,7 +1078,7 @@ export default function UsersPage() {
 
       {/* Password Change Modal */}
       {passwordUserId !== null && (
-        <div className="fixed inset-0 bg-onyx-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-ink-900 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-surface rounded-card shadow-lg p-6 w-full max-w-md">
             <h2 className="text-lg font-semibold text-content mb-4">
               {tr('Passwort ändern', 'Change password')}: {passwordUsername}
@@ -1102,7 +1102,7 @@ export default function UsersPage() {
               <button
                 onClick={handlePasswordChange}
                 disabled={newPassword.length < 6}
-                className="bg-brand hover:bg-brand-hover disabled:bg-onyx-400 text-on-primary px-4 py-2 rounded-input transition-colors"
+                className="bg-brand hover:bg-brand-hover disabled:bg-ink-400 text-on-primary px-4 py-2 rounded-input transition-colors"
               >
                 {tr('Speichern', 'Save')}
               </button>

@@ -101,7 +101,7 @@ const faqSectionsEn: { title: string; items: FAQItem[] }[] = [
     items: [
       {
         question: 'How do I sign in?',
-        answer: 'Open the GonoPBX web interface in your browser and enter your username and password. You will receive your credentials from your administrator.',
+        answer: 'Open the VST web interface in your browser and enter your username and password. You will receive your credentials from your administrator.',
       },
       {
         question: 'How do I change my password?',
@@ -122,7 +122,7 @@ const faqSectionsEn: { title: string; items: FAQItem[] }[] = [
       },
       {
         question: 'Which phones and softphones are supported?',
-        answer: 'GonoPBX is compatible with all SIP-capable devices. This includes hardware phones from Yealink, Snom, Grandstream, Poly, etc., and softphones like MicroSIP (Windows), Linphone (all platforms) or Zoiper.',
+        answer: 'VST is compatible with all SIP-capable devices. This includes hardware phones from Yealink, Snom, Grandstream, Poly, etc., and softphones like MicroSIP (Windows), Linphone (all platforms) or Zoiper.',
       },
       {
         question: 'My phone won’t register — what can I do?',
@@ -171,12 +171,12 @@ const faqSectionsEn: { title: string; items: FAQItem[] }[] = [
         answer: 'Under Settings → Email you can configure the SMTP server. It is used for welcome emails and voicemail notifications.',
       },
       {
-        question: 'How do I update GonoPBX?',
+        question: 'How do I update VST?',
         answer: 'Easiest via the web UI: Settings → Server → Update → "Install update". Alternatively via SSH: git pull origin main && docker compose up -d --build. Database migrations run automatically on startup.',
       },
       {
-        question: 'How do I connect GonoPBX to Home Assistant?',
-        answer: 'Under Settings → Home Assistant you can enable the integration. Enter the MQTT broker and generate an API key. GonoPBX will send call events via MQTT and provide sensors for extensions, trunks and active calls.',
+        question: 'How do I connect VST to Home Assistant?',
+        answer: 'Under Settings → Home Assistant you can enable the integration. Enter the MQTT broker and generate an API key. VST will send call events via MQTT and provide sensors for extensions, trunks and active calls.',
       },
     ],
   },

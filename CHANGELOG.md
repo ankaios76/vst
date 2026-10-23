@@ -34,7 +34,7 @@
 - **Dashboard-Redesign**: Persoenliche Begruessung (Moin/Hallo/Guten Abend)
   mit Benutzername, Wochentag und Datum. System-Health-Karte entfernt.
 - **Versionsanzeige im Dashboard**: Backend liefert die aktuelle Version
-  ueber die Dashboard-API, angezeigt unter dem GonoPBX-Status.
+  ueber die Dashboard-API, angezeigt unter dem VST-Status.
 - **dus.net Server korrigiert**: SIP-Server von sip.dus.net auf proxy.dus.net geaendert.
 - **Footer bereinigt**: Versionsanzeige aus dem Footer entfernt (nur noch im Dashboard).
 

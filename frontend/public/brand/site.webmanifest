@@ -1,11 +1,11 @@
 {
   "name": "VST",
   "short_name": "VST",
-  "description": "Vermittlungsstelle für Plusnet IPfonie",
+  "description": "Telefonanlage auf Basis von Asterisk",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFFFFF",
-  "theme_color": "#96144B",
+  "theme_color": "#1A6FA8",
   "icons": [
     {
       "src": "/brand/icon-192.png",

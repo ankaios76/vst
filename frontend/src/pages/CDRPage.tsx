@@ -418,7 +418,7 @@ export default function CDRPage() {
                           }}
                           disabled={blockBusy === normalize(record.src)}
                           title={`Sperre für ${record.src} aufheben`}
-                          className="inline-flex items-center gap-1 text-xs text-danger hover:text-content border border-rot-500 border-rot-500 rounded px-2 py-1 transition disabled:opacity-50"
+                          className="inline-flex items-center gap-1 text-xs text-danger hover:text-content border border-red-500 border-red-500 rounded px-2 py-1 transition disabled:opacity-50"
                         >
                           <Ban className="w-3.5 h-3.5" />
                           {blockBusy === normalize(record.src) ? 'Moment…' : 'Entsperren'}

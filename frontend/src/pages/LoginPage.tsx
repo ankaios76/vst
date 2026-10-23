@@ -41,7 +41,7 @@ export default function LoginPage() {
           </h2>
 
           {error && (
-            <div className="bg-surface-subtle border border-rot-500 text-danger px-4 py-3 rounded-input mb-4 text-sm">
+            <div className="bg-surface-subtle border border-red-500 text-danger px-4 py-3 rounded-input mb-4 text-sm">
               {error}
             </div>
           )}

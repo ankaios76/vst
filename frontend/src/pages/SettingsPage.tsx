@@ -416,12 +416,12 @@ export default function SettingsPage() {
       <h1 className="text-2xl font-bold text-content">{tr('Einstellungen', 'Settings')}</h1>
 
       {error && (
-        <div className="bg-surface-subtle border border-rot-500 text-danger px-4 py-3 rounded-input text-sm">
+        <div className="bg-surface-subtle border border-red-500 text-danger px-4 py-3 rounded-input text-sm">
           {error}
         </div>
       )}
       {success && (
-        <div className="bg-surface-subtle border border-gruen-500 text-success px-4 py-3 rounded-input text-sm">
+        <div className="bg-surface-subtle border border-green-500 text-success px-4 py-3 rounded-input text-sm">
           {success}
         </div>
       )}
@@ -552,7 +552,7 @@ export default function SettingsPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-onyx-400 text-on-primary px-6 py-2 rounded-input transition-colors"
+                  className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-ink-400 text-on-primary px-6 py-2 rounded-input transition-colors"
                 >
                   <Save className="w-4 h-4" />
                   {saving ? tr('Speichern...', 'Saving...') : tr('Speichern', 'Save')}
@@ -577,7 +577,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleTestEmail}
                 disabled={testing}
-                className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-onyx-400 text-on-primary px-6 py-2 rounded-input transition-colors"
+                className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-ink-400 text-on-primary px-6 py-2 rounded-input transition-colors"
               >
                 <Send className="w-4 h-4" />
                 {testing ? tr('Sende...', 'Sending...') : tr('Senden', 'Send')}
@@ -624,7 +624,7 @@ export default function SettingsPage() {
           <button
             onClick={handleSaveCodecs}
             disabled={savingCodecs || selectedCodecs.length === 0}
-            className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-onyx-400 text-on-primary px-6 py-2 rounded-input transition-colors"
+            className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-ink-400 text-on-primary px-6 py-2 rounded-input transition-colors"
           >
             <Save className="w-4 h-4" />
             {savingCodecs ? tr('Speichern...', 'Saving...') : tr('Codecs speichern', 'Save codecs')}
@@ -645,7 +645,7 @@ export default function SettingsPage() {
             </p>
 
             {whitelistEnabled && (
-              <div className="flex items-start gap-2 mb-4 p-3 bg-surface-subtle border border-gelb-600 rounded-input">
+              <div className="flex items-start gap-2 mb-4 p-3 bg-surface-subtle border border-yellow-600 rounded-input">
                 <AlertTriangle className="w-4 h-4 text-warning mt-0.5 flex-shrink-0" />
                 <span className="text-sm text-warning text-warning">
                   {tr('Achtung: Stellen Sie sicher, dass Ihre eigene IP-Adresse in der Liste enthalten ist,', 'Warning: Make sure your own IP address is included,')}
@@ -719,7 +719,7 @@ export default function SettingsPage() {
             <button
               onClick={handleSaveWhitelist}
               disabled={savingWhitelist}
-              className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-onyx-400 text-on-primary px-6 py-2 rounded-input transition-colors"
+              className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-ink-400 text-on-primary px-6 py-2 rounded-input transition-colors"
             >
               <Save className="w-4 h-4" />
               {savingWhitelist ? tr('Speichern...', 'Saving...') : tr('Whitelist speichern', 'Save whitelist')}
@@ -739,7 +739,7 @@ export default function SettingsPage() {
               </button>
             </div>
             {weakPasswords.length === 0 ? (
-              <div className="flex items-center gap-2 p-3 bg-surface-subtle border border-gruen-500 rounded-input">
+              <div className="flex items-center gap-2 p-3 bg-surface-subtle border border-green-500 rounded-input">
                 <CheckCircle className="w-4 h-4 text-success" />
                 <span className="text-sm text-success">{tr('Alle SIP-Passwörter sind ausreichend stark', 'All SIP passwords are sufficiently strong')}</span>
               </div>
@@ -795,11 +795,11 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 {/* Summary */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="p-3 bg-surface-subtle border border-rot-500 rounded-input text-center">
+                  <div className="p-3 bg-surface-subtle border border-red-500 rounded-input text-center">
                     <div className="text-2xl font-bold text-danger">{fail2ban.active_bans}</div>
                     <div className="text-xs text-danger">{tr('Aktive Bans', 'Active bans')}</div>
                   </div>
-                  <div className="p-3 bg-surface-subtle border border-gelb-600 rounded-input text-center">
+                  <div className="p-3 bg-surface-subtle border border-yellow-600 rounded-input text-center">
                     <div className="text-2xl font-bold text-warning">{fail2ban.bans_24h}</div>
                     <div className="text-xs text-warning">{tr('Bans (24h)', 'Bans (24h)')}</div>
                   </div>
@@ -1149,8 +1149,8 @@ export default function SettingsPage() {
             {mqttTestResult && (
               <div className={`flex items-center gap-2 p-3 mb-4 rounded-input border ${
                 mqttTestResult.ok
-                  ? 'bg-surface-subtle border-gruen-500'
-                  : 'bg-surface-subtle border-rot-500'
+                  ? 'bg-surface-subtle border-green-500'
+                  : 'bg-surface-subtle border-red-500'
               }`}>
                 {mqttTestResult.ok
                   ? <Wifi className="w-4 h-4 text-success" />
@@ -1174,7 +1174,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleSaveHA}
                 disabled={savingHA}
-                className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-onyx-400 text-on-primary px-6 py-2 rounded-input transition-colors"
+                className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-ink-400 text-on-primary px-6 py-2 rounded-input transition-colors"
               >
                 <Save className="w-4 h-4" />
                 {savingHA ? tr('Speichern...', 'Saving...') : tr('Speichern', 'Save')}
@@ -1345,7 +1345,7 @@ export default function SettingsPage() {
                       }
                     }}
                     disabled={installingUpdate}
-                    className="mt-3 flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-onyx-400 text-on-primary px-5 py-2 rounded-input transition-colors text-sm"
+                    className="mt-3 flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-ink-400 text-on-primary px-5 py-2 rounded-input transition-colors text-sm"
                   >
                     <Download className={`w-4 h-4 ${installingUpdate ? 'animate-bounce' : ''}`} />
                     {installingUpdate ? tr('Update wird installiert...', 'Update is being installed...') : tr(`Update auf v${updateInfo.latest_version} installieren`, `Install update v${updateInfo.latest_version}`)}
@@ -1355,7 +1355,7 @@ export default function SettingsPage() {
             )}
 
             {installingUpdate && (
-              <div className="flex items-center gap-3 p-4 mb-4 bg-surface-subtle border border-gelb-600 rounded-input">
+              <div className="flex items-center gap-3 p-4 mb-4 bg-surface-subtle border border-yellow-600 rounded-input">
                 <RefreshCw className="w-5 h-5 text-warning animate-spin flex-shrink-0" />
                 <div>
                   <div className="text-sm font-medium text-warning text-warning">{tr('Update wird installiert...', 'Update is being installed...')}</div>
@@ -1367,7 +1367,7 @@ export default function SettingsPage() {
             )}
 
             {updateInfo && !updateInfo.update_available && (
-              <div className="flex items-center gap-2 p-3 mb-4 bg-surface-subtle border border-gruen-500 rounded-input">
+              <div className="flex items-center gap-2 p-3 mb-4 bg-surface-subtle border border-green-500 rounded-input">
                 <CheckCircle className="w-4 h-4 text-success" />
                 <span className="text-sm text-success">VST v{updateInfo.current_version} {tr('ist aktuell', 'is up to date')}</span>
               </div>
@@ -1376,7 +1376,7 @@ export default function SettingsPage() {
             <button
               onClick={handleCheckUpdate}
               disabled={checkingUpdate || installingUpdate}
-              className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-onyx-400 text-on-primary px-6 py-2 rounded-input transition-colors"
+              className="flex items-center gap-2 bg-brand hover:bg-brand-hover disabled:bg-ink-400 text-on-primary px-6 py-2 rounded-input transition-colors"
             >
               <RefreshCw className={`w-4 h-4 ${checkingUpdate ? 'animate-spin' : ''}`} />
               {checkingUpdate ? tr('Prüfe...', 'Checking...') : tr('Auf Updates prüfen', 'Check for updates')}
@@ -1384,7 +1384,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Server Reboot */}
-          <div className="bg-surface rounded-card shadow-sm border border-rot-500 border-rot-500 p-6">
+          <div className="bg-surface rounded-card shadow-sm border border-red-500 border-red-500 p-6">
             <div className="flex items-center gap-2 mb-4">
               <Power className="w-5 h-5 text-danger" />
               <h2 className="text-lg font-semibold text-content">{tr('Server neu starten', 'Restart server')}</h2>
@@ -1395,7 +1395,7 @@ export default function SettingsPage() {
             <button
               onClick={handleReboot}
               disabled={rebooting}
-              className="flex items-center gap-2 border border-danger text-danger hover:bg-rot-50 disabled:opacity-50 px-6 py-2 rounded-input transition-colors"
+              className="flex items-center gap-2 border border-danger text-danger hover:bg-red-50 disabled:opacity-50 px-6 py-2 rounded-input transition-colors"
             >
               <Power className="w-4 h-4" />
               {rebooting ? tr('Server startet neu...', 'Server is rebooting...') : tr('Server neu starten', 'Restart server')}

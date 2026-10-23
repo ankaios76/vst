@@ -228,12 +228,12 @@ export default function ContactsPage() {
       </div>
 
       {error && (
-        <div className="bg-surface-subtle border border-rot-500 text-danger px-4 py-2 rounded-input text-sm">
+        <div className="bg-surface-subtle border border-red-500 text-danger px-4 py-2 rounded-input text-sm">
           {error}
         </div>
       )}
       {success && (
-        <div className="bg-surface-subtle border border-gruen-500 text-success px-4 py-2 rounded-input text-sm">
+        <div className="bg-surface-subtle border border-green-500 text-success px-4 py-2 rounded-input text-sm">
           {success}
         </div>
       )}
@@ -351,7 +351,7 @@ export default function ContactsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-input bg-brand hover:bg-brand-hover text-on-primary disabled:bg-onyx-400"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-input bg-brand hover:bg-brand-hover text-on-primary disabled:bg-ink-400"
           >
             {editingId ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
             {editingId ? tr('Speichern', 'Save') : tr('Anlegen', 'Create')}

@@ -105,7 +105,7 @@ class MQTTPublisher:
         except Exception as e:
             logger.error(f"MQTT publish error on {topic}: {e}")
 
-    # --- Convenience methods for GonoPBX events ---
+    # --- Convenience methods for VST events ---
 
     def publish_call_started(self, caller: str, destination: str, direction: str = "internal"):
         self.publish("gonopbx/call/started", {

@@ -1,12 +1,12 @@
-# GonoPBX – Admin‑Handbuch (kurz)
+# VST – Admin‑Handbuch (kurz)
 
 Stand: 13.02.2026
 
 ## Ziel
-Dieses Handbuch richtet sich an Administratoren und beschreibt Betrieb, Wartung und sichere Konfiguration von GonoPBX.
+Dieses Handbuch richtet sich an Administratoren und beschreibt Betrieb, Wartung und sichere Konfiguration von VST.
 
 ## Überblick
-GonoPBX besteht aus vier Docker‑Services in einem internen Netzwerk:
+VST besteht aus vier Docker‑Services in einem internen Netzwerk:
 
 - `pbx_frontend` (React/Nginx, Port 3000)
 - `pbx_backend` (FastAPI, Port 8000)

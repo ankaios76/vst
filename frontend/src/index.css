@@ -27,5 +27,5 @@ body {
    begründet in BRANDING.md. */
 .dark body,
 html.dark body {
-  background-color: var(--pn-onyx);
+  background-color: var(--vst-ink);
 }

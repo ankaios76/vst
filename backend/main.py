@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Import our modules
 import os
+import secrets
 from ami_client import AsteriskAMIClient
 from database import engine, Base
 from routers import peers, trunks, routes, dashboard, cdr, voicemail, callforward, groups, ivr, contacts
@@ -255,7 +256,11 @@ async def lifespan(app: FastAPI):
     # Seed admin user if not exists
     db = SessionLocal()
     try:
-        admin_pw = os.getenv("ADMIN_PASSWORD", "GonoPBX2026!")
+        admin_pw = os.getenv("ADMIN_PASSWORD")
+        if not admin_pw:
+            # Kein Standardpasswort: ohne ADMIN_PASSWORD wird einmalig ein zufälliges erzeugt und ins Log geschrieben.
+            admin_pw = secrets.token_urlsafe(16)
+            logger.warning(f"ADMIN_PASSWORD ist nicht gesetzt. Zufälliges Admin-Passwort für diesen Start: {admin_pw}")
         admin = db.query(User).filter(User.username == "admin").first()
         if not admin:
             admin = User(

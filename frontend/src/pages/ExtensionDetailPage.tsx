@@ -636,17 +636,17 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
                 <Icon className="w-4 h-4" />
                 {tab.label}
                 {tab.id === 'voicemail' && unreadVoicemails > 0 && (
-                  <span className="bg-onyx-100 text-content text-xs px-1.5 py-0.5 rounded-full leading-none">
+                  <span className="bg-ink-100 text-content text-xs px-1.5 py-0.5 rounded-full leading-none">
                     {unreadVoicemails}
                   </span>
                 )}
                 {tab.id === 'forwarding' && activeForwards > 0 && (
-                  <span className="bg-onyx-100 text-content text-xs px-1.5 py-0.5 rounded-full leading-none">
+                  <span className="bg-ink-100 text-content text-xs px-1.5 py-0.5 rounded-full leading-none">
                     {activeForwards}
                   </span>
                 )}
                 {tab.id === 'numbers' && routes.length > 0 && (
-                  <span className="bg-onyx-100 text-content text-xs px-1.5 py-0.5 rounded-full leading-none">
+                  <span className="bg-ink-100 text-content text-xs px-1.5 py-0.5 rounded-full leading-none">
                     {routes.length}
                   </span>
                 )}
@@ -732,7 +732,7 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
                         <div className="text-xs text-muted mb-1">{tr('Bereits vergebene Nummern dieser Leitung:', 'Numbers already assigned on this trunk:')}</div>
                         <div className="flex flex-wrap gap-2">
                           {assignedDids.map(r => (
-                            <span key={r.id} className="text-xs bg-surface-subtle text-warning border border-gelb-600 px-2 py-1 rounded font-mono">
+                            <span key={r.id} className="text-xs bg-surface-subtle text-warning border border-yellow-600 px-2 py-1 rounded font-mono">
                               {r.did} → {r.destination_extension}
                             </span>
                           ))}
@@ -1122,7 +1122,7 @@ export default function ExtensionDetailPage({ extension, onBack }: Props) {
                 <div className="flex items-center gap-2">
                   <h2 className="text-lg font-semibold text-content">{tr('Nachrichten', 'Messages')}</h2>
                   {unreadVoicemails > 0 && (
-                    <span className="bg-onyx-100 text-content text-xs px-2 py-0.5 rounded-full">
+                    <span className="bg-ink-100 text-content text-xs px-2 py-0.5 rounded-full">
                       {unreadVoicemails} {tr('neu', 'new')}
                     </span>
                   )}

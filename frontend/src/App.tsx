@@ -272,7 +272,7 @@ function AppContent() {
       {/* Footer */}
       <footer className="bg-surface-subtle border-t border-subtle mt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-xs text-muted space-y-1">
-          <p>VST &middot; vstpbx.de &middot; privates Projekt, kein Produkt der Plusnet GmbH</p>
+          <p>VST &middot; Open-Source-Telefonanlage</p>
           <p>Konzept, Entwicklung und Design, &copy; {new Date().getFullYear()} Norbert Hengsteler. {tr('Alle Rechte vorbehalten.', 'All rights reserved.')}</p>
           <p>
             {tr('Telefonanlage auf Basis von', 'PBX based on')}{' '}
@@ -291,7 +291,7 @@ function AppContent() {
 
       {/* Password Change Modal */}
       {showPwModal && (
-        <div className="fixed inset-0 bg-onyx-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-ink-900 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-surface rounded-card border border-subtle p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-headline text-lg font-semibold text-content">{tr('Passwort ändern', 'Change password')}</h2>
@@ -301,12 +301,12 @@ function AppContent() {
             </div>
 
             {pwError && (
-              <div className="mb-4 bg-rot-50 border border-rot-200 text-rot-700 px-4 py-2 rounded-input text-sm">
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-input text-sm">
                 {pwError}
               </div>
             )}
             {pwSuccess && (
-              <div className="mb-4 bg-gruen-50 border border-gruen-200 text-gruen-700 px-4 py-2 rounded-input text-sm">
+              <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded-input text-sm">
                 {pwSuccess}
               </div>
             )}

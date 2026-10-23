@@ -102,7 +102,7 @@ Read these before exposing VST to the internet.
 
 - The web interface speaks plain HTTP on port 3000. Put it behind a TLS reverse proxy (Caddy, nginx, Traefik) or reach it only over a VPN, and choose "reverse proxy" in the installer so that ports 3000 and 8000 bind to localhost.
 - SIP on the open internet gets scanned constantly. Use strong extension passwords (the interface has a generator), the IP allow-list, and Fail2Ban on the host. Prefer a VPN for remote phones.
-- The backend container mounts the Docker socket. That is what makes one-click updates work, and it is equivalent to root on the host for anyone who can run code in that container. If you do not want that, remove the `docker.sock` and `${PROJECT_DIR}` mounts from `docker-compose.yml` and update from the command line.
+- The backend container mounts the Docker socket. VST needs it to reload Asterisk after every change (it runs `asterisk -rx reload` inside the Asterisk container) and for one-click updates. That is equivalent to root on the host for anyone who can run code in that container, so never expose port 8000 to untrusted networks and keep the web interface behind a VPN or a TLS proxy. Removing the mount makes the interface work but Asterisk no longer picks up changes automatically; you would have to restart the `pbx_asterisk` container yourself after each change.
 - There is no default password. The installer generates one (or asks for yours) and stores it in `.env`; keep that file private.
 
 ## Compatibility notes

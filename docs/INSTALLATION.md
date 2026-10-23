@@ -224,7 +224,7 @@ Careful: Docker publishes ports **around `ufw`**. Published container ports stay
 
 **Strong passwords.** The **Security** tab (allow-list, password check and Fail2Ban status) lists extensions with weak passwords. Give every extension a generated password.
 
-**Docker socket.** The backend container mounts `/var/run/docker.sock` so that the update from the web interface works. That is effectively root on the host for anyone who can run code in the backend. If you do not want this, remove the `/var/run/docker.sock` and `${PROJECT_DIR}:/project` entries from `docker-compose.yml` and update from the command line only.
+**Docker socket.** The backend container mounts `/var/run/docker.sock`. VST needs it to reload Asterisk after every change (it runs `asterisk -rx reload` inside the Asterisk container) and for the update from the web interface. That is effectively root on the host for anyone who can run code in the backend. So never expose port 8000 to the internet and keep the web interface behind a VPN or an HTTPS proxy. If you remove the mount the interface still starts, but Asterisk no longer picks up changes by itself: you would have to restart the `pbx_asterisk` container after every change.
 
 ![Security](img/security.png)
 

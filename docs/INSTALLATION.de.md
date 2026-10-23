@@ -224,7 +224,7 @@ Achtung: Docker setzt seine Portfreigaben **an `ufw` vorbei**. Veröffentlichte 
 
 **Starke Passwörter.** Der Reiter **Sicherheit** (Whitelist, Passwortprüfung und Fail2Ban-Status) listet Nebenstellen mit schwachem Passwort. Gib jeder Nebenstelle ein erzeugtes Passwort.
 
-**Docker-Socket.** Der Backend-Container bindet `/var/run/docker.sock` ein, damit das Update aus der Weboberfläche funktioniert. Das ist faktisch Root-Zugriff auf den Host für jeden, der Code im Backend ausführen kann. Wenn du das nicht willst, entferne in `docker-compose.yml` die Einträge `/var/run/docker.sock` und `${PROJECT_DIR}:/project` und aktualisiere nur auf der Kommandozeile.
+**Docker-Socket.** Der Backend-Container bindet `/var/run/docker.sock` ein. VST braucht das, um Asterisk nach jeder Änderung neu zu laden (es führt `asterisk -rx reload` im Asterisk-Container aus) und für das Update aus der Weboberfläche. Das ist faktisch Root-Zugriff auf den Host für jeden, der Code im Backend ausführen kann. Stelle deshalb Port 8000 nie ins Internet und halte die Weboberfläche hinter VPN oder HTTPS-Proxy. Entfernst du den Zugang, startet die Oberfläche trotzdem, aber Asterisk übernimmt Änderungen nicht mehr von selbst: Du müsstest nach jeder Änderung den Container `pbx_asterisk` neu starten.
 
 ![Sicherheit](img/security.png)
 

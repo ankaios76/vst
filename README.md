@@ -15,6 +15,8 @@
   <a href="CHANGELOG.md">Changelog</a>
 </p>
 
+<p align="center"><a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license"></a></p>
+
 ---
 
 **VST** (German: *Vermittlungsstelle*, "telephone exchange") turns Asterisk into something you can run without editing config files. You manage extensions, trunks, inbound numbers, ring groups and menus in the browser. VST writes the PJSIP configuration and dialplan for you and reloads Asterisk.
@@ -140,6 +142,10 @@ vst/
 ## Contributing
 
 Bug reports and ideas are welcome as [issues](https://github.com/ankaios76/vst/issues). Pull requests too; please describe what you changed and how you tested it.
+
+## License
+
+MIT, see [LICENSE](LICENSE). Asterisk itself, the bundled sound prompts and the music on hold files have their own licences.
 
 ## Credits
 

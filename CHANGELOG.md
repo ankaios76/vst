@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Umbenennung
+
+- **VST heißt jetzt VstPBX.** „Vst“ ist die deutsche Abkürzung für Vermittlungsstelle. Grund: Die Abkürzung VST ist in der Audio-Welt durch das Plugin-Format von Steinberg belegt. Neue Wortmarke, neue Repository-Adresse `ankaios76/vstpbx` (die alte Adresse leitet GitHub weiter). Installationsordner in der Dokumentation: `/opt/vstpbx`.
+- Das Logo in den Willkommens-E-Mails war noch das alte GonoPBX-Logo und ist jetzt die neue Wortmarke.
+
 ## [3.0.0] - 2026-10-23
 
 ### Umbenennung

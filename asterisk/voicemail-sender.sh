@@ -1,5 +1,5 @@
 #!/bin/sh
-# VST HTML Voicemail Email Sender
+# VstPBX HTML Voicemail Email Sender
 # Called by Asterisk via mailcmd= in voicemail.conf
 # Reads a standard email from stdin (with attachment), replaces body with HTML
 
@@ -15,7 +15,7 @@ echo "$(date): Input saved to $TMPMAIL ($(wc -c < "$TMPMAIL") bytes)" >> "$LOGFI
 # Extract headers and parts
 TO=$(grep -m1 "^To:" "$TMPMAIL" | sed 's/^To: *//')
 FROM_ADDR=$(grep -m1 "^From:" "$TMPMAIL" | sed 's/^From: *//' | grep -o '[^ <]*@[^ >]*')
-FROM="\"VST\" <${FROM_ADDR}>"
+FROM="\"VstPBX\" <${FROM_ADDR}>"
 SUBJECT=$(grep -m1 "^Subject:" "$TMPMAIL" | sed 's/^Subject: *//')
 MSGID=$(grep -m1 "^Message-ID:" "$TMPMAIL" | sed 's/^Message-ID: *//')
 BOUNDARY="gonopbx-$(date +%s)-$$"
@@ -151,7 +151,7 @@ cat <<'HTMLMID4'
 
 <!-- Footer -->
 <tr><td style="padding:20px 32px;border-top:1px solid #e5e7eb;text-align:center;">
-<div style="font-size:12px;color:#9ca3af;">Automatisch gesendet von Ihrer VST Telefonanlage</div>
+<div style="font-size:12px;color:#9ca3af;">Automatisch gesendet von Ihrer VstPBX Telefonanlage</div>
 </td></tr>
 
 </table>

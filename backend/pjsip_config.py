@@ -68,7 +68,7 @@ def generate_pjsip_config(peers: List[SIPPeer], global_codecs: str = DEFAULT_COD
 [global]
 type=global
 max_forwards=70
-user_agent=VST {VERSION}
+user_agent=VstPBX {VERSION}
 
 [transport-udp]
 type=transport

@@ -605,7 +605,7 @@ def unban_ip(
 
 # --- Server Management ---
 
-GITHUB_REPO = "ankaios76/vst"
+GITHUB_REPO = "ankaios76/vstpbx"
 
 
 def _get_uptime() -> str:
@@ -720,7 +720,7 @@ def check_update(
     """Check GitHub for a newer release."""
     try:
         url = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
-        req = urllib.request.Request(url, headers={"Accept": "application/vnd.github.v3+json", "User-Agent": "VST"})
+        req = urllib.request.Request(url, headers={"Accept": "application/vnd.github.v3+json", "User-Agent": "VstPBX"})
         resp = urllib.request.urlopen(req, timeout=10)
         data = json.loads(resp.read().decode())
         latest_tag = data.get("tag_name", "").lstrip("v")

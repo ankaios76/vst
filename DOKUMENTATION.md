@@ -1,4 +1,4 @@
-# VST - Technische Dokumentation
+# VstPBX - Technische Dokumentation
 
 **Version:** 2.1.2
 **Stand:** 18.02.2026
@@ -28,7 +28,7 @@
 
 ## Projektbeschreibung
 
-VST ist eine webbasierte Verwaltungsoberfläche für Asterisk PBX. Die Anwendung ermöglicht die vollständige Konfiguration und Echtzeit-Überwachung einer Asterisk-Telefonanlage über eine moderne Browser-Oberfläche. Alle Konfigurationsänderungen (PJSIP, Dialplan) werden automatisch generiert und in Asterisk geladen - ein manuelles Editieren von Konfigurationsdateien ist nicht erforderlich.
+VstPBX ist eine webbasierte Verwaltungsoberfläche für Asterisk PBX. Die Anwendung ermöglicht die vollständige Konfiguration und Echtzeit-Überwachung einer Asterisk-Telefonanlage über eine moderne Browser-Oberfläche. Alle Konfigurationsänderungen (PJSIP, Dialplan) werden automatisch generiert und in Asterisk geladen - ein manuelles Editieren von Konfigurationsdateien ist nicht erforderlich.
 
 ### Kernfunktionen
 
@@ -99,7 +99,7 @@ VST ist eine webbasierte Verwaltungsoberfläche für Asterisk PBX. Die Anwendung
 ### Erstinstallation
 
 ```bash
-cd /opt/vst
+cd /opt/vstpbx
 docker compose up -d
 ```
 
@@ -785,7 +785,7 @@ Benutzer ändert Daten (UI)
 ## Dateistruktur
 
 ```
-vst/
+vstpbx/
 ├── docker-compose.yml              # Container-Orchestrierung
 ├── docker-compose.override.yml     # Lokale Overrides
 ├── DOKUMENTATION.md                # Diese Datei
@@ -819,7 +819,7 @@ vst/
 │   ├── tailwind.config.js
 │   ├── vite.config.ts
 │   ├── public/
-│   │   ├── logo.png                # VST Logo
+│   │   ├── logo.png                # VstPBX Logo
 │   │   └── logos/
 │   │       └── plusnet.svg          # Plusnet Provider-Logo
 │   └── src/

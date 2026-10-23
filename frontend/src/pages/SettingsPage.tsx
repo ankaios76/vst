@@ -249,7 +249,7 @@ export default function SettingsPage() {
       const info = await api.checkUpdate()
       setUpdateInfo(info)
       if (!info.update_available) {
-        setSuccess('VST ist auf dem neuesten Stand')
+        setSuccess('VstPBX ist auf dem neuesten Stand')
       }
     } catch (err: any) {
       setError(err.message || tr('Update-Prüfung fehlgeschlagen', 'Update check failed'))
@@ -1088,7 +1088,7 @@ export default function SettingsPage() {
           <div className="bg-surface rounded-card shadow-sm border border-subtle p-6">
             <h2 className="text-lg font-semibold text-content mb-2">{tr('MQTT Echtzeit-Events', 'MQTT real-time events')}</h2>
             <p className="text-sm text-muted mb-6">
-              {tr('VST publiziert Anruf-Events, Extension- und Trunk-Status per MQTT.', 'VST publishes call events, extension and trunk status via MQTT.')}
+              {tr('VstPBX publiziert Anruf-Events, Extension- und Trunk-Status per MQTT.', 'VstPBX publishes call events, extension and trunk status via MQTT.')}
               {' '}
               {tr('Verbinden Sie es mit Ihrem MQTT-Broker (z.B. Mosquitto in Home Assistant).', 'Connect it to your MQTT broker (e.g. Mosquitto in Home Assistant).')}
             </p>
@@ -1369,7 +1369,7 @@ export default function SettingsPage() {
             {updateInfo && !updateInfo.update_available && (
               <div className="flex items-center gap-2 p-3 mb-4 bg-surface-subtle border border-green-500 rounded-input">
                 <CheckCircle className="w-4 h-4 text-success" />
-                <span className="text-sm text-success">VST v{updateInfo.current_version} {tr('ist aktuell', 'is up to date')}</span>
+                <span className="text-sm text-success">VstPBX v{updateInfo.current_version} {tr('ist aktuell', 'is up to date')}</span>
               </div>
             )}
 

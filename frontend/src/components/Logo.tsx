@@ -20,12 +20,12 @@ export function Logo({
     <>
       <img
         src={`/brand/vst-logo-${suffix}primary.svg`}
-        alt="VST"
+        alt="VstPBX"
         className={`${className} dark:hidden`}
       />
       <img
         src={`/brand/vst-logo-${suffix}white.svg`}
-        alt="VST"
+        alt="VstPBX"
         className={`${className} hidden dark:block`}
       />
     </>

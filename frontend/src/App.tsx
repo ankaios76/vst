@@ -130,7 +130,7 @@ function AppContent() {
       <header className="bg-surface border-b border-subtle sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            {/* Logo. Die VST-Wortmarke ist 4,33:1 und auf 32 px Hoehe nur
+            {/* Logo. Die VstPBX-Wortmarke ist 4,33:1 und auf 32 px Hoehe nur
                 138 px breit — deutlich ueber der CD-Mindestbreite von 80 px
                 und schmal genug fuer jede Schirmbreite. Ein Umschalten auf
                 die Bildmarke solo ist daher nicht noetig. */}
@@ -272,7 +272,7 @@ function AppContent() {
       {/* Footer */}
       <footer className="bg-surface-subtle border-t border-subtle mt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-xs text-muted space-y-1">
-          <p>VST &middot; Open-Source-Telefonanlage</p>
+          <p>VstPBX &middot; Open-Source-Telefonanlage</p>
           <p>Konzept, Entwicklung und Design, &copy; {new Date().getFullYear()} Norbert Hengsteler. {tr('Alle Rechte vorbehalten.', 'All rights reserved.')}</p>
           <p>
             {tr('Telefonanlage auf Basis von', 'PBX based on')}{' '}

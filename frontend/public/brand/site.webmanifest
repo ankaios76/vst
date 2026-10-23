@@ -1,6 +1,6 @@
 {
-  "name": "VST",
-  "short_name": "VST",
+  "name": "VstPBX",
+  "short_name": "VstPBX",
   "description": "Telefonanlage auf Basis von Asterisk",
   "start_url": "/",
   "display": "standalone",

@@ -1,12 +1,12 @@
-# VST – Admin‑Handbuch (kurz)
+# VstPBX – Admin‑Handbuch (kurz)
 
 Stand: 13.02.2026
 
 ## Ziel
-Dieses Handbuch richtet sich an Administratoren und beschreibt Betrieb, Wartung und sichere Konfiguration von VST.
+Dieses Handbuch richtet sich an Administratoren und beschreibt Betrieb, Wartung und sichere Konfiguration von VstPBX.
 
 ## Überblick
-VST besteht aus vier Docker‑Services in einem internen Netzwerk:
+VstPBX besteht aus vier Docker‑Services in einem internen Netzwerk:
 
 - `pbx_frontend` (React/Nginx, Port 3000)
 - `pbx_backend` (FastAPI, Port 8000)
@@ -18,11 +18,11 @@ Die Asterisk‑Konfigurationen werden automatisch aus der Datenbank generiert un
 ## Installation (Kurzfassung)
 Voraussetzungen: Linux, Docker Engine 24+, Docker Compose v2.
 
-1. Projekt nach `/opt/vst` klonen (`git clone https://github.com/ankaios76/vst.git /opt/vst`).
+1. Projekt nach `/opt/vstpbx` klonen (`git clone https://github.com/ankaios76/vstpbx.git /opt/vstpbx`).
 2. Installation starten:
 
 ```bash
-cd /opt/vst
+cd /opt/vstpbx
 ./install.sh
 ```
 
@@ -52,7 +52,7 @@ Optional (nur intern): AMI ist auf `127.0.0.1:5038` gebunden.
 
 ## Betrieb: Start, Stop, Status
 ```bash
-cd /opt/vst
+cd /opt/vstpbx
 
 # Status
 docker compose ps
@@ -132,7 +132,7 @@ In der GUI: **Settings → Server → Update**.
 Manuell:
 
 ```bash
-cd /opt/vst
+cd /opt/vstpbx
 git pull origin main
 docker compose up -d --build
 ```
@@ -144,7 +144,7 @@ Wichtige Daten liegen in Docker‑Volumes:
 - `asterisk_voicemail` – Voicemails
 - `user_uploads` – Uploads/Avatare
 
-Ein getestetes Backup‑Skript (Datenbank per `pg_dump`, Volumes, `.env`) samt Restore steht in [docs/INSTALLATION.de.md](docs/INSTALLATION.de.md#10-betrieb-logs-backup-update). Die Volumes heißen `<Ordnername>_postgres_data` usw. (bei `/opt/vst`: `vst_…`).
+Ein getestetes Backup‑Skript (Datenbank per `pg_dump`, Volumes, `.env`) samt Restore steht in [docs/INSTALLATION.de.md](docs/INSTALLATION.de.md#10-betrieb-logs-backup-update). Die Volumes heißen `<Ordnername>_postgres_data` usw. (bei `/opt/vstpbx`: `vst_…`).
 
 ## Troubleshooting
 

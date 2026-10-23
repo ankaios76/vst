@@ -233,10 +233,10 @@ export default function Dashboard({ onExtensionClick, onTrunkClick, onNavigate }
           </div>
         </div>
 
-        {/* VST Status */}
+        {/* VstPBX Status */}
         <div className="bg-surface rounded-card border border-subtle px-6 h-full flex items-center justify-between">
           <div>
-            <p className="text-sm text-muted">VST</p>
+            <p className="text-sm text-muted">VstPBX</p>
             <p className="text-2xl font-bold text-content">
               {status?.asterisk === 'connected' ? tr('Online', 'Online') : tr('Offline', 'Offline')}
             </p>

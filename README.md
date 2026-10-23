@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="frontend/public/brand/vst-logo-claim-primary.svg" alt="VST" width="360">
+  <img src="frontend/public/brand/vst-logo-claim-primary.svg" alt="VstPBX" width="360">
 </p>
 
 <p align="center">
@@ -20,14 +20,14 @@
 
 ---
 
-**VST** (German: *Vermittlungsstelle*, "telephone exchange") turns Asterisk into something you can run without editing config files. You manage extensions, trunks, inbound numbers, ring groups and menus in the browser. VST writes the PJSIP configuration and dialplan for you and reloads Asterisk.
+**VstPBX** (*Vst* is the German abbreviation for *Vermittlungsstelle*, "telephone exchange") turns Asterisk into something you can run without editing config files. You manage extensions, trunks, inbound numbers, ring groups and menus in the browser. VstPBX writes the PJSIP configuration and dialplan for you and reloads Asterisk.
 
 **Try it:** [vst-demo.frickelfabrik.de](https://vst-demo.frickelfabrik.de), log in as `demo` with the password `vst-demo`. The demo uses made-up data and resets every 30 minutes. Telephony is switched off there, so you can set everything up but not place calls.
 
-It started as GonoPBX and has been renamed to VST. The code base is the same project; see the [changelog](CHANGELOG.md) for the history.
+It started as GonoPBX, was called VST for a few days, and is now VstPBX. The code base is the same project; see the [changelog](CHANGELOG.md) for the history. VstPBX has nothing to do with the VST audio plugin format by Steinberg.
 
 <p align="center">
-  <img src="docs/img/dashboard.png" alt="VST dashboard" width="860">
+  <img src="docs/img/dashboard.png" alt="VstPBX dashboard" width="860">
 </p>
 
 ## Features
@@ -65,8 +65,8 @@ It started as GonoPBX and has been renamed to VST. The code base is the same pro
 You need a Linux machine with Docker Engine 24+ and the Compose plugin, a few GB of free disk space, and (for real calls) a SIP provider account.
 
 ```bash
-git clone https://github.com/ankaios76/vst.git
-cd vst
+git clone https://github.com/ankaios76/vstpbx.git
+cd vstpbx
 sudo ./install.sh
 ```
 
@@ -101,11 +101,11 @@ The backend is the source of truth. It renders `pjsip_peers.conf`, the dialplan,
 
 ## Security notes
 
-Read these before exposing VST to the internet.
+Read these before exposing VstPBX to the internet.
 
 - The web interface speaks plain HTTP on port 3000. Put it behind a TLS reverse proxy (Caddy, nginx, Traefik) or reach it only over a VPN, and choose "reverse proxy" in the installer so that ports 3000 and 8000 bind to localhost.
 - SIP on the open internet gets scanned constantly. Use strong extension passwords (the interface has a generator), the IP allow-list, and Fail2Ban on the host. Prefer a VPN for remote phones.
-- The backend container mounts the Docker socket. VST needs it to reload Asterisk after every change (it runs `asterisk -rx reload` inside the Asterisk container) and for one-click updates. That is equivalent to root on the host for anyone who can run code in that container, so never expose port 8000 to untrusted networks and keep the web interface behind a VPN or a TLS proxy. Removing the mount makes the interface work but Asterisk no longer picks up changes automatically; you would have to restart the `pbx_asterisk` container yourself after each change.
+- The backend container mounts the Docker socket. VstPBX needs it to reload Asterisk after every change (it runs `asterisk -rx reload` inside the Asterisk container) and for one-click updates. That is equivalent to root on the host for anyone who can run code in that container, so never expose port 8000 to untrusted networks and keep the web interface behind a VPN or a TLS proxy. Removing the mount makes the interface work but Asterisk no longer picks up changes automatically; you would have to restart the `pbx_asterisk` container yourself after each change.
 - There is no default password. The installer generates one (or asks for yours) and stores it in `.env`; keep that file private.
 
 ## Compatibility notes
@@ -121,7 +121,7 @@ Some internal names keep the GonoPBX spelling so that existing installations and
 From the web interface: **Settings → Server → Update**. From the command line:
 
 ```bash
-cd vst
+cd vstpbx
 git pull
 sudo ./install.sh      # choose [1] Update: keeps data and passwords
 ```
@@ -131,7 +131,7 @@ Database migrations run automatically when the backend starts.
 ## Project layout
 
 ```
-vst/
+vstpbx/
 ├── asterisk/            Dockerfile, sound prompts, music on hold, config templates
 ├── backend/             FastAPI application, config generators, AMI client
 ├── frontend/            React application (Vite, Tailwind)
@@ -144,7 +144,7 @@ vst/
 
 ## Contributing
 
-Bug reports and ideas are welcome as [issues](https://github.com/ankaios76/vst/issues). Pull requests too; please describe what you changed and how you tested it.
+Bug reports and ideas are welcome as [issues](https://github.com/ankaios76/vstpbx/issues). Pull requests too; please describe what you changed and how you tested it.
 
 ## License
 
@@ -152,4 +152,4 @@ MIT, see [LICENSE](LICENSE). Asterisk itself, the bundled sound prompts and the 
 
 ## Credits
 
-Written by Norbert Hengsteler in Bremen. VST builds on [Asterisk](https://www.asterisk.org), a project of Sangoma Technologies. The bundled English prompts are the Asterisk core sounds, and the music on hold files keep their original licences (see `asterisk/moh/`).
+Written by Norbert Hengsteler in Bremen. VstPBX builds on [Asterisk](https://www.asterisk.org), a project of Sangoma Technologies. The bundled English prompts are the Asterisk core sounds, and the music on hold files keep their original licences (see `asterisk/moh/`).

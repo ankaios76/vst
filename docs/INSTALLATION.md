@@ -1,13 +1,13 @@
-# Installing and setting up VST
+# Installing and setting up VstPBX
 
-This guide takes you from an empty Linux machine to your first phone call through VST. It assumes you have used a terminal before, but not that you know Asterisk. A German version lives in [INSTALLATION.de.md](INSTALLATION.de.md).
+This guide takes you from an empty Linux machine to your first phone call through VstPBX. It assumes you have used a terminal before, but not that you know Asterisk. A German version lives in [INSTALLATION.de.md](INSTALLATION.de.md).
 
 **Contents**
 
 1. [What you need](#1-what-you-need)
 2. [Prepare the network](#2-prepare-the-network)
 3. [Install Docker](#3-install-docker)
-4. [Install VST](#4-install-vst)
+4. [Install VstPBX](#4-install-vst)
 5. [First login](#5-first-login)
 6. [First extension and first phone](#6-first-extension-and-first-phone)
 7. [Provider trunk and phone numbers](#7-provider-trunk-and-phone-numbers)
@@ -34,7 +34,7 @@ For real calls you also need a **SIP account** from your phone provider (user na
 
 ## 2. Prepare the network
 
-VST runs four containers. These are the ports that matter:
+VstPBX runs four containers. These are the ports that matter:
 
 | Port | Protocol | Purpose | Reachable from |
 |---|---|---|---|
@@ -45,11 +45,11 @@ VST runs four containers. These are the ports that matter:
 
 Three situations come up in practice:
 
-**a) Everything at home or in an office, the provider connects through registration.** The easy case. VST registers with the provider (an outbound connection) and your phones are on the same LAN. You do **not** need to open anything on the router. Give the VST machine a fixed address (DHCP reservation).
+**a) Everything at home or in an office, the provider connects through registration.** The easy case. VstPBX registers with the provider (an outbound connection) and your phones are on the same LAN. You do **not** need to open anything on the router. Give the VstPBX machine a fixed address (DHCP reservation).
 
-**b) Phones outside the network (home office, smartphone on the road).** Best through a VPN such as WireGuard, which makes it case a) again. Without a VPN, forward 5060 and 10000–10100/UDP on the router to the VST machine and read chapter 9 first.
+**b) Phones outside the network (home office, smartphone on the road).** Best through a VPN such as WireGuard, which makes it case a) again. Without a VPN, forward 5060 and 10000–10100/UDP on the router to the VstPBX machine and read chapter 9 first.
 
-**c) The provider calls VST from outside (IP authentication, no registration).** Port 5060 must be reachable from the provider. Allow only your provider's addresses in the firewall.
+**c) The provider calls VstPBX from outside (IP authentication, no registration).** Port 5060 must be reachable from the provider. Allow only your provider's addresses in the firewall.
 
 **Turn SIP ALG off.** Many routers (FRITZ!Box, Speedport, older TP-Link) have a feature that "fixes" SIP packets and breaks them. Typical symptoms: the phone rings but there is no audio, or calls drop after 30 seconds. If you see this and cannot disable the ALG, choose a SIP port other than 5060 during installation (for example 5062), which usually bypasses it.
 
@@ -76,15 +76,15 @@ git --version
 
 All three must print a version.
 
-## 4. Install VST
+## 4. Install VstPBX
 
 ```bash
-sudo git clone https://github.com/ankaios76/vst.git /opt/vst
-cd /opt/vst
+sudo git clone https://github.com/ankaios76/vstpbx.git /opt/vstpbx
+cd /opt/vstpbx
 sudo ./install.sh
 ```
 
-`/opt/vst` is only a suggestion. What matters is that the folder stays where it is: the installer writes it to `.env`, and the update function needs it.
+`/opt/vstpbx` is only a suggestion. What matters is that the folder stays where it is: the installer writes it to `.env`, and the update function needs it.
 
 The installer asks:
 
@@ -108,7 +108,7 @@ All four containers (`pbx_asterisk`, `pbx_backend`, `pbx_frontend`, `pbx_postgre
 To read the admin password:
 
 ```bash
-sudo grep ADMIN_PASSWORD /opt/vst/.env
+sudo grep ADMIN_PASSWORD /opt/vstpbx/.env
 ```
 
 `.env` holds every secret of the installation. Do not share it and never commit it to a repository.
@@ -119,7 +119,7 @@ Open `http://<server-ip>:3000` in a browser (with install mode 2, from the serve
 
 ![Login page](img/login.png)
 
-The dashboard shows the state of VST and Asterisk and the number of registered phones, followed by trunks, extensions and recent calls.
+The dashboard shows the state of VstPBX and Asterisk and the number of registered phones, followed by trunks, extensions and recent calls.
 
 ![Dashboard](img/dashboard.png)
 
@@ -137,20 +137,20 @@ Fill in:
 - **Caller ID:** the name shown on internal calls (for example "Reception")
 - **Password:** use the **Generate** button. The bar below shows its strength.
 
-Save. VST writes the configuration and reloads Asterisk.
+Save. VstPBX writes the configuration and reloads Asterisk.
 
 **Set up the phone.** In any SIP phone or softphone (Yealink, Snom, Grandstream, Linphone, Zoiper, a FRITZ!Fon through the FRITZ!Box, …) enter:
 
 | Field in the phone | Value |
 |---|---|
-| SIP server / registrar | the VST machine's address |
+| SIP server / registrar | the VstPBX machine's address |
 | Port | 5060 (or your chosen port) |
 | User name / auth ID | the extension, for example `101` |
 | Password | the extension's password |
 | Transport | UDP |
 | Codecs | G.722, A-law (PCMA), µ-law (PCMU) |
 
-After saving, the extension shows up as registered on the dashboard. Create a second extension, register a second phone and call `102` from `101`. That proves VST and Asterisk work without any provider involved.
+After saving, the extension shows up as registered on the dashboard. Create a second extension, register a second phone and call `102` from `101`. That proves VstPBX and Asterisk work without any provider involved.
 
 The extension's detail view (pencil icon in the list) has five tabs: **Numbers** (inbound numbers and outbound caller ID), **Call forwarding** (always, busy, no answer), **Voicemail**, **Audio codecs** and **Features** (for example BLF and pickup group).
 
@@ -164,14 +164,14 @@ The extension's detail view (pencil icon in the list) has five tabs: **Numbers**
 
 1. **Choose the provider.** Server and quirks are preconfigured for Plusnet IPfonie, dus.net, Telekom DeutschlandLAN, CompanyFlex, Telekom All-IP (residential, MagentaZuhause) and Iliad Italy. For anything else use the generic entry and type the SIP server yourself.
 2. **Credentials** from your provider (user name, password; for Telekom All-IP also the line number as "From user").
-3. **Authentication:** registration (VST registers with the provider) or IP authentication (the provider sends from fixed addresses). Your provider's documents say which one applies.
+3. **Authentication:** registration (VstPBX registers with the provider) or IP authentication (the provider sends from fixed addresses). Your provider's documents say which one applies.
 4. **Number block:** if you have several numbers, enter the block, for example `03023125100-03023125199`. A short form works too: the part after the dash replaces the last digits of the first number (`03023125100-99` is the same block). Blocks are limited to 1000 numbers.
 
 Save. The trunk appears on the dashboard with a status dot. Green means registered with the provider.
 
 **Assign an inbound number to an extension.** In the extension's **Numbers** tab pick the number and the trunk. Ring groups and IVR menus get their inbound number in their own form.
 
-**Outbound caller ID.** In the **Numbers** tab choose which of the assigned numbers is shown on outgoing calls. Optionally VST adds a `P-Asserted-Identity` header with the main number of the block, which some providers require for number blocks. For Telekom All-IP VST sets the line number as the sender automatically.
+**Outbound caller ID.** In the **Numbers** tab choose which of the assigned numbers is shown on outgoing calls. Optionally VstPBX adds a `P-Asserted-Identity` header with the main number of the block, which some providers require for number blocks. For Telekom All-IP VstPBX sets the line number as the sender automatically.
 
 **Test it.** Call your number from a mobile phone: the assigned extension must ring. Then call a mobile number from the extension, dialled with a leading `0` (`0151…`). Both calls appear in the call history shortly after.
 
@@ -179,17 +179,17 @@ Save. The trunk appears on the dashboard with a status dot. Green means register
 
 ## 8. Optional: voicemail, ring groups, IVR, Home Assistant
 
-**Voicemail.** Every extension gets a mailbox automatically. Ring time before the mailbox and the PIN are set in the extension's **Voicemail** tab. Dial `*98` from your phone to listen to your own mailbox; `*97` plus an extension (for example `*97101`) opens that extension's mailbox. Prompts are German because the German Asterisk sound pack is part of the image. To receive messages by e-mail too, enter your SMTP server under **Settings → E-Mail** (VST detects port 465 or 587 itself) and send a test message.
+**Voicemail.** Every extension gets a mailbox automatically. Ring time before the mailbox and the PIN are set in the extension's **Voicemail** tab. Dial `*98` from your phone to listen to your own mailbox; `*97` plus an extension (for example `*97101`) opens that extension's mailbox. Prompts are German because the German Asterisk sound pack is part of the image. To receive messages by e-mail too, enter your SMTP server under **Settings → E-Mail** (VstPBX detects port 465 or 587 itself) and send a test message.
 
 **Ring groups.** **Settings → Gruppen (Groups)**: name, internal number, members, strategy (all at once, round robin, least recently used) and ring time. Optionally assign an inbound number.
 
 ![Groups](img/groups.png)
 
-**IVR (voice menu).** **Settings → IVR**: upload a prompt (VST converts it to the right format), map keys to destinations, set retries, optionally assign an inbound number.
+**IVR (voice menu).** **Settings → IVR**: upload a prompt (VstPBX converts it to the right format), map keys to destinations, set retries, optionally assign an inbound number.
 
 **Phonebook.** Global and personal contacts, CSV import and export. Stored names appear in the call history.
 
-**Home Assistant.** **Settings → Home Assistant**: generate an API key, enter the MQTT broker, test the connection. VST publishes call events and status over MQTT (topics `gonopbx/...`; the name stayed for compatibility) and offers an endpoint for click-to-call.
+**Home Assistant.** **Settings → Home Assistant**: generate an API key, enter the MQTT broker, test the connection. VstPBX publishes call events and status over MQTT (topics `gonopbx/...`; the name stayed for compatibility) and offers an endpoint for click-to-call.
 
 ## 9. Hardening: HTTPS, firewall, Fail2Ban
 
@@ -198,14 +198,14 @@ Read this chapter before anything is reachable from the internet.
 **Put HTTPS in front of the web interface.** Choose "reverse proxy" (mode 2) during installation; ports 3000 and 8000 then listen on `127.0.0.1` only. With Caddy this is enough:
 
 ```
-vst.example.org {
+vstpbx.example.org {
     reverse_proxy 127.0.0.1:3000
 }
 ```
 
 Caddy fetches the certificate itself. The nginx inside the frontend container forwards `/api` and `/ws` (WebSocket) to the backend, so you only have to pass port 3000. If you do not want the web interface on the internet at all, reach it through a VPN.
 
-**Firewall on the VST machine.** Example with `ufw` for a home network `192.168.1.0/24`:
+**Firewall on the VstPBX machine.** Example with `ufw` for a home network `192.168.1.0/24`:
 
 ```bash
 sudo ufw default deny incoming
@@ -220,11 +220,11 @@ Careful: Docker publishes ports **around `ufw`**. Published container ports stay
 
 **SIP allow-list.** Under **Settings → Sicherheit (Security)** you can restrict which addresses may register phones. For an office LAN this is the most effective single measure.
 
-**Fail2Ban.** If Fail2Ban runs on the host, VST shows active bans and jails under **Security**. A jail for Asterisk bans addresses after failed logins. The Asterisk log is in the project folder under `asterisk/logs/`.
+**Fail2Ban.** If Fail2Ban runs on the host, VstPBX shows active bans and jails under **Security**. A jail for Asterisk bans addresses after failed logins. The Asterisk log is in the project folder under `asterisk/logs/`.
 
 **Strong passwords.** The **Security** tab (allow-list, password check and Fail2Ban status) lists extensions with weak passwords. Give every extension a generated password.
 
-**Docker socket.** The backend container mounts `/var/run/docker.sock`. VST needs it to reload Asterisk after every change (it runs `asterisk -rx reload` inside the Asterisk container) and for the update from the web interface. That is effectively root on the host for anyone who can run code in the backend. So never expose port 8000 to the internet and keep the web interface behind a VPN or an HTTPS proxy. If you remove the mount the interface still starts, but Asterisk no longer picks up changes by itself: you would have to restart the `pbx_asterisk` container after every change.
+**Docker socket.** The backend container mounts `/var/run/docker.sock`. VstPBX needs it to reload Asterisk after every change (it runs `asterisk -rx reload` inside the Asterisk container) and for the update from the web interface. That is effectively root on the host for anyone who can run code in the backend. So never expose port 8000 to the internet and keep the web interface behind a VPN or an HTTPS proxy. If you remove the mount the interface still starts, but Asterisk no longer picks up changes by itself: you would have to restart the `pbx_asterisk` container after every change.
 
 ![Security](img/security.png)
 
@@ -233,7 +233,7 @@ Careful: Docker publishes ports **around `ufw`**. Published container ports stay
 **Status and logs**
 
 ```bash
-cd /opt/vst
+cd /opt/vstpbx
 docker compose ps                 # is everything running?
 docker compose logs -f backend    # backend, live
 docker compose logs -f asterisk   # Asterisk, live
@@ -255,8 +255,8 @@ A simple script for a daily cron job:
 ```bash
 #!/bin/bash
 set -e
-cd /opt/vst
-DEST=/var/backups/vst/$(date +%F)
+cd /opt/vstpbx
+DEST=/var/backups/vstpbx/$(date +%F)
 mkdir -p "$DEST"
 docker exec pbx_postgres pg_dump -U asterisk asterisk_gui | gzip > "$DEST/db.sql.gz"
 for v in asterisk_voicemail user_uploads; do
@@ -268,12 +268,12 @@ cp .env "$DEST/env" && chmod 600 "$DEST/env"
 
 Copy the backup folder to a **different** place (another machine, NAS, cloud storage). A backup on the same disk does not protect against a disk failure.
 
-The volumes are called `<folder name>_asterisk_voicemail` and `<folder name>_user_uploads`, so `vst_…` for `/opt/vst`. `docker volume ls` shows the exact names.
+The volumes are called `<folder name>_asterisk_voicemail` and `<folder name>_user_uploads`, so `vst_…` for `/opt/vstpbx`. `docker volume ls` shows the exact names.
 
-**Restore** on a freshly installed VST:
+**Restore** on a freshly installed VstPBX:
 
 ```bash
-cd /opt/vst
+cd /opt/vstpbx
 docker compose stop backend
 gunzip -c /path/to/backup/db.sql.gz | docker exec -i pbx_postgres psql -U asterisk -d asterisk_gui
 docker compose start backend
@@ -286,7 +286,7 @@ On start the backend rewrites the Asterisk configuration from the database.
 Web interface: **Settings → Server → Update**. Command line:
 
 ```bash
-cd /opt/vst
+cd /opt/vstpbx
 sudo git pull
 sudo ./install.sh        # choose "[1] Update" when asked
 ```
@@ -299,7 +299,7 @@ Update mode keeps data and passwords and rebuilds the containers. Database chang
 
 **Login fails.** The password is in `.env`. To reset it, change `ADMIN_PASSWORD` there and run `docker restart pbx_backend`.
 
-**A phone does not register.** Check extension, password and server address. **Settings → SIP Debug** shows SIP messages live: does a `REGISTER` arrive? Does VST answer `401` (wrong password) or not at all (network/firewall)? `docker compose logs asterisk` helps too.
+**A phone does not register.** Check extension, password and server address. **Settings → SIP Debug** shows SIP messages live: does a `REGISTER` arrive? Does VstPBX answer `401` (wrong password) or not at all (network/firewall)? `docker compose logs asterisk` helps too.
 
 **The phone rings but there is no audio, or only one direction.** Almost always NAT or SIP ALG. Check that UDP 10000–10100 is reachable, that the external IP in `.env` is right and that the router's SIP ALG is off (chapter 2).
 
@@ -311,14 +311,14 @@ Update mode keeps data and passwords and rebuilds the containers. Database chang
 
 **Voicemail e-mail does not arrive.** Send the test message under **Settings → E-Mail**. The error message names the cause (login, port, TLS).
 
-**Nothing helps.** Look at `docker compose logs --tail 200 backend asterisk` and open an [issue](https://github.com/ankaios76/vst/issues). Redact passwords and public IP addresses first.
+**Nothing helps.** Look at `docker compose logs --tail 200 backend asterisk` and open an [issue](https://github.com/ankaios76/vstpbx/issues). Redact passwords and public IP addresses first.
 
 ## 12. Uninstall
 
 ```bash
-cd /opt/vst
+cd /opt/vstpbx
 docker compose down -v      # removes containers AND data (database, voicemail)
-cd / && sudo rm -rf /opt/vst
+cd / && sudo rm -rf /opt/vstpbx
 ```
 
 Without `-v` the Docker volumes with your data stay.

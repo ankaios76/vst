@@ -24,7 +24,7 @@ export function Logo({
         className={`${className} dark:hidden`}
       />
       <img
-        src={`/brand/vst-logo-${suffix}weiss.svg`}
+        src={`/brand/vst-logo-${suffix}white.svg`}
         alt="VST"
         className={`${className} hidden dark:block`}
       />

@@ -99,7 +99,7 @@ VST ist eine webbasierte Verwaltungsoberfläche für Asterisk PBX. Die Anwendung
 ### Erstinstallation
 
 ```bash
-cd /root/asterisk-pbx-gui
+cd /opt/vst
 docker compose up -d
 ```
 
@@ -785,7 +785,7 @@ Benutzer ändert Daten (UI)
 ## Dateistruktur
 
 ```
-asterisk-pbx-gui/
+vst/
 ├── docker-compose.yml              # Container-Orchestrierung
 ├── docker-compose.override.yml     # Lokale Overrides
 ├── DOKUMENTATION.md                # Diese Datei

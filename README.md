@@ -8,6 +8,7 @@
 </p>
 
 <p align="center">
+  <a href="https://vst-demo.frickelfabrik.de">Live demo</a> ·
   <a href="docs/INSTALLATION.md">Installation</a> ·
   <a href="docs/INSTALLATION.de.md">Installationsanleitung (Deutsch)</a> ·
   <a href="#features">Features</a> ·
@@ -20,6 +21,8 @@
 ---
 
 **VST** (German: *Vermittlungsstelle*, "telephone exchange") turns Asterisk into something you can run without editing config files. You manage extensions, trunks, inbound numbers, ring groups and menus in the browser. VST writes the PJSIP configuration and dialplan for you and reloads Asterisk.
+
+**Try it:** [vst-demo.frickelfabrik.de](https://vst-demo.frickelfabrik.de), log in as `demo` with the password `vst-demo`. The demo uses made-up data and resets every 30 minutes. Telephony is switched off there, so you can set everything up but not place calls.
 
 It started as GonoPBX and has been renamed to VST. The code base is the same project; see the [changelog](CHANGELOG.md) for the history.
 

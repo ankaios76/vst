@@ -210,28 +210,25 @@ def delete_trunk(trunk_id: int, request: Request, current_user: User = Depends(g
 
 
 def expand_number_block(number_block: str) -> list[str]:
-    """Expand a number block like '012345678900-9' into individual DIDs.
-    Format: {base_number}-{end_digit}
-    The last digit of base_number is the start, end_digit is the end.
+    """Expand a number block into individual DIDs.
+
+    Format: {first_number}-{end}, where `end` replaces the last digits of the first number:
+      '012345678900-9'  -> ...900 to ...909
+      '012345678900-99' -> ...900 to ...999
+      '012345678900-012345678999' (full number) is accepted as well.
+    Blocks of more than 1000 numbers are rejected.
     """
     if not number_block or '-' not in number_block:
         return []
-    parts = number_block.rsplit('-', 1)
-    if len(parts) != 2:
+    base, end_str = (x.strip() for x in number_block.rsplit('-', 1))
+    if not base.isdigit() or not end_str.isdigit() or len(end_str) > len(base):
         return []
-    base = parts[0]
-    end_str = parts[1].strip()
-    if not base or not end_str.isdigit():
+    n = len(end_str)
+    start = int(base)
+    end = int(base[:-n] + end_str)
+    if end < start or end - start >= 1000:
         return []
-    prefix = base[:-1]
-    start_digit = base[-1]
-    if not start_digit.isdigit():
-        return []
-    start = int(start_digit)
-    end = int(end_str)
-    if end < start:
-        return []
-    return [f"{prefix}{d}" for d in range(start, end + 1)]
+    return [f"{d:0{len(base)}d}" for d in range(start, end + 1)]
 
 
 @router.get("/available-dids")

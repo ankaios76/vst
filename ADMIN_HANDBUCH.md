@@ -18,15 +18,15 @@ Die Asterisk‑Konfigurationen werden automatisch aus der Datenbank generiert un
 ## Installation (Kurzfassung)
 Voraussetzungen: Linux, Docker Engine 24+, Docker Compose v2.
 
-1. Projekt nach `/root/asterisk-pbx-gui` legen.
+1. Projekt nach `/opt/vst` klonen (`git clone https://github.com/ankaios76/vst.git /opt/vst`).
 2. Installation starten:
 
 ```bash
-cd /root/asterisk-pbx-gui
+cd /opt/vst
 ./install.sh
 ```
 
-Für ein schnelleres Server‑Deployment ist auch `./deploy.sh` vorhanden.
+Eine ausführliche Anleitung steht in [docs/INSTALLATION.de.md](docs/INSTALLATION.de.md).
 
 ## Erstzugriff
 Die Web‑GUI läuft auf Port 3000. Beispiel:
@@ -52,7 +52,7 @@ Optional (nur intern): AMI ist auf `127.0.0.1:5038` gebunden.
 
 ## Betrieb: Start, Stop, Status
 ```bash
-cd /root/asterisk-pbx-gui
+cd /opt/vst
 
 # Status
 docker compose ps
@@ -132,7 +132,7 @@ In der GUI: **Settings → Server → Update**.
 Manuell:
 
 ```bash
-cd /root/asterisk-pbx-gui
+cd /opt/vst
 git pull origin main
 docker compose up -d --build
 ```
@@ -144,28 +144,7 @@ Wichtige Daten liegen in Docker‑Volumes:
 - `asterisk_voicemail` – Voicemails
 - `user_uploads` – Uploads/Avatare
 
-Beispiel‑Backup (lokales Verzeichnis `./backups`):
-
-```bash
-mkdir -p /root/asterisk-pbx-gui/backups
-
-# DB
-
-docker run --rm -v postgres_data:/data -v /root/asterisk-pbx-gui/backups:/backup alpine \
-  sh -c "cd /data && tar czf /backup/postgres_data.tgz ."
-
-# Voicemails
-
-docker run --rm -v asterisk_voicemail:/data -v /root/asterisk-pbx-gui/backups:/backup alpine \
-  sh -c "cd /data && tar czf /backup/asterisk_voicemail.tgz ."
-
-# Uploads
-
-docker run --rm -v user_uploads:/data -v /root/asterisk-pbx-gui/backups:/backup alpine \
-  sh -c "cd /data && tar czf /backup/user_uploads.tgz ."
-```
-
-Restore erfolgt analog durch Entpacken in das jeweilige Volume (Container gestoppt).
+Ein getestetes Backup‑Skript (Datenbank per `pg_dump`, Volumes, `.env`) samt Restore steht in [docs/INSTALLATION.de.md](docs/INSTALLATION.de.md#10-betrieb-logs-backup-update). Die Volumes heißen `<Ordnername>_postgres_data` usw. (bei `/opt/vst`: `vst_…`).
 
 ## Troubleshooting
 

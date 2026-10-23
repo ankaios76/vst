@@ -50,3 +50,12 @@ logs/
 asterisk/config/pjsip.conf
 asterisk/config/extensions.conf
 asterisk/config/manager.conf
+
+# Secrets and local material (never commit)
+*.key
+*.pem
+*.crt
+asterisk/tls/
+*.bak
+*.backup
+*.orig
